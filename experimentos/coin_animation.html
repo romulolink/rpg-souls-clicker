@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Animation Example</title>
+  <style>
+    #my-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+    }
+
+    .move-animation {
+      animation: moveImage 3s ease-in-out;
+    }
+
+    @keyframes moveImage {
+      0% {
+        transform: translate(0, 0);
+      }
+      100% {
+        transform: translate(var(--dest-x), var(--dest-y));
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <img src="coin.png" id="my-image">
+
+  <div style="position: fixed; top: 0; right: 0; width: 50px; height:50px; background-color:yellow" id="destination"></div>
+
+  <script>
+
+  </script>
+</body>
+</html>

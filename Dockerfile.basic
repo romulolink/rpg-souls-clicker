@@ -1,0 +1,21 @@
+# Define a imagem base do Docker
+FROM node:16
+
+# Define o diretório de trabalho dentro do contêiner
+WORKDIR /app
+
+# Copia o package.json e o package-lock.json para o diretório de trabalho
+COPY package*.json ./
+
+# Instala as dependências do Node.js
+RUN npm install
+
+# Copia o restante dos arquivos da aplicação para o diretório de trabalho
+COPY . .
+
+# Expõe a porta em que o aplicativo está escutando (opcional, depende da sua aplicação)
+EXPOSE 3000
+
+# Comando para iniciar o aplicativo
+CMD [ "node", "start" ]
+

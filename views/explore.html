@@ -1,0 +1,99 @@
+
+<div id="tab-explore" class="row tab-content ocean show">
+
+    <div class="row">
+        
+        <div class="col-md-3"></div>
+
+        <div class="col-md-4">
+            <center>
+            <div class="ribbons-fixed">
+                
+                <span><img class="icon" src="img/icons/compass.png"> Arcadius Land <h2 style="color:red" id="is-dev"><h2></span>
+
+            </div>  
+            </center>         
+
+        </div>
+       
+         
+    </div>
+
+    <div class="questContainer-wrapper">
+
+
+        <h3 style="color:rgb(203, 61, 61)"><img class="icon" src="img/quest.png"> Quest List</h3>
+        <div id="questContainer" class="questContainer">
+        
+
+    </div>
+    
+    
+        
+
+    </div>
+
+    <div class="row">
+
+            <!-- div class="col-md-2"></div -->
+
+             <div class="land-grid" id="islandGrid"></div>
+
+    </div>
+
+    <div id="mini-combat" style="display: none" class="mini-combat-wrapper">
+        <span class="close" onclick="openCombatModal()"><img class="icon-36" src="img/UI/maximize.png"></span>
+        <div class="row col-md-12">
+                    <div class="col-md-1"></div>
+
+                    <div class="col-md-5">
+
+                        <div class="monsterProfile">
+
+                            <image id="player-image-mini-combat" class="icon-64" src="img/monsters/2blazercraw.png" />
+                                <p class="center-text" id="current-monster-mini-combat-name">Monster1</p>
+                                <span style="float:right; margin-left:5px" class="number-circle-lg" id="player-level-mini-combat">1</span>
+
+                        </div>
+                        
+                        <div style="height:20px" class="progress">
+                        <div id="current-monster-mini-combat-lifeBar" class="progress-bar rounded progress-bar-red" role="progressbar" style="width: 0%;"aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <div style="height:20px" class="progress">
+                        <div id="current-monster-mini-combat-xpBar" class="progress-bar rounded progress-bar-purple" role="progressbar" style="width: 0%; height:70px"aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+ 
+
+                </div>
+
+
+                <div class="col-md-5">
+
+                    <div class="monsterProfile">
+
+                        <image id="enemy-image-mini-combat" class="icon-64" src="img/monsters/1leafstricke.png" />
+                            <p class="center-text" id="enemy-monster-monster-mini-name">Monster2</p><span style="float:right; margin-left:5px" class="number-circle-lg" id="enemy-level-mini-combat">1</span>
+                            
+
+
+                    </div>
+
+                    <div style="height:20px" class="progress">
+                        <div id="enemy-monster-mini-combat-lifeBar" class="progress-bar rounded progress-bar-red" role="progressbar" style="width: 0%;"aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                <br/>
+
+                </div>
+
+        </div><!-- row -->
+
+    </div><!-- mini-combat -->
+    
+    <div class="filler-100"></div>
+
+
+
+</div> <!-- / tab2 -->

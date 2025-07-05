@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Jogo de Pesca Incremental</title>
+  <style>
+    .slot {
+      width: 100px;
+      height: 100px;
+      border: 1px solid black;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background-color: lightgray;
+    }
+
+    .progress {
+      height: 100%;
+      background-color: green;
+    }
+
+    .fishermen {
+      margin-top: 20px;
+    }
+
+    .bait {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Jogo de Pesca Incremental</h1>
+
+  <div id="grid">
+    <!-- Slots de pesca -->
+  </div>
+
+  <div class="fishermen">
+    <h2>Pescadores</h2>
+    <p>Moedas: <span id="coinCount">0</span></p>
+    <p>Total de Pescadores: <span id="totalFishermenCount">0</span></p>
+    <button onclick="buyFisherman()">Contratar Pescador (10 moedas)</button>
+    <button onclick="addFishPoint()">Adicionar ponto de pesca (100 moedas)</button>
+  </div>
+
+  <div class="bait">
+    <h2>Iscas</h2>
+    <p>Selecione uma isca:</p>
+    <select id="baitSelect">
+      <option value="1">Isca Comum (5 moedas)</option>
+      <option value="2">Isca Especial (10 moedas)</option>
+      <option value="3">Isca Rara (15 moedas)</option>
+    </select>
+    <button onclick="buyBait()">Comprar Isca</button>
+  </div>
+
+  <button onclick="earnCoins()">Clique para ganhar 10 moedas</button>
+
+  <div>
+    <h2>Total de Peixes Fisgados: <span id="totalFishCount">0</span></h2>
+    <button onclick="sellFish()">Vender Peixes (30 moedas cada)</button>
+  </div>
+
+  <script>
+    // Variáveis do jogo
+    var coinCount = 0;
+    var totalFishPointCount = 1;
+    var currentFishPointCount = 1;
+    var totalFishCount = 0;
+    var totalFishermen = 0;
+    var availableFishermen = 0;
+    var grid = [];
+
+    // Função para limpar todos os slots
+    function clearAllSlots() {
+      var gridContainer = document.getElementById('grid');
+      gridContainer.innerHTML = "";
+    }
+
+    // Função para criar um novo slot de pesca
+    function createFishSlot() {
+      var gridContainer = document.getElementById('grid');
+      var slotId = 'slot-' + grid.length;
+      var slot = document.createElement('div');
+      slot.className = 'slot';
+      slot.id = slotId;
+      slot.onclick = function() { fish(slotId); };
+
+      var fishCount = document.createElement('div');
+      fishCount.id = slotId + '-counter';
+      fishCount.className = 'fishCount';
+      slot.appendChild(fishCount);
+      fishCount.innerHTML = 'Peixes: 0';
+
+      var level = document.createElement('div');
+      level.className = 'level';
+      level.id = slotId + '-level';
+      slot.appendChild(level);
+
+      var xp = document.createElement('div');
+      xp.className = 'xp';
+      xp.id = slotId + '-xp';
+      slot.appendChild(xp);
+
+      var fisherman = document.createElement('div');
+      fisherman.className = 'fisherman';
+      fisherman.id = slotId + '-fisherman';
+      fisherman.onclick = function(event) { addFisherman(slotId); };
+      slot.appendChild(fisherman);
+
+      var progressBar = document.createElement('div');
+      progressBar.className = 'progress-bar';
+      var progress = document.createElement('div');
+      progress.className = 'progress';
+      progressBar.appendChild(progress);
+      slot.appendChild(progressBar);
+
+      var accelerateButton = document.createElement('button');
+      accelerateButton.textContent = 'Acelerar Coleta';
+      accelerateButton.onclick = function(event) { accelerate(slotId); };
+      slot.appendChild(document.createElement('br'));
+      slot.appendChild(accelerateButton);
+
+      gridContainer.appendChild(slot);
+
+      grid.push({
+        id: slotId,
+        level: 1,
+        xp: 0,
+        speed: 1,
+        color: 'red',
+        fishermanCount: 0,
+        fishCount: 0,
+        accelerateMultiplier: 1
+      });
+    }
+
+    // Função para criar o grid de slots de pesca
+    function createGrid() {
+     // for (var i = 0; i < totalFishPointCount; i++) {
+        createFishSlot();
+     // }
+    }
+
+    // Função para contratar um pescador
+    function buyFisherman() {
+      if (coinCount >= 10) {
+        var availableSlots = grid.filter(function(slot) {
+          return slot.fishermanCount === 0;
+        });
+        if (availableSlots.length > 0) {
+          var randomIndex = Math.floor(Math.random() * availableSlots.length);
+          availableSlots[randomIndex].fishermanCount++;
+          totalFishermen++;
+          availableFishermen++;
+          coinCount -= 10;
+          updateCoinCount();
+          updateTotalFishermen();
+          updateGrid();
+        }
+      }
+    }
+
+    // Função para adicionar um ponto de pesca
+    function addFishPoint() {
+      var cost = 100;
+      if (coinCount >= cost) {
+        totalFishPointCount++;
+        coinCount -= cost;
+        //clearAllSlots();
+        createGrid();
+        updateCoinCount();
+      }
+    }
+
+    // Função para adicionar um pescador a um slot
+    function addFisherman(slotId) {
+      var slot = grid.find(function(slot) {
+        return slot.id === slotId;
+      });
+      if (slot && slot.fishermanCount >= 0 && availableFishermen > 0) {
+        slot.fishermanCount++;
+        availableFishermen--;
+        updateTotalFishermen();
+        updateGrid();
+      } else {
+        alert("Não há pescadores disponíveis.");
+      }
+    }
+
+     // Função para comprar uma isca
+    function buyBait() {
+      var selectElement = document.getElementById('baitSelect');
+      var selectedValue = selectElement.value;
+      var baitCost = parseInt(selectedValue) * 5;
+      if (coinCount >= baitCost) {
+        coinCount -= baitCost;
+        updateCoinCount();
+      }
+    }
+
+    // Função para pescar em um slot
+    function fish(slotId) {
+      var slot = grid.find(function(slot) {
+        return slot.id === slotId;
+      });
+      if (slot) {
+        var fishTime = Math.floor(Math.random() * 10000) + 1000; // Tempo aleatório entre 1 e 10 segundos
+        setTimeout(function() {
+          var fishCount = Math.floor(Math.random() * 10) + 1; // Número aleatório de peixes entre 1 e 10
+          slot.fishCount += fishCount;
+          totalFishCount += fishCount;
+          slot.xp += fishCount;
+          if (slot.xp >= 1000) {
+            slot.level++;
+            slot.xp = 0;
+            slot.color = generateRandomColor();
+          }
+          updateTotalFishCount();
+          updateGrid();
+        }, fishTime);
+      }
+    }
+
+    // Função para acelerar a coleta de peixes em um slot
+    function accelerate(slotId) {
+      var slot = grid.find(function(slot) {
+        return slot.id === slotId;
+      });
+      if (slot) {
+        if (slot.fishermanCount > 0) {
+          slot.accelerateMultiplier += slot.fishermanCount;
+          updateGrid();
+        }
+      }
+    }
+
+    // Função para vender os peixes
+    function sellFish() {
+      var totalFishToSell = 0;
+      grid.forEach(function(slot) {
+        totalFishToSell += slot.fishCount;
+        slot.fishCount = 0;
+      });
+      var sellPrice = totalFishToSell * 30;
+      coinCount += sellPrice;
+      totalFishCount -= totalFishToSell;
+      updateCoinCount();
+      updateTotalFishCount();
+      updateGrid();
+    }
+
+    // Função para gerar uma cor aleatória
+    function generateRandomColor() {
+      var letters = '0123456789ABCDEF';
+      var color = '#';
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    // Função para ganhar moedas
+    function earnCoins() {
+      coinCount += 10;
+      updateCoinCount();
+    }
+
+    // Função para atualizar o contador de moedas
+    function updateCoinCount() {
+      document.getElementById('coinCount').textContent = coinCount;
+    }
+
+    // Função para atualizar o contador de peixes totais
+    function updateTotalFishCount() {
+      document.getElementById('totalFishCount').textContent = totalFishCount;
+    }
+
+    // Função para atualizar o contador de pescadores totais
+    function updateTotalFishermen() {
+      document.getElementById('totalFishermenCount').textContent = totalFishermen;
+    }
+
+    // Função para atualizar o grid de slots de pesca
+    function updateGrid() {
+      grid.forEach(function(slot) {
+
+        var slotElement = document.getElementById(slot.id);
+        slotElement.style.backgroundColor = slot.color;
+
+        var fishCountElement = document.getElementById(slot.id + '-counter');
+        fishCountElement.innerHTML = 'Peixes: ' + slot.fishCount;
+
+        var progressBar = slotElement.querySelector('.progress-bar');
+        var progress = slotElement.querySelector('.progress');
+        progress.style.width = (slot.xp / 1000) * 100 + '%';
+
+        var levelElement = document.getElementById(slot.id + '-level');
+        levelElement.textContent = 'Level: ' + slot.level;
+
+        var xpElement = document.getElementById(slot.id + '-xp');
+        xpElement.textContent = 'XP: ' + slot.xp;
+
+        var fishermanElement = document.getElementById(slot.id + '-fisherman');
+        if (slot.fishermanCount > 0) {
+          fishermanElement.textContent = 'Pescador: Sim (' + slot.fishermanCount + ')';
+        } else {
+          fishermanElement.textContent = 'Pescador: Não';
+        }
+      });
+    }
+
+
+    // Inicialização do jogo
+    createGrid();
+  </script>
+</body>
+</html>

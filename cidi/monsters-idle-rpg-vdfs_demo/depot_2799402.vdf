@@ -1,0 +1,12 @@
+"DepotBuildConfig"
+{
+	"DepotID" "2799402"
+	"contentroot" "/root/build/incrementalmonstersrpg-linux-x64"
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"recursive" "1"
+	}
+	"FileExclusion" "*.pdb"
+}

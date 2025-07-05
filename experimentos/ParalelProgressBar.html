@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .progress-bar {
+      width: 200px;
+      height: 20px;
+      background-color: #f0f0f0;
+      margin-bottom: 10px;
+    }
+
+    .progress {
+      height: 100%;
+      background-color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <button onclick="simulateProgress()">Simulate Progress</button>
+
+  <div class="progress-bar">
+    <div class="progress" id="progress1"></div>
+  </div>
+  <div class="progress-bar">
+    <div class="progress" id="progress2"></div>
+  </div>
+
+  <script>
+    class ProgressBar {
+      constructor(element) {
+        this.elem = element;
+        this.width = 0;
+        this.intervalId = null;
+        this.canProgress = true;
+      }
+
+      start(i, x) {
+        if (this.canProgress) {
+          this.canProgress = false;
+          this.width = 0;
+          this.intervalId = setInterval(() => this.frame(i, x), 1);
+        }
+      }
+
+      frame(i, x) {
+        this.width += 1;
+        this.elem.style.width = this.width + "%";
+
+        if (this.width >= 100) {
+          clearInterval(this.intervalId);
+          this.canProgress = true;
+         // x.total += i;
+        }
+      }
+    }
+
+    const progressBarMap = new Map();
+
+    function createProgressBar(element, i, x) {
+      if (!progressBarMap.has(element)) {
+        const progressBar = new ProgressBar(element);
+        progressBar.start(i, x);
+        progressBarMap.set(element, progressBar);
+      }
+    }
+
+    function simulateProgress() {
+      const progressElement1 = document.getElementById("progress1");
+      const progressElement2 = document.getElementById("progress2");
+      createProgressBar(progressElement1, 10, { total: 0 });
+      createProgressBar(progressElement2, 20, { total: 0 });
+    }
+  </script>
+</body>
+</html>

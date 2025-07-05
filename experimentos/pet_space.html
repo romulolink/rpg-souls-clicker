@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Movimento de Imagem</title>
+  <style>
+    .container {
+      width: 500px;
+      height: 500px;
+      background-color: lightgreen;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #image {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      transition: transform 0.3s ease-in-out; /* Transição suave de movimento */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img id="image" src="2_red_rock.png">
+  </div>
+
+  <script>
+    var containerWidth = 500; // Largura da div container
+    var containerHeight = 500; // Altura da div container
+
+    var imageWidth = 64; // Largura da imagem
+    var imageHeight = 64; // Altura da imagem
+
+    var container = document.querySelector('.container');
+    var image = document.getElementById('image');
+
+    function getRandomPosition(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function moveImage() {
+      var maxX = containerWidth - imageWidth;
+      var maxY = containerHeight - imageHeight;
+
+      var randomX = getRandomPosition(0, maxX);
+      var randomY = getRandomPosition(0, maxY);
+
+      image.style.transform = `translate(${randomX}px, ${randomY}px)`;
+
+      requestAnimationFrame(moveImage); // Chamada recursiva para movimento contínuo
+    }
+
+    // Iniciar o movimento da imagem
+    moveImage();
+  </script>
+</body>
+</html>

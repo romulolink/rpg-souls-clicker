@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sistema de Quests</title>
+  <style>
+    .quest {
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #f2f2f2;
+    }
+
+    .quest.completed {
+      background-color: #d9ead3;
+    }
+
+    .quest.sub-quest {
+      margin-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lista de Quests</h1>
+  <div id="questContainer"></div>
+
+  <script>
+    var quests = [
+      {
+        id: "mainQuest1",
+        title: "Main Quest 1",
+        description: "Complete a primeira missão principal.",
+        isMainQuest: true,
+        sequence: 1,
+        isCompleted: false
+      },
+      {
+        id: "sideQuest1",
+        title: "Side Quest 1",
+        description: "Complete essa missão opcional.",
+        isMainQuest: false,
+        isCompleted: false
+      },
+      {
+        id: "mainQuest2",
+        title: "Main Quest 2",
+        description: "Complete a segunda missão principal.",
+        isMainQuest: true,
+        sequence: 2,
+        isCompleted: false
+      }
+      // Adicione mais quests conforme necessário
+    ];
+
+    var questContainer = document.getElementById("questContainer");
+
+    // Ordena as quests pela sequência das main quests
+    quests.sort(function(a, b) {
+      if (a.isMainQuest && b.isMainQuest) {
+        return a.sequence - b.sequence;
+      } else if (a.isMainQuest) {
+        return -1;
+      } else if (b.isMainQuest) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    // Cria e exibe as quests na página
+    quests.forEach(function(quest) {
+      var questElement = document.createElement("div");
+      questElement.id = quest.id;
+      questElement.className = "quest" + (quest.isCompleted ? " completed" : "");
+
+      var questTitle = document.createElement("h2");
+      questTitle.innerText = quest.title;
+
+      var questDescription = document.createElement("p");
+      questDescription.innerText = quest.description;
+
+      var questButton = document.createElement("button");
+      questButton.innerText = "Completar";
+      questButton.addEventListener("click", function() {
+        completeQuest(quest);
+      });
+
+      questElement.appendChild(questTitle);
+      questElement.appendChild(questDescription);
+      questElement.appendChild(questButton);
+      questContainer.appendChild(questElement);
+    });
+
+    function completeQuest(quest) {
+      quest.isCompleted = true;
+      var questElement = document.getElementById(quest.id);
+      questElement.classList.add("completed");
+    }
+  </script>
+</body>
+</html>

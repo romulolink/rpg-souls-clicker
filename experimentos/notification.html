@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Notification Box Example</title>
+    <style>
+        .notification {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <button onclick="showNotification()">Mostrar Notificação</button>
+
+    <div id="notificationBox" class="notification"></div>
+
+    <script>
+        function showNotification() {
+            var notificationBox = document.getElementById('notificationBox');
+            var content = document.createElement('div');
+            notificationBox.appendChild(content);
+
+            content.innerHTML = 'Esta é uma notificação!';
+            notificationBox.style.display = 'block';
+
+            setTimeout(function() {
+                notificationBox.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

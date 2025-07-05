@@ -1,0 +1,97 @@
+
+<div id="forest-modal" class="IMR_modal">
+
+    <div class="IMR_modal-content-wrapper">
+
+    <span class="close" onclick="closeModal('forest-modal')"><img class="icon-36" src="img/UI/Img_10.png"></span>
+
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <center>
+            <div class="ribbons">
+                
+                <span><img class="icon" src="img/forest.png"> Forest</span>
+
+            </div>  
+            </center>         
+
+        </div>
+    </div>
+    
+    <div class="IMR_modal-content">
+
+
+
+    <div class="row">
+
+
+        <div class="col-md-6">
+
+            <div class="alert alert-info alert-dismissable">
+                
+                <p><img class="icon" src="img/forest.png"> Forest Resources</p>                                
+            </div>
+
+            
+            <h5 style="color:#333">* hold the key <img class="icon" src="img/icons/key-i.png"> to open the inventory or click here <button onclick="openInventory()" class="btn btn-success"><img class="icon" src="img/images/bag1.png"/></button></h5>
+
+            <p style="font-size: 1vw; color:red">Use the +1 and -1 buttons to increase or decrease the automations purchased from the Town </p>
+
+            <br/>
+            
+            <div id="forest"></div>
+
+       
+            <div class="row">
+
+                <div class="filler-30"></div>
+                <h3>Monsters not collected</h3>
+                <br/>
+                <div class="item-grid" id="forest-missing-monsters"> </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+            <div class="alert alert-info alert-dismissable">
+                
+                <p><img class="icon" src="img/icons/skull.png"> Forest Monsters</p>                                
+            </div>
+
+            <div class="row" style="">
+
+                <div class="col-md-4"></div>
+                
+                <div class="col-xs-3">
+
+                    <div class="col-xs-12 enemy-image-container" id="forest-monsters">
+
+                    <!-- auto generated monsters goes here -->
+
+                    </div>  
+
+                    
+                    <button id="dicard-stone-name" class="btn btn-danger btn-block" onclick="startRandomMonsterAnimation()">Battle</button>
+
+                    <div class="message" id="result-message"></div>
+
+                </div>
+
+            </div>
+            
+            <h3>Defeated Monsters</h3>
+            <br/>
+            <div class="item-grid" id="forest-defeated-monsters"> </div>
+
+
+        </div>
+
+
+</div><!-- row -->
+
+
+    </div> <!-- / modaContent -->
+  </div> <!-- / modaContent wrapper -->
+</div> <!-- / modal -->

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Jogo</title>
+  <style>
+    .slot {
+      width: 70px;
+      height: 70px;
+      margin: 5px;
+      background-color:#9c7b6b !important;
+    }
+  </style>
+
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+</head>
+<body>
+  <div class="container text-center mt-5">
+    <h1>Jogo</h1>
+    <h3 id="coin-count">Moedas: 0</h3>
+    <button id="earn-coin-btn" class="btn btn-primary">Ganhar Moeda</button>
+    <div class="mt-5">
+      <button id="buy-slot-btn" class="btn btn-secondary">Comprar Slot (5 Moedas)</button>
+    </div>
+
+        <br/>
+
+
+    <h3>Escolha uma semente:</h3>
+
+      <br/>
+
+    <div class="row">
+
+      <div class="col"></div>
+
+      <div class="col-md-2">
+      <img id="seed1-img" src="../img/seed.png" width="64" height="64" class="seed-img" data-price="2" data-reward="50">
+       2Coins
+      </div>
+      <div  class="col-md-2">
+      <img id="seed2-img" src="../img/seed_red.png" width="64" height="64" class="seed-img" data-price="3" data-reward="75">
+       3Coins
+      </div>
+      <div  class="col-md-2">
+      <img id="seed3-img" src="../img/seed_orange.png" width="64" height="64" class="seed-img" data-price="4" data-reward="100">
+       3Coins
+      </div>
+      <div  class="col-md-2">
+      <img id="seed4-img" src="../img/seed_pink.png" width="64" height="64" class="seed-img" data-price="5" data-reward="125">
+       3Coins
+      </div>
+
+      <div class="col"></div>
+    
+    </div>
+
+
+    <div id="grid" class="mt-5 d-flex flex-wrap"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    var coinCount = 0;
+    var selectedSeedElement;
+
+    function addSeedToSlot(_slot, seed) {
+      const seedImage = seed.cloneNode(true);
+      _slot.append(seedImage);
+
+      const reward = parseInt(seed.getAttribute('data-reward'));
+      setTimeout(() => {
+        seedImage.remove();
+        coinCount += reward;
+        updateCoinCount();
+      }, 3000);
+    }
+
+    $(document).ready(function() {
+      let selectedSeed = null;
+
+      function updateCoinCount() {
+        $('#coin-count').text('Moedas: ' + coinCount);
+      }
+
+      $('#earn-coin-btn').click(function() {
+        coinCount++;
+        updateCoinCount();
+      });
+
+      $('#buy-slot-btn').click(function() {
+        if (coinCount >= 5) {
+          coinCount -= 5;
+
+          updateCoinCount();
+          $('#grid').append('<div class="slot btn btn-outline-secondary"></div>');
+        }
+      });
+
+      $('.seed-img').click(function() {
+
+        selectedSeed = $(this).attr('id');
+
+        selectedSeedElement = document.getElementById(selectedSeed);
+
+        const price = parseInt(selectedSeedElement.getAttribute('data-price'));
+
+         if (coinCount >= price) {
+
+               coinCount -= price;
+               updateCoinCount();
+
+         }else{
+
+            alert("moedas insuficientes para comprar slots");
+
+         }
+
+         
+      
+
+      });
+
+      $('#grid').on('click', '.slot', function() {
+        if (selectedSeed) {
+
+          const slot = $(this);
+          
+          const reward = parseInt(selectedSeedElement.getAttribute('data-reward'));
+
+            slot.append(selectedSeedElement.cloneNode(true));
+            
+            updateCoinCount();
+            setTimeout(function() {
+              slot.empty();
+              coinCount += reward;
+              updateCoinCount();
+            }, 3000);
+          
+
+          selectedSeed = null;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

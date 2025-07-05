@@ -1,0 +1,241 @@
+    <!DOCTYPE html>
+    <html>
+
+    <head>
+        <title>Incremental Monsters RPG </title>
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/vendor/jquery.js"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="js/vendor/bootstrap.css">
+
+
+    <!-- Optional theme -->
+     <link rel="stylesheet" href="js/vendor/bootstrap-theme.css">
+
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="js/vendor/bootstrap.js"></script>
+
+    <script src="js/vendor/tsparticles-confetti@2.12.0.bundle.min.js"></script>
+
+    <script src="js/vendor/angular.js"></script>
+
+   
+
+    <link rel="stylesheet" href="css/flat-ui.css" type="text/css" />
+
+
+    <!-- Latest compiled and minified Bootstrap JavaScript -->
+    <script src="js/vendor/bootstrap.js"></script>
+
+    <link rel="stylesheet" href="css/flat-ui.css" type="text/css" />
+
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    
+    <link rel="shortcut icon" href="img/favicon.ico">
+
+      
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="mask-icon" href="img/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+
+    
+    </head>
+
+
+
+    <body class="custom-cursor overlay" style="overflow: hidden;" ng-app="">
+
+
+    <div class="background">
+
+        <div id="default-modal" style="z-index: 999;" class="IMR_modal">
+            <div class="IMR_modal-content_small">
+                <span class="close" onclick="closeModal('default-modal')"><img class="icon-36" src="img/UI/Img_10.png"></span>
+                <h2 id="modal-title">Janela Modal</h2>
+                <p id="modal-content">Conteúdo da janela modal...</p>
+            </div>
+        </div>
+
+
+
+      <div id="confirmationModal" style="z-index: 999;" class="IMR_modal">
+        <div class="IMR_confirmation_modal-content">
+          <span class="close" onclick="closeModal('confirmationModal')"><img class="icon-36" src="img/UI/Img_10.png"></span> 
+          <div class="filler-30"></div>
+          <p>Are you sure</p>
+          <div class="filler-100"></div>
+          <div class="col-md-2"></div>
+          <div class="modal-buttons col-md-8">
+            <button class="btn btn-lg btn-success col-md-4" onclick="executeFunction()">YES</button>
+            <div class="col-md-4"></div>
+            <button class="btn btn-lg btn-danger col-md-4" onclick="closeConfirmationModal()">NO</button>
+          </div>
+        </div>
+      </div>
+
+
+        <div id="notificationBox" class="notification">
+
+            <div id="notificationBoxContent"></div>
+
+        </div>
+
+            <!-- Modal -->
+            <div ng-include="'views/welcome.html'"></div>
+
+
+             <!-- Inventory -->
+             <div ng-include="'views/inventory.html'"></div>
+
+            
+             <!-- Menu -->
+             <div ng-include="'views/menu.html'"></div>
+                     
+            <div id="game_container" class="game_container">
+
+                <div class="row hidden">
+                 <p> <h4 id="version-number">
+
+                    <br/>
+                    <div class="donate_frontpage">
+
+
+                    </div>
+                 </h4> </p>
+
+                 </div>
+
+                <div ng-include="'views/town.html'"></div>
+
+                <div ng-include="'views/explore.html'"></div>
+                
+                <div ng-include="'views/market.html'"></div>
+
+                <div ng-include="'views/options.html'"></div>
+
+                <div ng-include="'views/achievements.html'"></div>
+
+                <div ng-include="'views/forest.html'"></div>
+
+                <div ng-include="'views/login.html'"></div>
+
+                <div ng-include="'views/farming.html'"></div>
+
+                <div ng-include="'views/cave.html'"></div>
+
+                <div ng-include="'views/firecave.html'"></div>
+
+                <div ng-include="'views/icecave.html'"></div>
+
+                <div ng-include="'views/sacredwaterfall.html'"></div>
+
+                <div ng-include="'views/sacredcave.html'"></div>
+
+                <div ng-include="'views/deepforest.html'"></div>
+
+                <div ng-include="'views/volcano.html'"></div>
+
+                <div ng-include="'views/ghost.html'"></div>
+
+                <div ng-include="'views/underworld.html'"></div>
+
+                <div ng-include="'views/ancient.html'"></div>
+
+                <div ng-include="'views/skyworld.html'"></div>
+
+                <div ng-include="'views/elite.html'"></div>
+
+                <div ng-include="'views/museum.html'"></div>
+
+                <div ng-include="'views/blacksmith.html'"></div>
+
+                <div ng-include="'views/combat_modal.html'"></div>
+
+                <div ng-include="'views/dev-tools.html'"></div>
+
+                <div ng-include="'views/select-monster.html'"></div>
+
+                <div ng-include="'views/tutorial.html'"></div>
+
+
+            </div> <!-- container -->
+
+
+    </div><!-- background -->
+
+          <script>
+
+
+                window.onscroll = function() {
+                  var tabs = document.getElementsByClassName('tabs')[0];
+                  if (window.pageYOffset > 0) {
+                    tabs.classList.add('sticky');
+                  } else {
+                    tabs.classList.remove('sticky');
+                  }
+                };
+
+
+        </script>
+
+
+        <script>
+
+
+            window.addEventListener("load", function() {
+                
+                setTimeout(function() {
+
+                  // the code here executes each 2 secs
+
+                            
+                }, 2000);
+
+              });
+          
+        </script>
+
+        <script>var exports = {};</script>
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="js/vendor/jquery.min.js"></script>
+        <!-- Latest compiled and minified Bootstrap JavaScript -->
+        <script src="js/vendor/bootstrap.min.js"></script>
+        <!--Game Scripts-->
+        <script src="js/config/variables.js"></script>
+        <script src="js/data/resources.js"></script>
+        <script src="js/data/quests.js"></script>
+        <script src="js/data/upgrades.js"></script> 
+        <script src="js/data/workers.js"></script> 
+        <script src="js/data/achievements.js"></script>
+        <script src="js/data/places.js"></script> 
+        <script src="js/data/buildings.js"></script> 
+        <script src="js/data/inventory.js"></script> 
+        <script src="js/data/market.js"></script> 
+        <script src="js/data/monsters.js"></script>
+        <script src="js/data/player_data.js"></script>
+        <script src="js/sound.js"></script>
+        <script src="js/update-display.js"></script>
+        <script src="js/stats-controller.js"></script>
+        <script src="js/ui-controller.js"></script>
+        <script src="js/quest-controller.js"></script>
+        <script src="js/game.js"></script>     
+        <script src="js/upgrades.js"></script>
+        <script src="js/save-load.js"></script>
+        <script src="js/messages.js"></script>
+        <script src="js/dev.js"></script>
+        <script src="js/box_effect.js"></script>
+        <script src="js/combat.js"></script>
+        <script src="js/input-controller.js"></script>  
+        <!-- script src="js/firebase.js"></script -->
+
+
+    </body>
+
+    </html>

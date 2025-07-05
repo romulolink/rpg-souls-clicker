@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>Inventário</title>
+  <style>
+    .inventory {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-gap: 5px;
+    }
+    
+    .item {
+      cursor: pointer;
+      padding: 10px;
+      background-color: #eee;
+    }
+    
+    .item:hover {
+      background-color: #ccc;
+    }
+    
+    .item-description {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="inventory">
+    <h1>Inventário</h1>
+    <div class="item-grid">
+      <div class="item" onclick="showDescription('Item 1')">Item 1</div>
+      <div class="item" onclick="showDescription('Item 2')">Item 2</div>
+      <div class="item" onclick="showDescription('Item 3')">Item 3</div>
+      <div class="item" onclick="showDescription('Item 1')">Item 1</div>
+      <div class="item" onclick="showDescription('Item 2')">Item 2</div>
+      <div class="item" onclick="showDescription('Item 3')">Item 3</div>
+      <div class="item" onclick="showDescription('Item 1')">Item 1</div>
+      <div class="item" onclick="showDescription('Item 2')">Item 2</div>
+      <div class="item" onclick="showDescription('Item 3')">Item 3</div>
+      <div class="item" onclick="showDescription('Item 1')">Item 1</div>
+      <div class="item" onclick="showDescription('Item 2')">Item 2</div>
+      <div class="item" onclick="showDescription('Item 3')">Item 3</div>
+      <div class="item" onclick="showDescription('Item 1')">Item 1</div>
+      <div class="item" onclick="showDescription('Item 2')">Item 2</div>
+      <div class="item" onclick="showDescription('Item 3')">Item 3</div>
+      <div class="item" onclick="showDescription('Item 1')">Item 1</div>
+      <div class="item" onclick="showDescription('Item 2')">Item 2</div>
+      <div class="item" onclick="showDescription('Item 3')">Item 3</div>
+      <!-- Adicione mais itens aqui -->
+    </div>
+    <div class="item-description" id="description"></div>
+  </div>
+
+  <script>
+    function showDescription(item) {
+      var descriptionElement = document.getElementById('description');
+      descriptionElement.textContent = "Descrição do item: " + item;
+    }
+  </script>
+</body>
+</html>

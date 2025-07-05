@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Efeito de Fogos de Artifício com Phaser 3</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js" integrity="sha512-YQL0GVx/Too3vZjBl9plePRIYsRnd1s8N6QOvXPdZ+JMH2mtRTLQXGUDGjNW6zr1HUgcOIury67IvWe91oeEwQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+  <script>
+    const config = {
+      type: Phaser.AUTO,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      scene: {
+        create: create
+      }
+    };
+
+    const game = new Phaser.Game(config);
+
+    function create() {
+      const particles = this.add.particles('spark');
+
+      const emitter = particles.createEmitter({
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+        lifespan: 2000,
+        speed: { min: -800, max: 800 },
+        angle: { min: 0, max: 360 },
+        gravityY: 800,
+        scale: { start: 0.4, end: 0 },
+        tint: [0xff0000, 0x00ff00, 0x0000ff],
+        blendMode: 'ADD'
+      });
+
+      this.input.on('pointerdown', function(pointer) {
+        emitter.setPosition(pointer.x, pointer.y);
+        emitter.explode();
+      });
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,17 @@
+"appbuild"
+{
+	"appid" "2799400"
+	"desc" "Steam Pipe Update"
+	"buildoutput" "E:\steamworks_sdk_158a\sdk\tools\ContentBuilder\output"
+	"contentroot" ""
+	"setlive" "develop"
+	"preview" "0"
+	"local"	""
+	"depots"
+	{
+		"2799401"	"/home/steam/monsters-idle-rpg-vdfs/depot_2799401.vdf"
+		"2799402"	"/home/steam/monsters-idle-rpg-vdfs/depot_2799402.vdf"
+		"2799403"	"/home/steam/monsters-idle-rpg-vdfs/depot_2799403.vdf"
+
+	}
+}

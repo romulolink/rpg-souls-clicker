@@ -1,0 +1,176 @@
+<div id="combat-modal" class="IMR_modal">
+
+
+   <div class="IMR_modal-content-wrapper">
+        <div style="height:80vw" class="IMR_modal-content">
+            
+            <span class="close" onclick="openTab('tab-explore')"><img class="icon-36" src="img/UI/Img_10.png"></span>
+            <span class="close" onclick="openTab('tab-explore',false)"><img class="icon-36" src="img/UI/minimize.png"></span>
+           
+        
+   <div class="row">
+
+
+    <div class="row">
+      <div class="col-md-4"></div>
+      <div class="col-md-4">
+          <center>
+          <div class="ribbons">
+              
+              <span><img class="icon" src="img/icons/skull.png"> Dungeon</span>
+
+          </div>  
+          </center>         
+
+      </div>
+    </div>
+
+
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+
+
+   <div class="filler-12"></div>                    
+      <div class="combat">
+        
+        <div class="row">
+          <div class="col-xs-2"></div>
+          <div class="col-xs-5">
+            <div class="character-card">
+              <h4><span class='character-name' id="player-monster-name"> Player </span>  <span class="number-circle-lg" id="player-level"></span><span class='small-text' id="player-monster-rarity"></span></h4>
+              <div class="row">
+
+                <div class="col-md-8">
+                  <image class="icon-16 icon-left" src="img/icons/heart.png" />
+                  <span class="label">Life</span>               
+                  <div class="progress combatBar">
+                    
+                    <div id="player-health-bar" class="progress-bar-green" role="progressbar" style="width: 100%;"
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
+                  </div>
+
+                  <image class="icon-16 icon-left" src="img/icons/speed.png" />
+                  <span class="label">Stm</span> 
+                  <div class="progress combatBar">
+                     
+                    <div id="player-attack-speed-bar" class="btn-info" role="progressbar" style="width: 0%;"
+                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                  </div>
+
+                  <image class="icon-16 icon-left" src="img/icons/xp_ball.png" />
+                  <span class="label">Xp</span> 
+                  <div class="progress combatBar">        
+                    <div id="player-xpBar-combat" class="progress-bar progress-bar-purple" role="progressbar" style="width: 30%;"
+                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+
+
+                  <div class="col-md-12 image-container">
+                    <img id="player-image" class="icon-128 margin-10" src="img/monsters/2blazercraw.png" alt="Player Image" width="100%">
+                  </div>
+
+
+                  <br/>
+                  <div style="text-align: left;">
+                        <p><image class="icon-16" src="img/icons/heart.png" /> Life:  <span class='align-right' id="player-health">100</span></p>
+                        <p><image class="icon-16" src="img/icons/sword.png" /> Atk:  <span class='align-right' id="player-attack">10</span></p>
+                        <p><image class="icon-16" src="img/icons/speed.png" /> Speed:  <span class='align-right' id="player-attack-speed">1</span></p>
+                        <h4>Active elementar power:</h4>
+                        <div id="elementar-power-icon" class=""></div>
+                  </div>
+                  <div class="col-md-6"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-5">
+            <div class="character-card">
+              <h4><span class='character-name' id="enemy-monster-name">Enemy </span> <span class="number-circle-lg" id="enemy-level"></span><span class='small-text' id="enemy-monster-rarity"></span></h4>
+              <div class="row">
+
+                <div class="col-md-8">
+
+                  <image class="icon-16 icon-left" src="img/icons/heart.png" />
+                  <span class="label">Life</span>   
+                  <div class="progress combatBar">
+                    <div id="enemy-health-bar" class="progress-bar-red" role="progressbar" style="width: 100%;"
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
+                  </div>
+
+                  <image class="icon-16 icon-left" src="img/icons/speed.png" />
+                  <span class="label">Stm</span>   
+                  <div class="progress combatBar">
+                    <div id="enemy-attack-speed-bar" class="btn-info" role="progressbar" style="width: 0%;"
+                    aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                  </div>
+
+
+                  <div class="filler-20"></div>
+
+                  <div class="col-md-12 image-container">
+                    <img id="enemy-image" class="icon-128 margin-10" src="img/monsters/1leafstricke.png" alt="Enemy Image" width="100%">
+                    <div class="filler-12"></div>
+                  </div>
+
+                  <div style="text-align: left;">
+
+                          <p><image class="icon-16" src="img/icons/heart.png" /> Life: <span class='align-right' id="enemy-health">100</span></p>
+                          <p><image class="icon-16" src="img/icons/sword.png" /> Atk: <span class='align-right' id="enemy-attack">8</span></p>
+                          <p><image class="icon-16" src="img/icons/speed.png" /> Speed: <span class='align-right' id="enemy-attack-speed">1</span></p>
+                          <h4 style="color:#3bb0ff">Monster Drops:</h4>
+                          <div id="monster-drops" class=""></div>
+
+                  </div>
+
+
+                </div>
+              </div>
+            </div>
+          </div>  
+        </div>
+
+
+      </div><!-- combat modal -->
+
+    </div>
+    <div class="filler-100"></div>
+
+    <div class="col-md-12">
+     <!-- put a content here -->
+
+        <div class="row" id="market">
+          <div class="col-xs-1"></div>
+
+          <div class="col-xs-3">
+            <div class="form-check">
+              <input style="width:20px; height:20px" type="checkbox"  onchange="enableElementalRuneInCombat(this)" value="" id="disableelementalrune">
+              <h3 style="float: right;" for="flexCheckDefault">
+                Disable elemental rune use
+              </h3>
+            </div>
+          </div>
+
+          <div class="col-xs-6">
+            <h5 style="color:#333; margin-top:-10px">* hold the key <img class="icon" src="img/icons/key-i.png"> to open the inventory or click here <button onclick="openInventory()" class="btn btn-success"><img class="icon" src="img/images/bag1.png"/></button></h5>
+          </div>
+
+          <div class="col-xs-1">
+            <button id="dicard-stone-name" class="btn btn-danger btn-block" onclick="openTab('tab-explore')">&#8592; Return</button>
+          </div>
+          
+        </div>
+
+
+
+    </div>
+
+</div>
+
+
+            
+
+
+
+    </div>
+  </div>
+</div>

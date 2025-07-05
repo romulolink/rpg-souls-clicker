@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ondas no Oceano</title>
+  <style>
+    body {
+      background-color: #3498db;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wave {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      background-image: url('../img/wave.png');
+      background-position: center;
+      opacity: 1;
+      animation-name: waveAnimation;
+      animation-duration: 2s;
+      animation-timing-function: linear;
+      animation-iteration-count: 1;
+    }
+
+    @keyframes waveAnimation {
+      0% {
+        transform: scale(0.5);
+        opacity: 0.5;
+      }
+      50% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0.5);
+        opacity: 0.5;
+      }
+    }
+  </style>
+  <script>
+    window.onload = function() {
+      var ocean = document.querySelector("body");
+
+     
+    function createMultipleWaves(){
+
+       for (var i = 0; i < 10; i++) {
+          createWave();
+        }          
+
+    }
+
+    function createWave() {
+      var wave = document.createElement("div");
+      wave.className = "wave";
+      wave.style.left = getRandomPosition() + "px";
+      wave.style.top = getRandomPosition() + "px";
+      ocean.appendChild(wave);
+
+      wave.addEventListener("animationend", function() {
+        ocean.removeChild(wave);
+      });
+    }
+
+      setInterval(createMultipleWaves, 1000);
+
+      function getRandomPosition() {
+        var min = 0;
+        var max = window.innerWidth;
+        return Math.random() * (max - min) + min;
+      }
+    }
+  </script>
+</head>
+<body>
+</body>
+</html>

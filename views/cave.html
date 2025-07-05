@@ -1,0 +1,101 @@
+
+<div id="cave-modal" class="IMR_modal">
+
+    <div class="IMR_modal-content-wrapper">
+
+          <span class="close" onclick="closeModal('cave-modal')"><img class="icon-36" src="img/UI/Img_10.png"></span>
+
+
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <center>
+                    <div class="ribbons">
+                        
+                        <span><img src="img/cave.png" alt="cave" class="icon"> Cave</span>
+
+                    </div>  
+                    </center>         
+
+                </div>
+            </div>
+    
+    <div class="IMR_modal-content">
+
+          
+
+        <div class="col-md-6">
+
+
+            <div class="alert alert-info alert-dismissable">
+            
+                <p><img class="icon-16" src="img/images/pickaxe.png">  Mine resources</p>
+
+            </div>
+
+            <h5 style="color:#333">* hold the key <img class="icon" src="img/icons/key-i.png"> to open the inventory or click here <button onclick="openInventory()" class="btn btn-success"><img class="icon" src="img/images/bag1.png"/></button></h5>
+            
+            <p style="font-size: 1vw; color:red">You get Rune Essence passively by mining rocks. If your rock storage is full it will stop mining Rune Essence too </p>
+            <div id="cave"></div>
+
+            <div class="hidden" id="cave-two"></div>
+
+            <div class="filler-30"></div>
+
+            <div id="resources"></div>
+
+            <div class="filler"></div>
+
+        </div>
+
+
+        <div class="col-md-6">
+            <div class="alert alert-info alert-dismissable">
+                
+                <p><img class="icon" src="img/icons/skull.png"> Cave Monsters</p>                                
+            </div>
+
+
+            <div class="row">
+                <div class="col-xs-3 enemy-image-container" id="cave-monsters">
+
+                <!-- auto generated monsters goes here -->
+
+                </div>                    
+
+             </div>
+
+
+            <div class="row" style="margin-top:-100px">
+                
+                <div class="col-xs-3">
+                    
+                    <button id="dicard-stone-name" class="btn btn-danger btn-block" onclick="startRandomMonsterAnimation()">Battle</button>
+
+                    <div class="message" id="result-message"></div>
+
+                </div>
+
+            </div>
+
+            <h3>Defeated Monsters</h3>
+            <br/>
+            <div class="item-grid" id="cave-defeated-monsters"> </div>
+
+            
+            <h3>Monsters not collected</h3>
+            <br/>
+            <div class="item-grid" id="cave-missing-monsters"> </div>
+
+
+        </div>
+
+
+
+
+
+
+
+</div> <!-- modal content -->
+</div> <!-- modal content wrapper-->
+</div> <!-- modal -->

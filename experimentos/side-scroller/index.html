@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Physics Demo</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background-color: #aee;
+    }
+
+    #viewport {
+      width: 100vw;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #world {
+      width: 300vw;
+      height: 100%;
+      position: absolute;
+      left: 0;
+      transition: left 0.05s linear;
+    }
+
+    .ground {
+      position: absolute;
+      bottom: 0;
+      height: 15%;
+      width: 100%;
+      background-color: #4a2;
+    }
+
+    .square {
+      width: 100px;
+      height: 100px;
+      background: red;
+      position: absolute;
+      transition: transform 0.3s ease, background 0.3s ease;
+      cursor: pointer;
+    }
+
+    .square.clicked {
+      transform: scale(1.2) rotate(10deg);
+      background: orange;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="viewport">
+    <canvas id="particleCanvas" style="position:absolute; top:0; left:0; pointer-events:none; z-index:5;"></canvas>
+    <div id="world">
+      <div class="ground"></div>
+      <div class="square" id="square"></div>
+    </div>
+  </div>
+
+  <!-- Matter.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <script>
+
+  
+    const { Engine, Render, Runner, World, Bodies, Body, Events } = Matter;
+
+    const worldEl = document.getElementById("world");
+    const squareEl = document.getElementById("square");
+
+
+
+    const canvas = document.getElementById("particleCanvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+
+  function spawnParticles(x, y, count = 20) {
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x,
+        y,
+        vx: (Math.random() - 0.5) * 4,
+        vy: (Math.random() - 0.5) * 4,
+        alpha: 1,
+        size: Math.random() * 4 + 2,
+        color: `hsl(${Math.random() * 360}, 100%, 60%)`
+      });
+    }
+  }
+
+  function updateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha -= 0.02;
+      if (p.alpha <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(updateParticles);
+  }
+
+  updateParticles();
+
+  // Quando o quadrado for clicado
+  squareEl.addEventListener("click", () => {
+    squareEl.classList.add("clicked");
+    setTimeout(() => {
+      squareEl.classList.remove("clicked");
+    }, 300);
+
+    const rect = squareEl.getBoundingClientRect();
+    spawnParticles(rect.left + 50, rect.top + 50); // centro do quadrado
+  });
+  
+
+    // Física
+    const engine = Engine.create();
+    const { world } = engine;
+
+    // Runner para simular sem render próprio
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+
+    // Tamanho da tela
+    const viewWidth = window.innerWidth;
+    const viewHeight = window.innerHeight;
+
+    // Quadrado físico
+    const boxSize = 100;
+    const box = Bodies.rectangle(viewWidth / 2, viewHeight / 2 - 200, boxSize, boxSize, {
+      restitution: 0.4,
+    });
+    World.add(world, box);
+
+    // Chão físico
+    const ground = Bodies.rectangle(viewWidth / 2, viewHeight - (viewHeight * 0.135), viewWidth * 3, 20, {
+      isStatic: true
+    });
+    World.add(world, ground);
+
+    // Atualizar posição visual do quadrado
+    Events.on(engine, "afterUpdate", () => {
+      squareEl.style.left = `${box.position.x - boxSize / 2}px`;
+      squareEl.style.top = `${box.position.y - boxSize / 2}px`;
+    });
+
+    // Scroll lateral com A e D
+    let offset = 0;
+    const step = 10;
+    const maxOffset = -viewWidth * 2;
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "a" || e.key === "A") {
+        offset = Math.min(offset + step, 0);
+      } else if (e.key === "d" || e.key === "D") {
+        offset = Math.max(offset - step, maxOffset);
+      }
+      worldEl.style.left = offset + "px";
+    });
+
+    // Clique com animação
+    squareEl.addEventListener("click", () => {
+      squareEl.classList.add("clicked");
+      setTimeout(() => {
+        squareEl.classList.remove("clicked");
+      }, 300);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+
+<div id="farming-modal" class="IMR_modal">
+
+    <div class="IMR_modal-content-wrapper">
+
+    <span class="close" onclick="closeModal('farming-modal')"><img class="icon-36" src="img/UI/Img_10.png"></span>
+
+
+    <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <center>
+            <div class="ribbons">
+                
+                <span><img src="img/farming.png" alt="farm-place" class="icon"> Farm</span>
+
+            </div>  
+            </center>         
+
+        </div>
+    </div>
+    
+    <div class="IMR_modal-content">
+
+
+<div class="row">
+
+
+  <div class="farming-container text-center mt-5">
+    
+    <h3 style="display:none" id="coin-count">Slots: 0</h3>
+
+        <br/>
+
+
+    <h3>Choose a seed:</h3>
+
+      <br/>
+
+    <div class="row">
+
+      <div class="col-md-6">
+
+            <div class="alert alert-info alert-dismissable">
+                
+                <p><img class="icon" src="img/forest.png"> Planting </p>                                
+            </div>
+
+            <div class="mt-5">
+              <button id="buy-slot-btn" onmousedown="buyTerrainSlot()" class="btn btn-orange">Buy Slot (5 Coins)</button>
+            </div><br/>
+
+            <p style="font-size: 1vw">These flowers allow monsters to auto-recover their life during battles based on their elemental nature. <span style="color:rgb(255, 10, 10)"> Purchase a slot above and the seed in the market</span>, click on a seed, and then click on a slot to plant an Elemental Lotus flower.</p>
+
+          <div class="col-md-3">
+          <img class="btn btn-transparent" id="plant_lotus_seed" src="img/seed.png" onmousedown="selectSeed(this)" width="48" height="48" class="seed-img" data-price="2" data-reward="50">
+           <span id="plant_lotus_seed_total">0</span>
+          </div>
+          <div  class="col-md-3">
+          <img class="btn btn-transparent" id="fire_lotus_seed" src="img/seed_red.png" onmousedown="selectSeed(this)" width="48" height="48" class="seed-img" data-price="3" data-reward="75">
+           <span id="fire_lotus_seed_total">0</span>
+          </div>
+          <div  class="col-md-3">
+          <img class="btn btn-transparent" id="earth_lotus_seed" src="img/seed_orange.png" onmousedown="selectSeed(this)" width="48" height="48" class="seed-img" data-price="4" data-reward="100">
+           <span id="earth_lotus_seed_total">0</span>
+          </div>
+          <div  class="col-md-3">
+          <img class="btn btn-transparent" id="water_lotus_seed" src="img/seed_blue.png" onmousedown="selectSeed(this)" width="48" height="48" class="seed-img" data-price="5" data-reward="125">
+           <span id="water_lotus_seed_total">0</span>
+          </div>
+
+          <div class="filler-30"></div>
+          
+          <div id="grid" class="d-flex flex-wrap"></div>
+
+      </div><!-- col-md-6 -->
+
+
+      <div class="col-md-6">
+
+           <div class="alert alert-info alert-dismissable">
+                
+                <p><img class="icon" src="img/forest.png"> Farm Resources </p>                                
+            </div>
+        
+         <div class="col-md-2"></div>
+         <div id="farm-super-lotus" class="col-md-7">
+
+          <p style="font-size: 1vw">These flowers auto-recover a lot more hp during battles based on their elemental nature.</p>
+
+                <div class="row">
+                    <button id="super_plant_lotus-btn" style="height:50px" class="btn btn-success btn-block" onmouseover="activateContentCaption('super_plant_lotus-cost-caption')" onmouseout="deactivateContentCaption('super_plant_lotus-cost-caption')" onmousedown="clickIncrement(this,inventory.super_plant_lotus)">
+
+                      <image class="icon" src="img/super-lotus-plant.png" /> Create <span id="super_plant_lotus-click-increment"></span> Super Plant Lotus</button>
+
+                      <div id="super_plant_lotus-cost-caption" style="margin-top:0px" class="col-xs-3 hidden">
+                        <div class="resource-cost-caption"><span>-10  </span><span id="super_plant_lotus-cost"></span>Plant Lotus</div>
+                      </div>
+              </div>
+
+
+              <div class="row">
+                <button id="super_water_lotus-btn" style="height:50px" class="btn btn-success btn-block" onmouseover="activateContentCaption('super_water_lotus-cost-caption')" onmouseout="deactivateContentCaption('super_water_lotus-cost-caption')" onmousedown="clickIncrement(this,inventory.super_water_lotus)">
+
+                  <image class="icon" src="img/super-lotus-water.png" /> Create <span id="super_water_lotus-click-increment"></span> Super Water Lotus</button>
+
+                  <div id="super_water_lotus-cost-caption" style="margin-top:0px" class="col-xs-3 hidden">
+                    <div class="resource-cost-caption"><span>-10  </span><span id="super_water_lotus-cost"></span>Water Lotus</div>
+                  </div>
+              </div>
+
+
+              <div class="row">
+                    <button id="super_fire_lotus-btn" style="height:50px" class="btn btn-success btn-block" onmouseover="activateContentCaption('super_fire_lotus-cost-caption')" onmouseout="deactivateContentCaption('super_fire_lotus-cost-caption')" onmousedown="clickIncrement(this,inventory.super_fire_lotus)">
+
+                      <image class="icon" src="img/super-lotus-fire.png" /> Create <span id="super_fire_lotus-click-increment"></span> Super Fire Lotus </button>
+
+                      <div id="super_fire_lotus-cost-caption" style="margin-top:0px" class="col-xs-3 hidden">
+                        <div class="resource-cost-caption"><span>-10  </span><span id="super_fire_lotus-cost"></span> Fire Lotus</div>
+                      </div>
+              </div>
+
+
+              <div class="row">
+                    <button id="super_earth_lotus-btn" style="height:50px" class="btn btn-success btn-block" onmouseover="activateContentCaption('super_earth_lotus-cost-caption')" onmouseout="deactivateContentCaption('super_earth_lotus-cost-caption')" onmousedown="clickIncrement(this,inventory.super_earth_lotus)">
+
+                      <image class="icon" src="img/super-lotus-earth.png" /> Create <span id="super_earth_lotus-click-increment"></span> Super Earth Lotus</button>
+
+                      <div id="super_earth_lotus-cost-caption" style="margin-top:0px" class="col-xs-3 hidden">
+                        <div class="resource-cost-caption"><span>-10  </span><span id="super_earth_lotus-cost"></span> Earth Lotus</div>
+                      </div>
+              </div>
+
+
+         </div>
+
+
+      </div>
+    
+    </div><!-- row -->
+
+    <div class="filler"></div>
+
+    
+
+  </div>
+
+  </div> <!-- row --> 
+
+    </div> <!-- modal content -->
+  </div> <!-- modal content wrapper -->
+</div> <!-- modal -->

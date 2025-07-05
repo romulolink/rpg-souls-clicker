@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monster CRUD</title>
+</head>
+<body>
+    <h1>Monster CRUD</h1>
+
+    <h2>Add / Edit Monster</h2>
+    <form id="monster-form">
+        <label for="slug">Slug:</label>
+        <input type="text" id="slug" name="slug"><br>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"><br>
+
+        <label for="monster_id">Monster ID:</label>
+        <input type="number" id="monster_id" name="monster_id"><br>
+
+        <label for="unique_id">Unique ID:</label>
+        <input type="number" id="unique_id" name="unique_id"><br>
+
+        <label for="description">Description:</label>
+        <textarea id="description" name="description"></textarea><br>
+
+        <label for="level">Level:</label>
+        <input type="number" id="level" name="level"><br>
+
+        <label for="total">Total:</label>
+        <input type="number" id="total" name="total"><br>
+
+        <label for="icon_path">Icon Path:</label>
+        <input type="text" id="icon_path" name="icon_path"><br>
+
+        <label for="monster_type">Monster Type:</label>
+        <input type="text" id="monster_type" name="monster_type"><br>
+
+        <label for="rarity">Rarity:</label>
+        <input type="text" id="rarity" name="rarity"><br>
+
+        <label for="evolutions">Evolutions:</label>
+        <input type="number" id="evolutions" name="evolutions"><br>
+
+        <label for="current_xp">Current XP:</label>
+        <input type="number" id="current_xp" name="current_xp"><br>
+
+        <label for="current_life">Current Life:</label>
+        <input type="number" id="current_life" name="current_life"><br>
+
+        <label for="total_attack">Total Attack:</label>
+        <input type="number" id="total_attack" name="total_attack"><br>
+
+        <label for="places_chance.forest_chance">Forest Chance:</label>
+        <input type="number" step="0.01" id="forest_chance" name="places_chance.forest_chance"><br>
+
+        <label for="drops.plant_essence">Plant Essence:</label>
+        <input type="number" id="plant_essence" name="drops.plant_essence"><br>
+
+        <label for="basic_stats.basic_life">Basic Life:</label>
+        <input type="number" id="basic_life" name="basic_stats.basic_life"><br>
+
+        <label for="basic_stats.agility">Agility:</label>
+        <input type="number" step="0.01" id="agility" name="basic_stats.agility"><br>
+
+        <label for="basic_stats.attack">Attack:</label>
+        <input type="number" id="attack" name="basic_stats.attack"><br>
+
+        <label for="extra_stats.extra_life">Extra Life:</label>
+        <input type="number" id="extra_life" name="extra_stats.extra_life"><br>
+
+        <label for="extra_stats.extra_agility">Extra Agility:</label>
+        <input type="number" id="extra_agility" name="extra_stats.extra_agility"><br>
+
+        <label for="extra_stats.extra_attack">Extra Attack:</label>
+        <input type="number" id="extra_attack" name="extra_stats.extra_attack"><br>
+        
+        <input type="submit" value="Save">
+    </form>
+
+    <h2>Monsters List</h2>
+    <ul id="monsters-list">
+        <!-- Monsters will be populated here -->
+    </ul>
+
+    <h2>Export Monsters</h2>
+    <button id="export-button">Export to JavaScript</button>
+
+
+    <h2>Import Monsters</h2>
+
+    <input type="file" id="import-button" style="display: none">
+
+    <button class="btn btn-danger" onclick="document.getElementById('import-button').click()">Import Save</button>
+
+
+
+    <script>
+        // Monster data
+        var monsters = {};
+
+        var savedMonsters = localStorage.getItem('monsters');
+        var monsters = savedMonsters ? JSON.parse(savedMonsters) : {};
+
+        // Function to add or edit a monster
+        function addEditMonster(event) {
+            event.preventDefault();
+
+            var slug = document.getElementById('slug').value;
+            var name = document.getElementById('name').value;
+            var monster_id = parseInt(document.getElementById('monster_id').value);
+            var unique_id = parseInt(document.getElementById('unique_id').value);
+            var description = document.getElementById('description').value;
+            var level = parseInt(document.getElementById('level').value);
+            var total = parseInt(document.getElementById('total').value);
+            var icon_path = document.getElementById('icon_path').value;
+            var monster_type = document.getElementById('monster_type').value;
+            var rarity = document.getElementById('rarity').value;
+            var evolutions = parseInt(document.getElementById('evolutions').value);
+            var current_xp = parseInt(document.getElementById('current_xp').value);
+            var current_life = parseInt(document.getElementById('current_life').value);
+            var total_attack = parseInt(document.getElementById('total_attack').value);
+            var forest_chance = parseFloat(document.getElementById('forest_chance').value);
+            var plant_essence = parseInt(document.getElementById('plant_essence').value);
+            var basic_life = parseInt(document.getElementById('basic_life').value);
+            var agility = parseFloat(document.getElementById('agility').value);
+            var attack = parseInt(document.getElementById('attack').value);
+            var extra_life = parseInt(document.getElementById('extra_life').value);
+            var extra_agility = parseFloat(document.getElementById('extra_agility').value);
+            var extra_attack = parseInt(document.getElementById('extra_attack').value);
+
+            monsters[slug] = {
+                slug: slug,
+                name: name,
+                monster_id: monster_id,
+                unique_id: unique_id,
+                description: description,
+                level: level,
+                total: total,
+                icon_path: icon_path,
+                monster_type: monster_type,
+                rarity: rarity,
+                evolutions: evolutions,
+                current_xp: current_xp,
+                current_life: current_life,
+                total_attack: total_attack,
+                places_chance: {
+                    forest_chance: forest_chance,
+                },
+                drops: {
+                    plant_essence: plant_essence,
+                },
+                basic_stats: {
+                    basic_life: basic_life,
+                    agility: agility,
+                    attack: attack
+                },
+                extra_stats: {
+                    extra_life: extra_life,
+                    extra_agility: extra_agility,
+                    extra_attack: extra_attack
+                }
+            };
+
+            // Update monsters list
+            updateMonstersList();
+
+            // Clear form fields
+            document.getElementById('slug').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('monster_id').value = '';
+            document.getElementById('unique_id').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('level').value = '';
+            document.getElementById('total').value = '';
+            document.getElementById('icon_path').value = '';
+            document.getElementById('monster_type').value = '';
+            document.getElementById('rarity').value = '';
+            document.getElementById('evolutions').value = '';
+            document.getElementById('current_xp').value = '';
+            document.getElementById('current_life').value = '';
+            document.getElementById('total_attack').value = '';
+            document.getElementById('forest_chance').value = '';
+            document.getElementById('plant_essence').value = '';
+            document.getElementById('basic_life').value = '';
+            document.getElementById('agility').value = '';
+            document.getElementById('attack').value = '';
+            document.getElementById('extra_life').value = '';
+            document.getElementById('extra_agility').value = '';
+            document.getElementById('extra_attack').value = '';
+        }
+
+        // Function to update the monsters list
+        function updateMonstersList() {
+            var monstersList = document.getElementById('monsters-list');
+            monstersList.innerHTML = '';
+
+            for (var slug in monsters) {
+                var monster = monsters[slug];
+                var listItem = document.createElement('li');
+                listItem.textContent = monster.name;
+
+                monstersList.appendChild(listItem);
+            }
+        }
+
+function exportMonsters() {
+    var exportData = 'var monsters = {\n';
+
+    for (var monsterKey in monsters) {
+        var monster = monsters[monsterKey];
+        exportData += `    ${monsterKey}: {\n`;
+
+        for (var fieldKey in monster) {
+            var fieldValue = monster[fieldKey];
+            if (typeof fieldValue === 'string') {
+                fieldValue = fieldValue.replace(/"/g, '\\"'); // Remove aspas duplas e adiciona escape para aspas existentes
+            }
+            exportData += `        ${fieldKey}: ${JSON.stringify(fieldValue, (key, value) => {
+                // Remove aspas dos subcampos
+                if (typeof value === 'object' && !Array.isArray(value)) {
+                    var entries = Object.entries(value).map(([k, v]) => [k.replace(/"/g, ''), v]);
+                    return `{${entries.map(([k, v]) => `"${k}":${JSON.stringify(v)}`).join(',')}}`;
+                }
+                return value;
+            })},\n`;
+        }
+
+        exportData += '    },\n';
+    }
+
+    exportData += '};';
+
+
+     exportData = exportData
+                    .replace(/\\"/g, '')
+                    .replace(/"\{/g, '{')
+                    .replace(/\}"/g, '}');
+
+    console.log(exportData);
+
+    // Cria um elemento de link para download
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(exportData));
+    element.setAttribute('download', 'monsters.js');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    // Dispara o evento de clique para iniciar o download
+    element.click();
+
+    // Remove o elemento do DOM após o download
+    document.body.removeChild(element);
+}
+
+
+
+
+
+    function importMonsters(data) {
+            try {
+                var importedMonsters = JSON.parse(data);
+
+                // Limpa os dados atuais dos monstros
+                monsters = {};
+
+                // Copia os dados dos monstros importados para a estrutura de dados "monsters"
+                for (var monsterKey in importedMonsters) {
+                    monsters[monsterKey] = importedMonsters[monsterKey];
+                }
+
+                console.log('Dados importados com sucesso!');
+                updateMonstersList();
+
+                // Salva os monstros importados no localStorage
+                saveMonstersToLocalStorage();
+
+            } catch (error) {
+                console.error('Erro ao importar dados:', error);
+            }
+        }
+
+        // Event listener para o botão de importação de dados
+        document.getElementById('import-button').addEventListener('change', function (event) {
+            var file = event.target.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function (event) {
+                var content = event.target.result;
+                importMonsters(content);
+            };
+
+            reader.readAsText(file);
+        });
+
+
+
+        // Function to save monsters to localStorage
+        function saveMonstersToLocalStorage() {
+            var monstersData = JSON.stringify(monsters);
+            localStorage.setItem('monsters', monstersData);
+        }
+
+        // Attach event listeners
+            document.getElementById('monster-form').addEventListener('submit', function(event) {
+            addEditMonster(event);
+            saveMonstersToLocalStorage();
+        });
+
+        // Attach event listener to export monsters when the button is clicked
+        document.getElementById('export-button').addEventListener('click', exportMonsters);;
+
+
+
+
+        // Initial update of monsters list
+        updateMonstersList();
+    </script>
+</body>
+</html>

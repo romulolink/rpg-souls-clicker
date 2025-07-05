@@ -1,0 +1,133 @@
+<div id="inventory-modal" style="z-index: 777;" class="IMR_modal">
+
+    <div class="IMR_modal-content-wrapper">
+
+
+            <span class="close" onclick="closeModal('inventory-modal')"><img class="icon-36" src="img/UI/Img_10.png"></span>
+
+              <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <center>
+                    <div class="ribbons">
+                        
+                        <span><img src="img/images/bag1.png" alt="farm-place" class="icon"> Inventory</span>
+
+                    </div>  
+                    </center>         
+
+                </div>
+            </div>
+    
+    <div class="IMR_modal-content">
+
+
+            <div class="filler-30"></div>
+
+            <div class="row">
+                    <div class="col-md-7 item-grid" id="inventory"></div>
+                    <div class="col-md-4">
+
+                        <div class="col-md-11 item-details">
+
+                            <img class="icon-64" src="img/UI/blank.png" id="selected-item-icon" />
+                            <h6 class="text-bold" id="selected-item-name">Click on an item to select it</h6>
+                            <p id="selected-item-stats">Stats</p>
+                            <button id="sell-item-btn" class="btn btn-danger actionBtn_deac">Sell</button>
+                            <button id="use-item-btn" class="btn btn-success actionBtn_deac">Use</button>
+
+                            <div class="input-group col-md-6 col-md-push-3">
+                                <span class="input-group-addon">Sell x:</span>    
+
+                                <select class="btn btn-default dropdown-toggle" style="animation:none; color:#333" name="sell-x-amount" id="sell-x-amount">
+                                <option value="1">1x</option>
+                                <option value="10">10x</option>
+                                <option value="100">100x</option>
+                                <option value="1000">1000x</option>
+                                <option value="10000">10K</option>
+                                <option value="100000">100K</option>
+                                <option value="1000000">1M</option>
+                                </select>
+
+                            
+                            </div>
+
+                        </div>
+                    </div>
+            </div>
+
+            <div style="margin-bottom: 10px;" class="row">
+                
+                 <div class="filler-10"></div>
+
+            </div>
+           
+
+            <div class="row">
+
+                <div class="col-md-7" style="margin-left:40px">
+
+                    <div  style="height:70px" class="alert alert-info alert-dismissable">
+                    
+                            <p>Resources</p>
+                        
+                    </div>
+
+                    <div id="resources-inventory"></div>
+                        
+
+                </div>
+
+                <div class="col-md-2"></div>
+
+                <div class="col-md-4">
+
+                    <div style="height:70px" class="alert alert-info alert-dismissable">
+                    
+                        <p>Current Monster</p>
+
+                     </div>
+
+                    <div class="col-md-4 monsterProfile">
+
+                        <image id="current-monster-inventory-image" class="icon-64" src="img/UI/blank.png" />
+                            <h6 class="center-text" id="current-monster-inventory-name">Your selected monsters will be shown here</h6>
+                            <span class="number-circle-lg" id="current-monster-inventory-level"></span>
+                        <div class="filler-30"></div>
+
+                    </div>
+
+                    <div class="col-md-4">
+                          <div class="progress">
+                            <div id="current-monster-inventory-lifeBar" class="progress-bar rounded progress-bar-red" role="progressbar" style="width: 0%;"aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                         </div>
+
+                         <div class="progress">
+                            <div id="current-monster-inventory-xpBar" class="progress-bar rounded progress-bar-purple" role="progressbar" style="width: 0%;"aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                         </div>
+
+                         <h6><image class="icon-16" src="img/icons/heart.png" />&nbsp;&nbsp;<span id="current-monster-inventory-stats-life">99/99</span>
+                        </h6>
+                        <h6><image class="icon-16" src="img/icons/sword.png" />&nbsp;&nbsp;<span id="current-monster-inventory-attack">99</span></h6>
+
+                    </div>
+                        
+                    
+                    
+
+                    <button style="width:120px" onclick="openModal('', '','select-monster')">Select another monster <br/><image class="icon" src="img/inventory.png" /></button>
+
+
+                    <div id="resources-inventory"></div>
+                    
+
+
+                </div>
+                
+
+            </div>
+
+
+    </div>
+  </div>
+</div>

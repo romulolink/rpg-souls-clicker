@@ -1,0 +1,15 @@
+"appbuild"
+{
+	"appid" "2310190"
+	"desc" "Steam Pipe Update"
+	"buildoutput" "home/steam/output"
+	"contentroot" ""
+	"setlive" "develop"
+	"preview" "0"
+	"local"	""
+	"depots"
+	{
+		"2310190"	"/home/steam/monsters-idle-rpg-vdfs/depot_2310190.vdf"
+
+	}
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Círculo Animado com Clip Path</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: black;
+      overflow: hidden;
+    }
+
+    .content {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background-color: white;
+      color: black;
+      font-size: 24px;
+      text-align: center;
+      clip-path: circle(0%);
+      animation-name: circleAnimation;
+      animation-duration: 1.5s;
+      animation-timing-function: linear;
+      animation-fill-mode: forwards;
+    }
+
+
+    .content div{
+
+      margin-top:35vh;
+    }
+
+
+    @keyframes circleAnimation {
+      0% {
+        clip-path: circle(0%);
+      }
+      100% {
+        clip-path: circle(100%);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <div>
+      <h1>Conteúdo da Página</h1>
+      <p>Este é um exemplo de conteúdo dentro de um círculo animado usando clip path CSS.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Janela Modal</title>
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .modal-buttons {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Janela Modal</h1>
+  
+  <button onclick="openModal(confirmFunction)">Abrir Janela Modal</button>
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <p>Deseja executar a função?</p>
+      <div class="modal-buttons">
+        <button onclick="executeFunction()">Sim</button>
+        <button onclick="closeModal()">Não</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var modal = document.getElementById("modal");
+    var confirmFunction;
+
+    function openModal(confirmCallback) {
+      confirmFunction = confirmCallback;
+      modal.style.display = "block";
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    function executeFunction() {
+      if (typeof confirmFunction === "function") {
+        confirmFunction();
+      }
+      closeModal();
+    }
+
+    function confirmFunction() {
+      // Função a ser executada quando o jogador escolher "Sim"
+      console.log("Função executada!");
+    }
+  </script>
+</body>
+</html>

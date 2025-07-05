@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sorteio de Imagens</title>
+  <style>
+    .image-container {
+      width: 300px;
+      height: 300px;
+      position: relative;
+      overflow: hidden;
+      margin: 0px auto;
+    }
+
+    .image-container img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      filter: brightness(0%);
+    }
+
+    .image-container img.active {
+      opacity: 1;
+      filter: brightness(0%);
+    }
+
+    .image-container img.choosen {
+      opacity: 1;
+      filter: brightness(100%);
+    }
+
+    .message {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+
+  </style>
+</head>
+<body>
+  <div class="image-container">
+    <img src="img/image1.png" alt="Image 1" data-probability="0.2" class="active">
+    <img src="img/image2.png" alt="Image 2" data-probability="0.1">
+    <img src="img/image3.png" alt="Image 3" data-probability="0.3">
+    <img src="img/image4.png" alt="Image 4" data-probability="0.05">
+    <img src="img/image5.png" alt="Image 5" data-probability="0.15">
+    <img src="img/image6.png" alt="Image 6" data-probability="0.05">
+    <img src="img/image7.png" alt="Image 7" data-probability="0.1">
+    <img src="img/image8.png" alt="Image 8" data-probability="0.025">
+    <img src="img/image9.png" alt="Image 9" data-probability="0.075">
+    <img src="img/image10.png" alt="Image 10" data-probability="0.05">
+  </div>
+  <div class="message" id="result-message"></div>
+
+  <script>
+    window.onload = function() {
+      var imageContainer = document.querySelector(".image-container");
+      var images = Array.from(imageContainer.getElementsByTagName("img"));
+      var resultMessage = document.getElementById("result-message");
+      var intervalId;
+      var resultImage;
+      var resultIndex;
+      var activeImage;
+
+      function getRandomImage() {
+        var totalProbability = images.reduce((total, image) => total + parseFloat(image.getAttribute("data-probability")), 0);
+        var randomNumber = Math.random() * totalProbability;
+        var cumulativeProbability = 0;
+
+        for (var i = 0; i < images.length; i++) {
+          var image = images[i];
+          var probability = parseFloat(image.getAttribute("data-probability"));
+          cumulativeProbability += probability;
+
+          if (randomNumber <= cumulativeProbability) {
+
+            resultIndex = i;
+            return image;
+          }
+        }
+
+        return null;
+      }
+
+      function startAnimation() {
+        intervalId = setInterval(function() {
+          activeImage = imageContainer.querySelector(".active");
+          var nextIndex = (images.indexOf(activeImage) + 1) % images.length;
+
+          activeImage.classList.remove("active");
+          images[nextIndex].classList.add("active");
+
+          if (intervalId && nextIndex === 0) {
+            clearInterval(intervalId);
+            activeImage = imageContainer.querySelector(".active");
+            resultImage = getRandomImage();
+            showResult();
+          }
+        }, 300);
+      }
+
+      function showResult() {
+        resultMessage.textContent = "A imagem sorteada foi: " + (resultIndex + 1);
+        activeImage.classList.remove("active");
+        images[resultIndex].classList.add("choosen");
+
+      }
+
+      startAnimation();
+    };
+  </script>
+</body>
+</html>

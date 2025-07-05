@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Island Game</title>
+  <style>
+    .land-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 200px);
+      grid-template-rows: repeat(5, 200px);
+      gap: 10px;
+    }
+
+    .available {
+      border: 2px dashed #000;
+      cursor: pointer;
+      display: block !important;
+    }
+
+    .island {
+      position: relative;
+      background-color: #eee;
+      cursor: pointer;
+      /*display: none;*/
+    }
+
+    .island.active {
+      display: block;
+      border: 0px dashed #000;
+    }
+
+    .island img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .island.active img {
+      opacity: 1;
+    }
+
+    .coinCount {
+      margin-bottom: 10px;
+    }
+
+    .buyButton {
+      display: none;
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .island:hover .buyButton {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Island Game</h1>
+  <div class="coinCount">
+    Coins: <span id="coinCount">0</span>
+  </div>
+  <div class="land-grid" id="islandGrid">
+  </div>
+
+  <script>
+    var coinCount = 100000;
+    var activeIsland = 13;
+    var totalIslands = 25;
+
+    function generateIslands() {
+      var grid = document.getElementById("islandGrid");
+
+      for (var i = 1; i <= totalIslands; i++) {
+
+        var islandDiv = document.createElement("div");
+        islandDiv.id = "island-" + i;
+        islandDiv.className = "island";
+
+        var img = document.createElement("img");
+        img.src = "../img/land-" + i + ".png";
+        img.alt = "Island " + i;
+
+        var buyButton = document.createElement("button");
+        buyButton.className = "buyButton";
+        buyButton.textContent = "Buy Island";
+
+        islandDiv.appendChild(img);
+        islandDiv.appendChild(buyButton);
+
+        grid.appendChild(islandDiv);
+
+      }
+
+      // Ativar apenas a primeira ilha
+      var firstIsland = document.getElementById("island-13");
+      firstIsland.classList.add("active");
+      firstIsland.onclick = function () {
+          buyIsland(this.id.split("-")[1]);
+      };
+
+
+    }
+
+    function updateIslandAvailability() {
+      var islands = document.getElementsByClassName("island");
+
+
+      var activeElement = document.getElementById("island-" + activeIsland);
+      activeElement.classList.add("available");
+
+      var adjacentIds = getAdjacentIslandIds(activeIsland);
+
+      for (var j = 0; j < adjacentIds.length; j++) {
+        var adjacentElement = document.getElementById("island-" + adjacentIds[j]);
+        adjacentElement.classList.add("available");
+        adjacentElement.onclick = function () {
+          buyIsland(this.id.split("-")[1]);
+        };
+
+
+      }
+    }
+
+
+    function getAdjacentIslandIds(islandId) {
+
+        var adjacentIds = [];
+
+        var row = Math.floor((islandId - 1) / 5);
+        var col = (islandId - 1) % 5;
+
+        // Verificar ilha acima
+        if (row > 0) {
+          var aboveId = (row - 1) * 5 + col + 1;
+          adjacentIds.push(aboveId);
+        }
+
+        // Verificar ilha abaixo
+        if (row < 4) {
+          var belowId = (row + 1) * 5 + col + 1;
+          adjacentIds.push(belowId);
+        }
+
+        // Verificar ilha à esquerda
+        if (col > 0) {
+          var leftId = row * 5 + col;
+          adjacentIds.push(leftId);
+        }
+
+        // Verificar ilha à direita
+        if (col < 4) {
+          var rightId = row * 5 + col + 2;
+          adjacentIds.push(rightId);
+        }
+
+        return adjacentIds;
+    }
+
+    function buyIsland(islandId) {
+
+      if (islandId == activeIsland) {
+
+        var coinCountElement = document.getElementById("coinCount");
+        coinCount += 10;
+        coinCountElement.textContent = coinCount;
+      } else {
+
+        var islandElement = document.getElementById("island-" + islandId);
+        var coinCountElement = document.getElementById("coinCount");
+
+        if (coinCount >= 100) {
+          coinCount -= 100;
+
+          coinCountElement.textContent = coinCount;
+          islandElement.classList.add("active");
+          activeIsland = islandId;
+          updateIslandAvailability();
+        } else {
+          alert("Insufficient coins to buy this island!");
+        }
+      }
+    }
+
+    generateIslands();
+    updateIslandAvailability();
+  </script>
+</body>
+</html>

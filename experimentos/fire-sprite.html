@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sprite de Fogo - Animação</title>
+  <style>
+    .power-animation {
+      width: 64px; /* Largura do sprite */
+      height: 64px; /* Altura do sprite */
+      background-image: url('img/water-power.png'); /* Caminho para o sprite de fogo */
+      animation: fireAnimation 0.6s steps(5) infinite; /* Duração da animação e número de frames */
+    }
+
+    @keyframes fireAnimation {
+      0% { background-position: 0 0; } /* Posição do primeiro frame do sprite */
+      100% { background-position: -320px 0; } /* Posição do último frame do sprite */
+    }
+  </style>
+</head>
+<body>
+  <div class="power-animation"></div>
+
+  <script>
+    // Nenhum código JavaScript é necessário para a animação do sprite de fogo
+  </script>
+</body>
+</html>
