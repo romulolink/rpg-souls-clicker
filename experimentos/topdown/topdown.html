@@ -1,46 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Top-Down Demo • Edge-Scroll Camera</title>
-<style>
-  html,body{margin:0;height:100%;overflow:hidden;background:#111}
-  canvas{display:block}
-</style>
+  <meta charset="UTF-8">
+  <title>Top-Down Demo • Ilha Verde (animals avoid trees)</title>
+  <style>
+    html,body{margin:0;height:100%;overflow:hidden;background:#87ceeb}
+    canvas{display:block}
+  </style>
 </head>
 <body>
 <canvas id="game"></canvas>
 
 <script>
 /* ---------- CONFIG ---------- */
-const WORLD_SIZE   = 2000;
+const MAP_SIZE     = 2000;
 const GRID         = 64;
 
-const PLAYER_SPEED_KEY   = 3;     // WASD speed
-const PLAYER_SPEED_MOUSE = 2;     // edge-scroll speed (pixels / frame)
+const ISLAND_COLOR = '#64be53';  // chão da ilha
+const GRID_COLOR   = '#9df18b';  // linhas
+
+const PLAYER_SPEED_KEY   = 3;
+/* Edge-scroll (opcional) ---------- */
+const PLAYER_SPEED_MOUSE = 2;
+const EDGE_MARGIN        = 50;
+/* --------------------------------- */
 
 const TREE_COUNT   = 150;
 const ANIMAL_COUNT = 20;
 const ANIMAL_SPEED = 0.5;
-
-const CAM_SMOOTH   = 0.08;  // camera easing
-const EDGE_MARGIN  = 50;    // px from edge to start scrolling
+const ANIMAL_RADIUS= 6;          // usado para colisão
+const CAM_SMOOTH   = 0.08;
 
 /* ---------- CANVAS ---------- */
-const canvas = document.getElementById('game');
-const ctx    = canvas.getContext('2d');
-function resize(){ canvas.width=innerWidth; canvas.height=innerHeight; }
+const canvas=document.getElementById('game');
+const ctx    =canvas.getContext('2d');
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
 addEventListener('resize',resize); resize();
 
-/* ---------- ENTITIES ---------- */
-const player={x:WORLD_SIZE/2,y:WORLD_SIZE/2,vx:0,vy:0};
+/* ---------- WORLD & ENTITIES ---------- */
+const player={x:MAP_SIZE/2,y:MAP_SIZE/2,vx:0,vy:0};
 const snap=v=>Math.floor(v/GRID)*GRID+GRID/2;
-const rs   =()=>Math.random()<.5?-1:1;
+const rs  =()=>Math.random()<.5?-1:1;
 
-const trees=[...Array(TREE_COUNT)].map(()=>({x:snap(Math.random()*WORLD_SIZE),y:snap(Math.random()*WORLD_SIZE)}));
+/* árvores */
+const trees=[...Array(TREE_COUNT)].map(()=>({
+  x:snap(Math.random()*MAP_SIZE),
+  y:snap(Math.random()*MAP_SIZE)
+}));
+const TREE_HALF = GRID*0.4;                 // ~25.6
+
+/* animais */
 const animals=[...Array(ANIMAL_COUNT)].map(()=>({
-  x:snap(Math.random()*WORLD_SIZE), y:snap(Math.random()*WORLD_SIZE),
-  vx:ANIMAL_SPEED*rs()*Math.random(), vy:ANIMAL_SPEED*rs()*Math.random()
+  x:snap(Math.random()*MAP_SIZE),
+  y:snap(Math.random()*MAP_SIZE),
+  vx:ANIMAL_SPEED*rs()*Math.random(),
+  vy:ANIMAL_SPEED*rs()*Math.random()
 }));
 
 /* ---------- INPUT ---------- */
@@ -48,9 +62,8 @@ const keys={};
 addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
 addEventListener('keyup',  e=>keys[e.key.toLowerCase()]=false);
 
-/* mouse position */
-let mouseX=0, mouseY=0;
-addEventListener('mousemove',e=>{ mouseX=e.clientX; mouseY=e.clientY; });
+let mouseX=0,mouseY=0;
+addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY;});
 
 /* ---------- CAMERA ---------- */
 let camX=player.x-canvas.width/2;
@@ -58,65 +71,92 @@ let camY=player.y-canvas.height/2;
 
 /* ---------- GAME LOOP ---------- */
 function update(){
-  /* -------- player movement via WASD -------- */
+  /* ---- player movement via WASD ---- */
   player.vx=(keys.a?-1:0)+(keys.d?1:0);
   player.vy=(keys.w?-1:0)+(keys.s?1:0);
   const len=Math.hypot(player.vx,player.vy)||1;
   player.x+=player.vx/len*PLAYER_SPEED_KEY;
   player.y+=player.vy/len*PLAYER_SPEED_KEY;
 
-  /* -------- additional movement via mouse edge scroll -------- */
+  /* ---- edge-scroll (commented / optional) ---- */
+  /*
   if(mouseX<EDGE_MARGIN)                player.x-=PLAYER_SPEED_MOUSE;
   if(mouseX>canvas.width-EDGE_MARGIN)   player.x+=PLAYER_SPEED_MOUSE;
   if(mouseY<EDGE_MARGIN)                player.y-=PLAYER_SPEED_MOUSE;
   if(mouseY>canvas.height-EDGE_MARGIN)  player.y+=PLAYER_SPEED_MOUSE;
+  */
+  /* ------------------------------------------- */
 
-  /* clamp to world */
-  player.x=Math.max(0,Math.min(WORLD_SIZE,player.x));
-  player.y=Math.max(0,Math.min(WORLD_SIZE,player.y));
+  player.x=Math.max(0,Math.min(MAP_SIZE,player.x));
+  player.y=Math.max(0,Math.min(MAP_SIZE,player.y));
 
-  /* -------- animals -------- */
+  /* ---- animals ---- */
   animals.forEach(a=>{
+    /* salvar posição anterior para retroceder em caso de colisão */
+    const prevX=a.x, prevY=a.y;
+
+    /* movimento básico */
     a.x+=a.vx; a.y+=a.vy;
-    if(a.x<0||a.x>WORLD_SIZE){a.vx*=-1; a.x=Math.max(0,Math.min(WORLD_SIZE,a.x));}
-    if(a.y<0||a.y>WORLD_SIZE){a.vy*=-1; a.y=Math.max(0,Math.min(WORLD_SIZE,a.y));}
+
+    /* bordas do mapa */
+    if(a.x<0||a.x>MAP_SIZE){a.vx*=-1;a.x=Math.max(0,Math.min(MAP_SIZE,a.x));}
+    if(a.y<0||a.y>MAP_SIZE){a.vy*=-1;a.y=Math.max(0,Math.min(MAP_SIZE,a.y));}
+
+    /* colisão com árvore */
+    const collided = trees.some(t=>{
+      const dx=a.x-t.x, dy=a.y-t.y;
+      return Math.hypot(dx,dy) < (TREE_HALF + ANIMAL_RADIUS);
+    });
+    if(collided){
+      /* volta e inverte direção (rebote simples) */
+      a.x=prevX; a.y=prevY;
+      a.vx*=-1;  a.vy*=-1;
+    }
+
+    /* chance de mudar direção aleatória */
     if(Math.random()<0.005){
       a.vx=ANIMAL_SPEED*rs()*Math.random();
       a.vy=ANIMAL_SPEED*rs()*Math.random();
     }
   });
 
-  /* -------- smooth camera -------- */
+  /* ---- smooth camera ---- */
   const tgtX=player.x-canvas.width/2;
   const tgtY=player.y-canvas.height/2;
-  camX+= (tgtX-camX)*CAM_SMOOTH;
-  camY+= (tgtY-camY)*CAM_SMOOTH;
+  camX+=(tgtX-camX)*CAM_SMOOTH;
+  camY+=(tgtY-camY)*CAM_SMOOTH;
 }
 
+/* ---------- DRAW ---------- */
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  /* grid */
-  ctx.strokeStyle='#2c2c2c'; ctx.lineWidth=1; ctx.beginPath();
-  for(let x=0;x<=WORLD_SIZE;x+=GRID){ ctx.moveTo(x-camX,-camY); ctx.lineTo(x-camX,WORLD_SIZE-camY);}
-  for(let y=0;y<=WORLD_SIZE;y+=GRID){ ctx.moveTo(-camX,y-camY); ctx.lineTo(WORLD_SIZE-camX,y-camY);}
+  /* ilha verde */
+  ctx.fillStyle=ISLAND_COLOR;
+  ctx.fillRect(-camX,-camY,MAP_SIZE,MAP_SIZE);
+
+  /* grade */
+  ctx.strokeStyle=GRID_COLOR; ctx.lineWidth=1; ctx.beginPath();
+  for(let x=0;x<=MAP_SIZE;x+=GRID){ctx.moveTo(x-camX,-camY);ctx.lineTo(x-camX,MAP_SIZE-camY);}
+  for(let y=0;y<=MAP_SIZE;y+=GRID){ctx.moveTo(-camX,y-camY);ctx.lineTo(MAP_SIZE-camX,y-camY);}
   ctx.stroke();
 
-  /* trees */
-  ctx.fillStyle='#0a0';
-  const tHalf=GRID*0.4;
-  trees.forEach(t=>{ ctx.fillRect(t.x-tHalf-camX,t.y-tHalf-camY,tHalf*2,tHalf*2); });
-
-  /* animals */
-  ctx.fillStyle='#7c4a20';
-  animals.forEach(a=>{
-    ctx.beginPath(); ctx.arc(a.x-camX,a.y-camY,6,0,Math.PI*2); ctx.fill();
+  /* árvores */
+  ctx.fillStyle='#206020';
+  trees.forEach(t=>{
+    ctx.fillRect(t.x-TREE_HALF-camX,t.y-TREE_HALF-camY,TREE_HALF*2,TREE_HALF*2);
   });
 
-  /* (player square intentionally not drawn) */
+  /* animais */
+  ctx.fillStyle='#7c4a20';
+  animals.forEach(a=>{
+    ctx.beginPath();
+    ctx.arc(a.x-camX,a.y-camY,ANIMAL_RADIUS,0,Math.PI*2);
+    ctx.fill();
+  });
 }
 
-function loop(){ update(); draw(); requestAnimationFrame(loop); }
+function loop(){update();draw();requestAnimationFrame(loop);}
 loop();
 </script>
 </body>

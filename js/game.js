@@ -87,6 +87,7 @@ window.onload = function() {
     
     calcStorageCost();
 
+
 };
 
 
