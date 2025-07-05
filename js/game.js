@@ -65,7 +65,7 @@ window.onload = function() {
 
     setInterval(function () { saveGame(); }, 10000);
 
-    setInterval(createMultipleWaves, 1000);
+    //setInterval(createMultipleWaves, 1000);
 
     enableIslands();
 

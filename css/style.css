@@ -419,7 +419,7 @@ background-size: 100% 100%;
 }
 
 .available:hover{
-    cursor: url('../img/icons/pointer.png'), auto; 
+    cursor: url('../img/icons/cursor-sword.png'), auto; 
 }
 
 .island {
@@ -431,7 +431,7 @@ background-size: 100% 100%;
 
 .island:hover{
 
-    cursor: url('../img/icons/pointer.png'), auto;
+    cursor: url('../img/icons/cursor-sword.png'), auto;
 
 }
 
@@ -521,13 +521,25 @@ background-size: 100% 100%;
 
 .available:hover .buyButton {
   display: block;
-  cursor: url('../img/icons/pointer.png'), auto; 
+  cursor: url('../img/icons/cursor-sword.png'), auto; 
   color: black;
 }
 
 .ocean{
 
     background-color: #00c0ff !important;
+    margin-left: -15px;
+    margin-top: -15px;
+    border: 0px solid white;
+    position: absolute;
+    width: 100%;
+    height: 110%;
+    z-index: -10;
+}
+
+.land{
+
+    background-color: #3a9d56 !important;
     margin-left: -15px;
     margin-top: -15px;
     border: 0px solid white;
@@ -593,12 +605,12 @@ background-size: 100% 100%;
 
 
 .custom-cursor {
-  cursor: url('../img/icons/cursor.png'), auto;   
+  cursor: url('../img/icons/cursor-sword.png'), auto;   
 }
 
 
 .custom-cursor-point {
-  cursor: url('../img/icons/pointer.png'), auto;   
+  cursor: url('../img/icons/cursor-sword.png'), auto;   
 }
 
 .slot {
@@ -776,7 +788,7 @@ background-size: 100% 100%;
 .close-btn img:hover {
 
     opacity: 1 !important; 
-    cursor: url('../img/icons/pointer.png'), auto; 
+    cursor: url('../img/icons/cursor-sword.png'), auto; 
 
 }
 
@@ -786,7 +798,7 @@ background-size: 100% 100%;
 
 .close:hover {
     color: #aaa;
-    cursor: url('../img/icons/pointer.png'), auto; 
+    cursor: url('../img/icons/cursor-sword.png'), auto; 
 }
 
 .center-text{
@@ -1178,7 +1190,7 @@ h6 {
    color:white !important;
    cursor: pointer;
    margin: 0px 5px;
-   cursor: url('../img/icons/pointer.png'), auto;
+   cursor: url('../img/icons/cursor-sword.png'), auto;
 }
 .tab-content {
    display: none;
@@ -1367,7 +1379,7 @@ h6 {
 
 #wheat-btn:hover {
   display:block;
-  cursor: url('../img/icons/pointer.png'), auto; 
+  cursor: url('../img/icons/cursor-sword.png'), auto; 
 }
 
 

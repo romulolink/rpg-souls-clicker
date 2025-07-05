@@ -438,7 +438,7 @@ a {
 a:hover {
   color: #1abc9c;
   text-decoration: none;
-  cursor: url('../img/icons/pointer.png'), auto;
+  cursor: url('../img/icons/cursor-sword.png'), auto;
 
 }
 h1 {
