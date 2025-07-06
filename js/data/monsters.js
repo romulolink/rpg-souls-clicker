@@ -1,13 +1,13 @@
 var monsters = {
     leafstricke: {
-        slug: "leafstricke",
-        name: "Leafstricke",
+        slug: "boar",
+        name: "Boar",
         monster_id: 1,
         unique_id: 1,
-        description: "a cute leaf snake",
+        description: "an agressive boar",
         level: 1,
         total: 0,
-        icon_path: "img/monsters/1leafstricke.png",
+        icon_path: "img/sprites/boar.png",
         monster_type: "plant",
         rarity: "rare",
         evolutions: 3,

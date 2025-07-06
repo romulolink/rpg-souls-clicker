@@ -1,6 +1,11 @@
 (function(){
-  const ANIMAL_SPEED  = 0.5;
-  const ANIMAL_RADIUS = 6;
+  const ANIMAL_SPEED  = 0.1;
+  const ANIMAL_RADIUS = 10;                  // raio usado p/ colisão
+  const ANIMAL_SIZE   = 24;                  // largura/altura sprite
+
+  /* --------- sprite do animal --------- */
+  const animalImg = new Image();
+  animalImg.src   = 'img/sprites/boar.png'; // seu PNG aqui
   const MAP_SIZE      = window.World.MAP_SIZE;
   const GRID          = window.World.GRID;
   const TREE_HALF     = GRID*0.4;
@@ -49,11 +54,13 @@
   }
 
   function drawAnimals(ctx, cam, arr){
-    ctx.fillStyle = '#7c4a20';
-    arr.forEach(a=>{
-      ctx.beginPath();
-      ctx.arc(a.x - cam.x, a.y - cam.y, ANIMAL_RADIUS, 0, Math.PI*2);
-      ctx.fill();
+    if (!animalImg.complete) return;          // aguarda carregar
+    const half = ANIMAL_SIZE / 2;
+    arr.forEach(a => {
+      ctx.drawImage(animalImg,
+        a.x - half - cam.x,
+        a.y - half - cam.y,
+        ANIMAL_SIZE, ANIMAL_SIZE);
     });
   }
 

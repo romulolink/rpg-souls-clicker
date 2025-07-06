@@ -31,10 +31,56 @@
     </div>
   </div>
 
-  <!-- Mini Combate -->
-  <div id="mini-combat" style="display: none" class="mini-combat-wrapper">
-    <!-- ... seu conteúdo de combate aqui ... -->
-  </div>
+   <div id="mini-combat" style="display: none" class="mini-combat-wrapper">
+        <span class="close" onclick="openCombatModal()"><img class="icon-36" src="img/UI/maximize.png"></span>
+        <div class="row col-md-12">
+                    <div class="col-md-1"></div>
+
+                    <div class="col-md-5">
+
+                        <div class="monsterProfile">
+
+                            <image id="player-image-mini-combat" class="icon-64" src="img/monsters/2blazercraw.png" />
+                                <p class="center-text" id="current-monster-mini-combat-name">Monster1</p>
+                                <span style="float:right; margin-left:5px" class="number-circle-lg" id="player-level-mini-combat">1</span>
+
+                        </div>
+                        
+                        <div style="height:20px" class="progress">
+                        <div id="current-monster-mini-combat-lifeBar" class="progress-bar rounded progress-bar-red" role="progressbar" style="width: 0%;"aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <div style="height:20px" class="progress">
+                        <div id="current-monster-mini-combat-xpBar" class="progress-bar rounded progress-bar-purple" role="progressbar" style="width: 0%; height:70px"aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+ 
+
+                </div>
+
+
+                <div class="col-md-5">
+
+                    <div class="monsterProfile">
+
+                        <image id="enemy-image-mini-combat" class="icon-64" src="img/monsters/1leafstricke.png" />
+                            <p class="center-text" id="enemy-monster-monster-mini-name">Monster2</p><span style="float:right; margin-left:5px" class="number-circle-lg" id="enemy-level-mini-combat">1</span>
+                            
+
+
+                    </div>
+
+                    <div style="height:20px" class="progress">
+                        <div id="enemy-monster-mini-combat-lifeBar" class="progress-bar rounded progress-bar-red" role="progressbar" style="width: 0%;"aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                <br/>
+
+                </div>
+
+        </div><!-- row -->
+
+    </div><!-- mini-combat -->
 
   <div class="filler-100"></div>
 </div> <!-- / tab-explore -->
@@ -60,11 +106,13 @@
   }
   window.addEventListener('resize', resize); resize();
 
+  const feedbacks = []; // efeitos visuais temporários
+
   const player = { x: World.MAP_SIZE / 2, y: World.MAP_SIZE / 2, vx: 0, vy: 0 };
   const keys = {};
   window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
   window.addEventListener('keyup',   e => keys[e.key.toLowerCase()] = false);
-  const PLAYER_SPEED = 3;
+  const PLAYER_SPEED = 1;
 
   const trees   = World.generateTrees(150);
   const animals = Mobs.createAnimals(20);
@@ -81,31 +129,52 @@
 
     Mobs.updateAnimals(animals, trees);
     cam.follow(player);
+
+    for (let i = feedbacks.length - 1; i >= 0; i--) {
+      feedbacks[i].radius += 1;
+      feedbacks[i].alpha  -= 0.05;
+      if (feedbacks[i].alpha <= 0) {
+        feedbacks.splice(i, 1);
+      }
+    }
+
   }
 
   function draw() {
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     World.draw(ctx, cam, trees);
     Mobs.drawAnimals(ctx, cam, animals);
+
+    feedbacks.forEach(fb => {
+      ctx.beginPath();
+      ctx.arc(fb.x - cam.x, fb.y - cam.y, fb.radius, 0, 2 * Math.PI);
+      ctx.strokeStyle = `rgba(255,255,255,${fb.alpha})`;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+
   }
 
 
   
-      canvas.addEventListener('click', function(e) {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left + cam.x;
-        const mouseY = e.clientY - rect.top + cam.y;
+    canvas.addEventListener('click', function(e) {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left + cam.x;
+      const mouseY = e.clientY - rect.top + cam.y;
 
-        animals.forEach(animal => {
-        const dx = animal.x - mouseX;
-        const dy = animal.y - mouseY;
-        const dist = Math.hypot(dx, dy);
-        if (dist <= 6) { // 6 = ANIMAL_RADIUS
-          //  alert("Animal clicked!");
+      animals.forEach(animal => {
+      const dx = animal.x - mouseX;
+      const dy = animal.y - mouseY;
+      const dist = Math.hypot(dx, dy);
+      if (dist <= 6) { // 6 = ANIMAL_RADIUS
+        //  alert("Animal clicked!");
+        feedbacks.push({ x: animal.x, y: animal.y, radius: 0, alpha: 1 });
 
-          startRandomMonsterAnimation();
-        }
-        });
+        openCombat(1);
+
+      }
+      });
     });
 
   (function loop() {

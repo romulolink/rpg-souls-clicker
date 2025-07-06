@@ -4,6 +4,12 @@
   const ISLAND_COLOR = '#64be53';
   const GRID_COLOR   = '#9df18b';
 
+
+  /* --------- sprite da árvore --------- */
+  const treeImg   = new Image();
+  treeImg.src     = 'img/sprites/tree.png';  // coloque seu PNG aqui
+  const TREE_SIZE = GRID * 1;              // ⇠ ajuste ao seu gosto
+
   const snap = v => Math.floor(v/GRID)*GRID + GRID/2;
 
   function generateTrees(count){
@@ -29,11 +35,16 @@
     ctx.stroke();
 
     /* trees */
-    ctx.fillStyle = '#206020';
-    const half = GRID*0.4;
-    trees.forEach(t=>{
-      ctx.fillRect(t.x-half-cam.x, t.y-half-cam.y, half*2, half*2);
+    if (!treeImg.complete) return;               // ainda não carregou
+
+    const half = TREE_SIZE / 2;
+    trees.forEach(t => {
+      ctx.drawImage(treeImg,
+        t.x - half - cam.x,
+        t.y - half - cam.y,
+        TREE_SIZE, TREE_SIZE);
     });
+    
   }
 
   window.World = { MAP_SIZE, GRID, ISLAND_COLOR, GRID_COLOR, generateTrees, draw };
