@@ -1,3 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cartoon Island – Pixel‑Perfect Full Map</title>
+  <style>
+    html,body{margin:0;height:100%;background:#887ecb;display:flex;justify-content:center;align-items:center}
+    canvas{image-rendering:pixelated;background:#50459b;max-width:100%;max-height:100%}
+  </style>
+</head>
+<body>
+  <!-- canvas starts without logical size; we set after loading the map -->
+  <canvas id="gameCanvas"></canvas>
+
+<script>
 /******************************************************************
  *  Pixel‑Perfect Map Viewer – shows ENTIRE Tiled map             *
  *****************************************************************/
@@ -83,3 +99,6 @@ function drawTreeObjects(t){
       tr.x+sway, tr.y, tr.w, tr.h);
   });
 }
+</script>
+</body>
+</html>

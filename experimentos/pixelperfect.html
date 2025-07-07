@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pixel perfect canvas</title>
+
+    <style>
+      html,
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        margin: 0;
+        background-color: #887ecb;
+
+        .canvas-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          height: 100%;
+        }
+
+        canvas {
+          background-color: #50459b;
+          max-width: 100%;
+          max-height: 100%;
+          image-rendering: pixelated;
+        }
+      }
+    </style>
+
+     <script type="module" src="js/pixel-perfect.js"></script>
+
+  </head>
+  <body>
+
+    <canvas class="pixel-perfect" id="gameCanvas"></canvas>
+
+   
+
+    <script>
+/******************************************************************
+ *  TILE-MAP (2 tilesets) + TREES as OBJECTS                      *
+ *****************************************************************/
+
+// ░░ CONFIG ░░
+const MAP_JSON      = 'js/data/world.json';
+const TILESET_GROUND_SRC = 'img/tileset/FarmRPG16x16-TinyAssetPack/Tileset/tileset.png';
+const TILESET_TREE_SRC   = 'img/tileset/FarmRPG16x16-TinyAssetPack/Objects/trees.png';
+const TILE_W  = 16;
+const TILE_H  = 16;
+const TREE_CLASS_NAME = 'tree';
+
+// ░░ Canvas ░░
+const INTEGER_SCALING = true;
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false; // Disable smoothing for pixel art
+
+
+function resizeCanvas() {
+let scale = Math.min(
+    window.innerWidth / canvas.width,
+    window.innerHeight / canvas.height
+);
+if (INTEGER_SCALING) {
+    scale = Math.floor(scale);
+}
+canvas.style.width = `${Math.round(scale * canvas.width)}px`;
+canvas.style.height = `${Math.round(scale * canvas.height)}px`;
+}
+
+// ░░ Camera ░░
+class Camera{
+  constructor(){this.x=0;this.y=0;this.scale=1;this.smooth=0.1;}
+  follow(t){const tx=t.x-(canvas.width /(2*this.scale));const ty=t.y-(canvas.height/(2*this.scale));this.x+=(tx-this.x)*this.smooth;this.y+=(ty-this.y)*this.smooth;}
+  ws(wx,wy){return{x:(wx-this.x)*this.scale,y:(wy-this.y)*this.scale};}
+}
+const cam=new Camera();
+
+// ░░ Globals ░░
+let mapData=null;
+let groundImg=null, treeImg=null;
+let groundCols=0, treeCols=0;
+let trees=[];
+
+// ░░ Load assets ░░
+Promise.all([
+  fetch(MAP_JSON).then(r=>r.json()),
+  imgLoad(TILESET_GROUND_SRC),
+  imgLoad(TILESET_TREE_SRC)
+]).then(([map,gImg,tImg])=>{
+  mapData=map;
+  groundImg=gImg; treeImg=tImg;
+  groundCols=Math.floor(gImg.width/TILE_W);
+  treeCols  =Math.floor(tImg.width/TILE_W);
+  extractTrees();
+  requestAnimationFrame(loop);
+});
+
+function imgLoad(src){return new Promise(res=>{const i=new Image();i.src=src;i.onload=()=>res(i);});}
+
+function extractTrees(){
+  const layer=mapData.layers.find(l=>l.type==='objectgroup'&&l.name==='trees');
+  if(!layer)return;
+  trees=layer.objects.filter(o=>o.type===TREE_CLASS_NAME).map(o=>({x:o.x,y:o.y-o.height,w:o.width,h:o.height,ofs:Math.random()*6.28}));
+}
+
+// ░░ Game Loop ░░
+function loop(t){update(t);draw(t);requestAnimationFrame(loop);}    
+
+function update(t){cam.follow({x:240,y:120});/* static center for demo */}
+
+function draw(time){ctx.clearRect(0,0,canvas.width,canvas.height);drawTileLayers();drawTrees(time);}    
+
+  function drawTileLayers(){
+    mapData.layers.filter(l=>l.type==='tilelayer').forEach(layer=>{
+      const data=layer.data;
+      for(let idx=0;idx<data.length;idx++){
+        const gid=data[idx]; if(gid===0)continue;
+        let img, index, cols;
+        if(gid>=241){img=treeImg; index=gid-241; cols=treeCols;} else {img=groundImg; index=gid-1; cols=groundCols;}
+        const sx=(index%cols)*TILE_W;
+        const sy=Math.floor(index/cols)*TILE_H;
+        const mx=(idx%mapData.width)*TILE_W;
+        const my=Math.floor(idx/mapData.width)*TILE_H;
+        const p=cam.ws(mx,my);
+        ctx.drawImage(img,sx,sy,TILE_W,TILE_H,p.x,p.y,TILE_W*cam.scale,TILE_H*cam.scale);
+      }
+    });
+  }
+
+    function drawTrees(time){
+      const sway=Math.sin(time/300)*2;
+      trees.forEach(tr=>{
+        const p=cam.ws(tr.x,tr.y);
+        ctx.fillStyle='#206020';
+        ctx.fillRect(p.x+sway,p.y,tr.w*cam.scale,tr.h*cam.scale);
+      });
+    }
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+</script>
+
+
+  </body>
+</html>
