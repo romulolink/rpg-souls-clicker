@@ -1,4 +1,4 @@
-*.identifier
+*.Identifier
 ### Node ###
 
 
@@ -8,6 +8,8 @@ js/firebase.js
 .parcel-cache/
 /experimentos/water/.cache
 /experimentos/water/.gitignore
+*:Zone.Identifier
+
 
 # Logs
 logs
@@ -106,3 +108,4 @@ $RECYCLE.BIN/
 out/
 cidi/build_steam.sh
 cidi/build_steam_demo.sh
+*.Identifier
