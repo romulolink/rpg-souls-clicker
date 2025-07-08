@@ -1,3 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cartoon Island – Phaser 3 single-file demo</title>
+  <style>
+    html,body{margin:0;height:100%;overflow:hidden;background:#87ceeb}
+    /* canvas criado por Phaser herdará image-rendering:pixelated quando pixelArt:true */
+    canvas{image-rendering:pixelated}
+  </style>
+  <!-- Phaser 3 CDN (3.70) -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
+</head>
+<body>
+
+<script>
 /* -------------------------------------------------------------
  *  Phaser 3 – Mapa Tiled com vários tilesets + árvores animadas
  * ----------------------------------------------------------- */
@@ -6,9 +23,8 @@ const CONFIG = {
   type   : Phaser.AUTO,
   width  : 960,           // tamanho inicial da view (pode ser o que quiser)
   height : 640,
-  zoom   : 1,             // aproxima em 2× sem perder pixel-art
+  zoom   : 2,             // aproxima em 2× sem perder pixel-art
   pixelArt: true,         // desativa smoothing
-  parent : "gameCanvas",  // id do elemento HTML onde o canvas será inserido
   backgroundColor: "#87ceeb",
   scene  : { preload, create }
 };
@@ -18,7 +34,6 @@ new Phaser.Game(CONFIG);
 const MAP_JSON         = "js/data/world.json";
 const TILESET_GROUND   = "img/tileset/FarmRPG16x16-TinyAssetPack/Tileset/tileset.png";
 const TILESET_TREES    = "img/tileset/FarmRPG16x16-TinyAssetPack/Objects/trees.png";
-const TILESET_PROPS    = "img/tileset/FarmRPG16x16-TinyAssetPack/Objects/props.png";
 
 /* ---- PRELOAD ---- */
 function preload() {
@@ -28,7 +43,6 @@ function preload() {
   // as chaves ('ground', 'trees') DEVEM ser iguais às usadas no .tsx / Tiled
   this.load.image("ground", TILESET_GROUND);
   this.load.image("trees",  TILESET_TREES);
-  this.load.image("props",  TILESET_PROPS);
 }
 
 /* ---- CREATE ---- */
@@ -39,29 +53,18 @@ function create() {
   /* -- Associa tilesets -- */
   const groundSet = map.addTilesetImage("ground", "ground");
   const treeSet   = map.addTilesetImage("trees",  "trees");
-  const propsSet   = map.addTilesetImage("props",  "props");
 
   /* -- Cria camadas de tiles (ordem importa) -- */
   map.createLayer("ground", groundSet, 0, 0);
   map.createLayer("trees",  treeSet,   0, 0);
-  map.createLayer("props",  propsSet,   0, 0);
 
   /* -- Converte Object-Layer 'trees' em sprites balançando -- */
   const objects = map.getObjectLayer("trees")?.objects || [];
   objects.forEach(obj => {
     const sprite = this.add
       .sprite(obj.x + obj.width/2, obj.y - obj.height/2, "trees", 0)
-      .setOrigin(0.5, 1)                 // pivô na base do tronco
-      .setCrop(96, 0, obj.width, obj.height)
-      .setInteractive({ pixelPerfect: true, useHandCursor: true });
-      
-    sprite.on("pointerdown", () => {
-    
-    openCombat(1);
+      .setOrigin(0.5, 1);                 // pivô na base do tronco
 
-  });
-
-  this.cameras.main.setZoom(2); 
     // Tween: brisa suave (x oscila ±2 px)
     this.tweens.add({
       targets: sprite,
@@ -89,3 +92,7 @@ function create() {
     if (cursors.down.isDown)  cam.scrollY += speed * dt/1000;
   });
 }
+</script>
+
+</body>
+</html>

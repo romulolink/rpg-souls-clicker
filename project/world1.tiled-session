@@ -8,21 +8,40 @@
         "."
     ],
     "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
         "ground.tsx": {
             "scaleInDock": 1.5,
             "scaleInEditor": 1
+        },
+        "props.tsx": {
+            "scaleInDock": 1
         },
         "trees.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
         "world_map..tmx": {
-            "scale": 1,
-            "selectedLayer": 0,
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 1.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 239.5,
-                "y": 120.5
+                "x": 258,
+                "y": 158.33333333333331
             }
+        },
+        "world_map..tmx#ground": {
+            "scaleInDock": 1
+        },
+        "world_map..tmx#props": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "world_map..tmx#trees": {
+            "scaleInDock": 1
         },
         "world_map.tmx": {
             "expandedObjectLayers": [
@@ -31,13 +50,14 @@
             "scale": 0.75,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 306,
+                "x": 305.3333333333333,
                 "y": 6
             }
         }
     },
     "last.exportedFilePath": "E:/Workspace/RPGSouls/js/data",
-    "last.imagePath": "E:/Workspace/RPGSouls/img/tileset/FarmRPG16x16-TinyAssetPack/Tileset",
+    "last.externalTilesetPath": "E:/Workspace/RPGSouls/project",
+    "last.imagePath": "E:/Workspace/RPGSouls/img/tileset/FarmRPG16x16-TinyAssetPack/Objects",
     "lastUsedTilesetExportFilter": "JSON tileset files (*.tsj *.json)",
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",

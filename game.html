@@ -23,7 +23,7 @@
 
     <script src="js/vendor/angular.js"></script>
 
-   
+   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
 
     <link rel="stylesheet" href="css/flat-ui.css" type="text/css" />
 
@@ -45,14 +45,30 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
 
-      <style>
-      
-      canvas{image-rendering:pixelated;background:#50459b;max-width:100%;max-height:100%}
-    </style>
+    <style>
+        html{
+        
+          margin:0px auto;
+          height:100%; 
+          overflow:hidden;
+          background:#000000
+        
+        }
+
+        #gameCanvas{
+          display: grid;
+          justify-items: center;
+          z-index: -10;
+
+        }
+
+
+        /* canvas criado por Phaser herdará image-rendering:pixelated quando pixelArt:true */
+        canvas{image-rendering:pixelated; }
+
+   </style>
 
     </head>
-
-
 
     <body class="custom-cursor overlay" style="overflow: hidden;" ng-app="">
 
@@ -236,7 +252,6 @@
         <script src="js/dev.js"></script>
         <script src="js/camera.js"></script>
         <script src="js/mobs.js"></script>
-        <script src="js/world.js"></script>
         <script src="js/box_effect.js"></script>
         <script src="js/combat.js"></script>
         <script src="js/input-controller.js"></script>  
