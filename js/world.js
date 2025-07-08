@@ -46,12 +46,14 @@ function create() {
   map.createLayer("trees",  treeSet,   0, 0);
   map.createLayer("props",  propsSet,   0, 0);
 
+
   /* -- Converte Object-Layer 'trees' em sprites balançando -- */
   const objects = map.getObjectLayer("trees")?.objects || [];
   objects.forEach(obj => {
+
     const sprite = this.add
-      .sprite(obj.x + obj.width/2, obj.y - obj.height/2, "trees", 0)
-      .setOrigin(0.5, 1)                 // pivô na base do tronco
+      .sprite(obj.x - obj.width/2, obj.y + obj.height/2, "trees", 0)
+     // .setOrigin(obj.x, obj.y)                 // pivô na base do tronco
       .setCrop(96, 0, obj.width, obj.height)
       .setInteractive({ pixelPerfect: true, useHandCursor: true });
       

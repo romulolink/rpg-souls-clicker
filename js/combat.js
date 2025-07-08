@@ -78,6 +78,9 @@ function updateDisplayCombat() {
     enemyImageMiniCombat.src = enemy.icon_path;
     
     updateProgressBarCombat('player-health-bar', (player.current_life / player.getLifeTotal()) * 100, player.current_life + '/' + player.getLifeTotal());
+
+      updateProgressBarCombat('player-damage-bar', (player.current_life / player.getLifeTotal()) * 100, player.current_life + '/' + player.getLifeTotal());
+
     updateProgressBarCombat('current-monster-mini-combat-lifeBar', (player.current_life / player.getLifeTotal()) * 100, player.current_life + '/' + player.getLifeTotal());
     updateProgressBarCombat('player-attack-speed-bar', playerSpeedProgress.value, playerSpeedProgress.value);
     document.getElementById('player-health').textContent = player.getLifeTotal().toString();
@@ -96,6 +99,9 @@ function updateDisplayCombat() {
     document.getElementById('player-attack').textContent = player.calculateTotalAttack();
 
     updateProgressBarCombat('enemy-health-bar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.basic_life);
+
+      updateProgressBarCombat('enemy-damage-bar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.basic_life);
+
     updateProgressBarCombat('enemy-monster-mini-combat-lifeBar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.basic_life);
     updateProgressBarCombat('enemy-attack-speed-bar', enemySpeedProgress.value, enemySpeedProgress.value);
     document.getElementById('enemy-health').textContent = enemy.getLifeTotal().toString();

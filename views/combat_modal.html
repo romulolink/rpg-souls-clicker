@@ -45,7 +45,10 @@
                   <span class="label">Life</span>               
                   <div class="progress combatBar">
                     
-                    <div id="player-health-bar" class="progress-bar-green" role="progressbar" style="width: 100%;"
+                    <div id="player-health-bar" class="progress-bar-green" role="progressbar" style="width: 100%; z-index:2"
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
+                    
+                    <div id="player-damage-bar" class="progress-bar-yellow" role="progressbar" style="width: 100%; z-index:1"
                     aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
                   </div>
 
@@ -93,7 +96,10 @@
                   <image class="icon-16 icon-left" src="img/icons/heart.png" />
                   <span class="label">Life</span>   
                   <div class="progress combatBar">
-                    <div id="enemy-health-bar" class="progress-bar-red" role="progressbar" style="width: 100%;"
+                    <div id="enemy-health-bar" class="progress-bar-red" role="progressbar" style="width: 100%; z-index:2"
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
+
+                    <div id="enemy-damage-bar" class="progress-bar-yellow" role="progressbar" style="width: 100%; z-index:1"
                     aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">100%</div>
                   </div>
 

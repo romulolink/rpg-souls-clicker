@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Mini Idle Clicker</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root { font-size: 16px; }
+  body{
+    margin:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    height:100vh;background:#222;color:#eee;
+    font-family:sans-serif;user-select:none
+  }
+  h1{margin:4px 0 12px;font-size:1.4rem}
+  #big-btn{
+    width:180px;height:180px;border-radius:50%;
+    background:#3498db;display:flex;align-items:center;justify-content:center;
+    font-size:2rem;cursor:pointer;box-shadow:0 0 12px #0006;
+    transition:transform .1s
+  }
+  #big-btn:active{transform:scale(.94)}
+  #stats{margin:12px 0;text-align:center}
+  #upgrades{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+  .card{
+    background:#333;padding:8px 12px;border-radius:6px;
+    box-shadow:0 0 6px #0008;cursor:pointer;min-width:120px;text-align:center
+  }
+  .card.disabled{opacity:.4;cursor:not-allowed}
+  canvas{position:fixed;inset:0;pointer-events:none}
+</style>
+</head>
+<body>
+
+<h1>Mini Idle Clicker</h1>
+<div id="big-btn">💰</div>
+
+<div id="stats">
+  Coins: <span id="coins">0</span><br>
+  +<span id="cpc">1</span> / click • +<span id="cps">0</span> / sec
+</div>
+
+<div id="upgrades">
+  <div id="btn-cpc" class="card">+1 / click<br>Cost: <span>10</span></div>
+  <div id="btn-cps" class="card">+0.5 / sec<br>Cost: <span>25</span></div>
+</div>
+
+<canvas id="fx"></canvas>
+
+<script>
+/* ---------- game state ---------- */
+let coins = 0;
+let cpc   = 1;
+let cps   = 0;
+let costCPC = 10;
+let costCPS = 25;
+
+/* ---------- dom refs ---------- */
+const $coins = document.getElementById('coins');
+const $cpc   = document.getElementById('cpc');
+const $cps   = document.getElementById('cps');
+const btnBig = document.getElementById('big-btn');
+const btnCPC = document.getElementById('btn-cpc');
+const btnCPS = document.getElementById('btn-cps');
+const fxCanvas = document.getElementById('fx'), ctx = fxCanvas.getContext('2d');
+
+/* ---------- resize canvas ---------- */
+function resize(){fxCanvas.width=innerWidth;fxCanvas.height=innerHeight;}
+addEventListener('resize',resize);resize();
+
+/* ---------- UI update ---------- */
+function updateUI(){
+  $coins.textContent = coins.toFixed(0);
+  $cpc.textContent   = cpc.toFixed(0);
+  $cps.textContent   = cps.toFixed(1);
+  btnCPC.querySelector('span').textContent = costCPC;
+  btnCPS.querySelector('span').textContent = costCPS;
+  btnCPC.classList.toggle('disabled', coins<costCPC);
+  btnCPS.classList.toggle('disabled', coins<costCPS);
+}
+
+/* ---------- particle effect ---------- */
+const particles=[];
+class P{
+  constructor(x,y){
+    this.x=x;this.y=y;
+    const a=Math.random()*Math.PI*2,r=Math.random()*3+1;
+    this.vx=Math.cos(a)*r;this.vy=Math.sin(a)*r-2;
+    this.alpha=1;
+  }
+  step(){
+    this.vy+=0.05;this.x+=this.vx;this.y+=this.vy;
+    this.alpha-=0.02;return this.alpha>0;
+  }
+  draw(){
+    ctx.globalAlpha=this.alpha;
+    ctx.fillStyle='#ffd700';
+    ctx.fillRect(this.x,this.y,3,3);
+    ctx.globalAlpha=1;
+  }
+}
+function burst(x,y){
+  for(let i=0;i<15;i++)particles.push(new P(x,y));
+}
+
+/* ---------- main actions ---------- */
+btnBig.addEventListener('click',e=>{
+  coins+=cpc;
+  burst(e.clientX,e.clientY);
+  updateUI();
+});
+btnCPC.addEventListener('click',()=>{
+  if(coins>=costCPC){
+    coins-=costCPC;
+    cpc++;
+    costCPC=Math.ceil(costCPC*1.6);
+    updateUI();
+  }
+});
+btnCPS.addEventListener('click',()=>{
+  if(coins>=costCPS){
+    coins-=costCPS;
+    cps+=0.5;
+    costCPS=Math.ceil(costCPS*1.7);
+    updateUI();
+  }
+});
+
+/* ---------- idle income ---------- */
+setInterval(()=>{coins+=cps;updateUI();},1000);
+
+/* ---------- particle loop ---------- */
+(function loop(){
+  requestAnimationFrame(loop);
+  ctx.fillStyle='rgba(0,0,0,0.25)';
+  ctx.fillRect(0,0,fxCanvas.width,fxCanvas.height);
+  for(let i=particles.length-1;i>=0;i--){
+    if(!particles[i].step())particles.splice(i,1);
+    else particles[i].draw();
+  }
+})();
+updateUI();
+</script>
+</body>
+</html>

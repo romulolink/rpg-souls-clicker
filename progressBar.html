@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>RPG Health Bar (no absolute)</title>
+<style>
+  :root {
+    --bar-w: 340px;
+    --bar-h: 34px;
+  }
+  body{
+    font-family:sans-serif;
+    background:#222;
+    color:#eee;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    height:100vh;margin:0;
+  }
+
+  /* ---------- barra ---------- */
+  #bar-container{
+    display:grid;               /* << grid faz a sobreposição */
+    width:var(--bar-w);
+    height:var(--bar-h);
+    background:#444;
+    border:2px solid #888;
+    border-radius:6px;
+    overflow:hidden;
+    margin-bottom:12px;
+  }
+  #damage-bar,#health-bar{
+    grid-area:1/1;              /* ocupa a mesma célula */
+    width:100%;height:100%;
+  }
+
+  /* amarela embaixo */
+  #damage-bar{
+    background:#ffd700;
+    pointer-events:none;
+    z-index:1;
+  }
+
+  /* verde em cima */
+  #health-bar{
+    background:#3cb043;
+    transition:width .35s linear;
+    z-index:2;
+  }
+
+  button{
+    padding:8px 18px;
+    font-size:16px;
+    cursor:pointer;
+  }
+  #info{margin-top:8px;font-weight:bold}
+</style>
+</head>
+<body>
+
+<div id="bar-container">
+  <div id="damage-bar"></div>
+  <div id="health-bar"></div>
+</div>
+
+<button id="damage-btn">Take Random Damage</button>
+<div id="info">HP: 100 / 100</div>
+
+<script>
+  const maxHP = 100;
+  let   hp    = maxHP;
+  const dmgMin=5, dmgMax=35;
+
+  const healthBar = document.getElementById('health-bar');
+  const damageBar = document.getElementById('damage-bar');
+  const info      = document.getElementById('info');
+  const btn       = document.getElementById('damage-btn');
+
+  const pct = v => (v / maxHP * 100) + '%';
+  const updateInfo = () => info.textContent = `HP: ${hp} / ${maxHP}`;
+
+  function takeDamage(){
+    if(hp<=0) return;
+
+    const dmg   = Math.floor(Math.random()*(dmgMax-dmgMin+1))+dmgMin;
+    const newHP = Math.max(hp - dmg, 0);
+    const oldPct= pct(hp);
+    const newPct= pct(newHP);
+
+    /* sincroniza instantaneamente */
+    healthBar.style.transition='none';
+    damageBar.style.transition='none';
+    healthBar.style.width = oldPct;
+    damageBar.style.width = oldPct;
+    void healthBar.offsetWidth;           // reflow
+
+    /* 1) barra verde reduz já */
+    healthBar.style.transition='width .35s linear';
+    healthBar.style.width = newPct;
+
+    /* 2) 1,5 s depois a amarela acompanha */
+    setTimeout(()=>{
+      damageBar.style.transition='width 1.35s linear';
+      damageBar.style.width = newPct;
+      hp = newHP;
+      updateInfo();
+    },1500);
+  }
+
+  btn.addEventListener('click', takeDamage);
+</script>
+</body>
+</html>

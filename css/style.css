@@ -1399,7 +1399,7 @@ h6 {
   background-color: #e15d41;
   background-image: linear-gradient(to right, #e15d41, #e15d41);
   -webkit-transition: width .0s ease !important;
-  transition: width .0s ease !important;
+  transition: width .35s ease !important;
 }
 
 .progress-bar-red {
@@ -1407,6 +1407,7 @@ h6 {
   background-image: linear-gradient(to right, palevioletred, palevioletred);
   -webkit-transition: width .0s ease !important;
   transition: width .0s ease !important;
+  grid-area:1/1;
 }
 
 .progress-bar-green {
@@ -1414,6 +1415,16 @@ h6 {
   background-image: linear-gradient(to right, #96c663, #96c663);
   -webkit-transition: width .0s ease !important;
   transition: width .0s ease !important;
+  grid-area:1/1;
+  
+}
+
+.progress-bar-yellow {
+  background-color: #ffde4d;
+  background-image: linear-gradient(to right, #ffde4d, #ffde4d);
+  -webkit-transition: width 1.35s ease !important;
+  transition: width 1.35s ease !important;
+  grid-area:1/1;
 }
 
 
@@ -1421,7 +1432,7 @@ h6 {
   background-color: #c449f5;
   background-image: linear-gradient(to right, #c449f5, #c449f5);
   -webkit-transition: width .0s ease !important;
-  transition: width .0s ease !important;
+  transition: width .35s ease !important;
 }
 
 
@@ -1432,5 +1443,6 @@ h6 {
     align-items: center;
     align-content: center;
     margin: 5px 0px 0px 0px !important;
+    display: grid;
 
 }

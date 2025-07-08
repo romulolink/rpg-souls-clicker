@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world_map..tmx",
+    "activeFile": "world_map.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -16,7 +16,8 @@
             "scaleInEditor": 1
         },
         "props.tsx": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "trees.tsx": {
             "scaleInDock": 1,
@@ -47,12 +48,21 @@
             "expandedObjectLayers": [
                 6
             ],
-            "scale": 0.75,
-            "selectedLayer": 2,
+            "scale": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 305.3333333333333,
-                "y": 6
+                "x": 347,
+                "y": 129.75
             }
+        },
+        "world_map.tmx#ground": {
+            "scaleInDock": 1
+        },
+        "world_map.tmx#props": {
+            "scaleInDock": 1
+        },
+        "world_map.tmx#trees": {
+            "scaleInDock": 1
         }
     },
     "last.exportedFilePath": "E:/Workspace/RPGSouls/js/data",
@@ -63,15 +73,16 @@
     "map.lastUsedFormat": "tmx",
     "openFiles": [
         "ground.tsx",
-        "trees.tsx",
-        "world_map..tmx"
+        "props.tsx",
+        "world_map.tmx"
     ],
     "project": "world1.tiled-project",
     "recentFiles": [
         "ground.tsx",
-        "trees.tsx",
+        "props.tsx",
+        "world_map.tmx",
         "world_map..tmx",
-        "world_map.tmx"
+        "trees.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
