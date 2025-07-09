@@ -11,6 +11,10 @@
         "": {
             "scaleInDock": 1
         },
+        "animals.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "ground.tsx": {
             "scaleInDock": 1.5,
             "scaleInEditor": 1
@@ -48,12 +52,15 @@
             "expandedObjectLayers": [
                 6
             ],
-            "scale": 0.5,
-            "selectedLayer": 2,
+            "scale": 1,
+            "selectedLayer": 6,
             "viewCenter": {
-                "x": 338,
-                "y": 573
+                "x": 391,
+                "y": 450.5
             }
+        },
+        "world_map.tmx#animals": {
+            "scaleInDock": 0.75
         },
         "world_map.tmx#ground": {
             "scaleInDock": 1
@@ -72,10 +79,12 @@
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
     "openFiles": [
-        "world_map.tmx"
+        "world_map.tmx",
+        "animals.tsx"
     ],
     "project": "world1.tiled-project",
     "recentFiles": [
+        "animals.tsx",
         "world_map.tmx",
         "props.tsx",
         "ground.tsx",

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phaser 3 • Mapa grande + WASD</title>
+  <style>
+    html,body{
+      margin:0;height:100%;
+      background:#2a2a2a;
+      display:flex;justify-content:center;align-items:center;
+      overflow:hidden;
+    }
+    canvas{image-rendering:pixelated}
+  </style>
+  <!-- Phaser 3 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
+</head>
+<body>
+
+<script>
+/* ───── CONFIGURAÇÃO BÁSICA ─────────────────────────────────── */
+const GAME_W = 480, GAME_H = 320;  // resolução lógica
+
+const config = {
+  type      : Phaser.AUTO,
+  pixelArt  : true,
+  backgroundColor: '#87ceeb',
+  scale     : {
+    mode      : Phaser.Scale.NONE,          // canvas fixo
+    autoCenter: Phaser.Scale.CENTER_BOTH,   // centraliza
+    width     : GAME_W,
+    height    : GAME_H
+  },
+  scene     : { preload, create, update }
+};
+new Phaser.Game(config);
+
+/* ───── CAMINHOS DE ASSETs ──────────────────────────────────── */
+const MAP_JSON        = 'js/data/world.json';
+const TILESET_GROUND  = 'img/tileset/FarmRPG16x16-TinyAssetPack/Tileset/tileset.png';
+const TILESET_TREES   = 'img/tileset/FarmRPG16x16-TinyAssetPack/Objects/trees.png';
+const TILE_W = 16, TILE_H = 16;
+
+/* ───── VARs GLOBAIS DA SCENE ───────────────────────────────── */
+let cursors, cam;
+let treeCols;
+
+/* ───── PRELOAD ─────────────────────────────────────────────── */
+function preload () {
+  this.load.tilemapTiledJSON('map', MAP_JSON);
+  this.load.image('ground', TILESET_GROUND);
+  this.load.image('trees' , TILESET_TREES);
+}
+
+/* ───── CREATE ──────────────────────────────────────────────── */
+function create () {
+  /* Carrega mapa e tilesets */
+  const map = this.make.tilemap({ key: 'map' });
+  const groundSet = map.addTilesetImage('ground', 'ground');
+  const treeSet   = map.addTilesetImage('trees',  'trees');
+  treeCols = treeSet.image.width / TILE_W;
+
+  /* Camadas de tile */
+  map.createLayer('ground', groundSet, 0, 0);
+  map.createLayer('trees',  treeSet,   0, 0);
+
+  /* Mundo maior que o canvas */
+  cam = this.cameras.main;
+  cam.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+
+  /* Controle WASD */
+  cursors = this.input.keyboard.addKeys({
+    up   : Phaser.Input.Keyboard.KeyCodes.W,
+    down : Phaser.Input.Keyboard.KeyCodes.S,
+    left : Phaser.Input.Keyboard.KeyCodes.A,
+    right: Phaser.Input.Keyboard.KeyCodes.D
+  });
+  this.camSpeed = 250;   // px/s
+
+  /* Árvores da Object Layer → sprites balançando */
+  const objs = map.getObjectLayer('trees')?.objects || [];
+  const FIRST_TREE_GID = map.tilesets.find(ts => ts.name === 'trees').firstgid;
+
+  objs.forEach(o=>{
+    const idx = o.gid - FIRST_TREE_GID;
+    const sx = (idx % treeCols) * TILE_W;
+    const sy = Math.floor(idx / treeCols) * TILE_H;
+
+    const sprite = this.add
+      .sprite(o.x + o.width/2, o.y - o.height/2, 'trees')
+      .setOrigin(0.5,1)
+      .setCrop(sx, sy, o.width, o.height)          // recorte correto
+      .setInteractive({ pixelPerfect:true, useHandCursor:true });
+
+    /* balanço leve */
+    this.tweens.add({
+      targets : sprite,
+      x       : sprite.x + 2,
+      duration: 1000,
+      yoyo    : true,
+      repeat  : -1,
+      ease    : 'Sine.easeInOut',
+      delay   : Math.random()*500
+    });
+
+    /* clique → alert */
+    sprite.on('pointerdown', () => {
+      alert(`Árvore: ${o.name||o.id}`);
+    });
+  });
+}
+
+/* ───── UPDATE ──────────────────────────────────────────────── */
+function update(_, dt){
+  const spd = this.camSpeed * (dt/1000);
+  if(cursors.left.isDown)  cam.scrollX -= spd;
+  if(cursors.right.isDown) cam.scrollX += spd;
+  if(cursors.up.isDown)    cam.scrollY -= spd;
+  if(cursors.down.isDown)  cam.scrollY += spd;
+}
+</script>
+
+</body>
+</html>

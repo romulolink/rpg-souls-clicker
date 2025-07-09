@@ -4,11 +4,11 @@
 
 const CONFIG = {
   type   : Phaser.AUTO,
-  width  : 960,           // tamanho inicial da view (pode ser o que quiser)
+  width  : window.innerWidth,           // tamanho inicial da view (pode ser o que quiser)
   height : 640,
   zoom   : 1,             // aproxima em 2× sem perder pixel-art
   scale  : {
-    mode: Phaser.Scale.RESIZE, // ajusta canvas ao tamanho da janela
+    mode: Phaser.Scale.FIT, // ajusta canvas ao tamanho da janela
     autoCenter: Phaser.Scale.CENTER_BOTH // centraliza canvas na tela
   },
   pixelArt: true,         // desativa smoothing
@@ -48,12 +48,14 @@ function create() {
   /* -- Mapa -- */
   const map = this.make.tilemap({ key: "map" });
 
-  /* -- Associa tilesets -- */
-  const groundSet = map.addTilesetImage("ground", "ground");
-  const treeSet   = map.addTilesetImage("trees",  "trees");
-  const propsSet   = map.addTilesetImage("props",  "props");
-  const animalsSet   = map.addTilesetImage("animals",  "animals");
- 
+  const TILE  = 16;   // largura/altura reais do tile
+  const PAD   = 0;    // padding/spacing que você extraiu
+
+  const groundSet  = map.addTilesetImage('ground',  'ground',  TILE, TILE, PAD, PAD);
+  const treeSet    = map.addTilesetImage('trees',   'trees',   TILE, TILE, PAD, PAD);
+  const propsSet   = map.addTilesetImage('props',   'props',   TILE, TILE, PAD, PAD);
+  const animalsSet = map.addTilesetImage('animals', 'animals', TILE, TILE, PAD, PAD);
+  
   /* -- Cria camadas de tiles (ordem importa) -- */
   map.createLayer("ground", groundSet, 0, 0);
   map.createLayer("trees",  treeSet,   0, 0);
@@ -64,6 +66,7 @@ function create() {
   this.cameras.main.setRoundPixels(true);
   this.game.renderer.config.antialias = false;
   this.game.renderer.config.pixelArt = true;
+  
 
   /* -- Converte Object-Layer 'trees' em sprites balançando -- */
   const objects = map.getObjectLayer("animals")?.objects || [];
