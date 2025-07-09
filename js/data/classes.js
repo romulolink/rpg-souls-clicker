@@ -40,7 +40,7 @@ var classes = {
         basic_stats: {
             strength: 8,
             life: 70,
-            vigor: 8,
+            vigor: 20,
             dexterity: 15,
             intelligence: 10,
             luck: 13
@@ -88,7 +88,7 @@ var classes = {
         basic_stats: {
             strength: 8,
             life: 90,
-            vigor: 10,
+            vigor: 3,
             dexterity: 8,
             intelligence: 12,
             luck: 12

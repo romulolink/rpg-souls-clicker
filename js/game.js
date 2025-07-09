@@ -447,12 +447,11 @@ function discardResource(_resource, amount = 1){
 
     function selectCurrentClass(monster){
 
+        for(m in myClassData){
 
-        for(m in myMonstersData){
+            if(myClassData[m].slug === monster){
 
-            if(myMonstersData[m].slug === monster){
-
-                currentMonster = myMonstersData[m];
+                currentMonster = myClassData[m];
 
                 setCustomMethods(currentMonster);
 
@@ -1838,8 +1837,15 @@ function selectInitialClasss(class_slug){
     $('#onLoadModal').modal('hide');
 
     if(myClassData.length > 0){
+
+    
+
       currentMonster = myClassData[0];
+
+       alert("You aaaaa have selected the class: " + currentMonster.slug);
+
       selectCurrentClass(currentMonster.slug);
+
     }
 
     try {

@@ -19,7 +19,7 @@ var monsters = {
         basic_stats: {
             strength: 8,
             life: 70,
-            vigor: 8,
+            vigor: 1,
             dexterity: 15,
             intelligence: 10,
             luck: 13
@@ -46,7 +46,7 @@ var monsters = {
             basic_stats: {
             strength: 8,
             life: 70,
-            vigor: 8,
+            vigor: 1,
             dexterity: 15,
             intelligence: 10,
             luck: 13
@@ -73,7 +73,7 @@ var monsters = {
         basic_stats: {
             strength: 8,
             life: 70,
-            vigor: 8,
+            vigor: 1,
             dexterity: 15,
             intelligence: 10,
             luck: 13

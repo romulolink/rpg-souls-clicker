@@ -12,6 +12,8 @@ let enemySpeedProgress = { value: 0 };
 let newCombatTimeout;
 let _startCombat = false;
 var useElementalRune = true;
+const baseVigorInterval = 1000;
+const baseAttackSpeed = 5; // Adjusted to match the original code's logic
 
 
 var MONSTERS_TYPES = {
@@ -98,11 +100,11 @@ function updateDisplayCombat() {
     document.getElementById('player-monster-rarity').classList.add(player.rarity);
     document.getElementById('player-attack').textContent = player.calculateTotalAttack();
 
-    updateProgressBarCombat('enemy-health-bar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.basic_life);
+    updateProgressBarCombat('enemy-health-bar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.life);
 
-      updateProgressBarCombat('enemy-damage-bar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.basic_life);
+      updateProgressBarCombat('enemy-damage-bar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.life);
 
-    updateProgressBarCombat('enemy-monster-mini-combat-lifeBar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.basic_life);
+    updateProgressBarCombat('enemy-monster-mini-combat-lifeBar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.life);
     updateProgressBarCombat('enemy-attack-speed-bar', enemySpeedProgress.value, enemySpeedProgress.value);
     document.getElementById('enemy-health').textContent = enemy.getLifeTotal().toString();
     document.getElementById('enemy-attack-speed').textContent = enemy.basic_stats.vigor.toString();
@@ -135,7 +137,7 @@ function simulateCombat(monster_id = 0) {
 
     player = currentMonster;
 
-
+  
     setCustomMethods(player);
     setCustomMethods(enemy);
 
@@ -149,8 +151,8 @@ function simulateCombat(monster_id = 0) {
 
     _startCombat = true;
 
-   // let playerAdditionalDamage = additionalDamages[MONSTERS_TYPES[player.monster_type]][MONSTERS_TYPES[enemy.monster_type]];
-   // let opponentAdditionalDamage = additionalDamages[MONSTERS_TYPES[enemy.monster_type]][MONSTERS_TYPES[player.monster_type]];
+    let playerAdditionalDamage = 1; //additionalDamages[MONSTERS_TYPES[player.monster_type]][MONSTERS_TYPES[enemy.monster_type]];
+    let opponentAdditionalDamage = 1; //additionalDamages[MONSTERS_TYPES[enemy.monster_type]][MONSTERS_TYPES[player.monster_type]];
 
  
     playerAttackInterval = setInterval(function () {
@@ -160,8 +162,8 @@ function simulateCombat(monster_id = 0) {
 
         removeAllElementarPowerClass();
 
-     //   if(playerAdditionalDamage > 1)
-     //     playerAdditionalDamage = 1;
+        if(playerAdditionalDamage > 1)
+           playerAdditionalDamage = 1;
 
 
     }else{
@@ -171,7 +173,7 @@ function simulateCombat(monster_id = 0) {
     }
 
 
-    progressBarCombat(playerSpeedProgress, progressCombatPlayer, enemy, player)//, playerAdditionalDamage);
+    progressBarCombat(playerSpeedProgress, progressCombatPlayer, enemy, player, playerAdditionalDamage);
 
     if (enemy.current_life <= 0) {
 
@@ -184,7 +186,7 @@ function simulateCombat(monster_id = 0) {
         }, 3000);
 
         enemy.current_life = 0;
-        StatsController.AddXp(enemy.basic_stats.basic_life);
+        StatsController.AddXp(enemy.basic_stats.life);
         GiveMonsterDrops(enemy);
         defeatedEnemiesData.push(enemy.monster_id);
 
@@ -223,7 +225,7 @@ function simulateCombat(monster_id = 0) {
 
             return;
         }
-    }, player.basic_stats.agility * 1000);
+    }, baseVigorInterval - player.basic_stats.vigor * baseAttackSpeed);
 
 
     enemyAttackInverval = setInterval(function () {
@@ -246,7 +248,7 @@ function simulateCombat(monster_id = 0) {
 
         }
         
-    }, enemy.basic_stats.agility * 1000);
+    }, baseVigorInterval - enemy.basic_stats.vigor * baseAttackSpeed);
 }
 
 
@@ -327,10 +329,10 @@ function GiveMonsterDrops(enemy){
 
 
 function resetEnemyStats() {
-    enemy.current_life = enemy.basic_stats.basic_life;
+    enemy.current_life = enemy.basic_stats.life;
 }
 function resetPlayerStats() {
-    player.current_life = player.basic_stats.basic_life;
+    player.current_life = player.basic_stats.life;
 }
 function progressBarCombat(elementProgress, ProgressCharacter, character, attacker, attackMultiplier = 1) {
 

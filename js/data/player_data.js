@@ -25,7 +25,7 @@ var player_data = {
         basic_stats: {
                 strength: 10,
                 life: 90,
-                vigor: 10,
+                vigor: 1,
                 dexterity: 10,
                 intelligence: 10,
                 luck: 10,              
