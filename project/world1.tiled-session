@@ -48,11 +48,11 @@
             "expandedObjectLayers": [
                 6
             ],
-            "scale": 2,
-            "selectedLayer": 3,
+            "scale": 0.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 347,
-                "y": 129.75
+                "x": 338,
+                "y": 573
             }
         },
         "world_map.tmx#ground": {
@@ -67,22 +67,20 @@
     },
     "last.exportedFilePath": "E:/Workspace/RPGSouls/js/data",
     "last.externalTilesetPath": "E:/Workspace/RPGSouls/project",
-    "last.imagePath": "E:/Workspace/RPGSouls/img/tileset/FarmRPG16x16-TinyAssetPack/Objects",
+    "last.imagePath": "C:/Users/romulolink/Desktop/RPSouls - Local/32rogues",
     "lastUsedTilesetExportFilter": "JSON tileset files (*.tsj *.json)",
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
     "map.lastUsedFormat": "tmx",
     "openFiles": [
-        "ground.tsx",
-        "props.tsx",
         "world_map.tmx"
     ],
     "project": "world1.tiled-project",
     "recentFiles": [
-        "ground.tsx",
-        "props.tsx",
         "world_map.tmx",
-        "world_map..tmx",
-        "trees.tsx"
+        "props.tsx",
+        "ground.tsx",
+        "trees.tsx",
+        "world_map..tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

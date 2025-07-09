@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Phaser – Prototype World + Entities</title>
+  <style>
+    html,body{margin:0;height:100%;background:#2a2a2a;display:flex;justify-content:center;align-items:center;overflow:hidden}
+    canvas{image-rendering:pixelated}
+    #ui{position:absolute;top:10px;left:10px;z-index:10;color:#fff;font-family:sans-serif}
+    .btn{margin:4px;padding:6px 10px;background:#444;border:none;color:#fff;cursor:pointer}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
+</head>
+<body>
+<div id="ui">
+  <button class="btn" id="btn-forest">Forest</button>
+  <button class="btn" id="btn-desert">Desert</button>
+</div>
+<script>
+/***************************************************
+ *  QUICK PROTOTYPE: multi-map + WASD + clickable  *
+ *  Rômulo – Jul 2025                              *
+ ***************************************************/
+const TILE_W=16,TILE_H=16;
+const maps={
+  forest:{ json:'assets/maps/forest.json', tilesets:['ground','objects'], bg:'#579e5b' },
+  desert:{ json:'assets/maps/desert.json', tilesets:['ground','objects'], bg:'#d8b55d' }
+};
+
+const config={
+  type:Phaser.AUTO,
+  pixelArt:true,
+  backgroundColor:'#579e5b',
+  scale:{ mode:Phaser.Scale.NONE, autoCenter:Phaser.Scale.CENTER_BOTH, width:480, height:320 },
+  scene:{ preload, create, update }
+};
+new Phaser.Game(config);
+
+/***** GLOBALS *****/
+let cursors, cam, animalGroup;
+let currentMapKey='forest';
+
+function preload(){
+  /* generic loads */
+  this.load.image('ground','assets/tilesets/terrain.png');
+  this.load.image('objects','assets/tilesets/objects.png');
+  this.load.spritesheet('animals','assets/sprites/animals.png',{frameWidth:16,frameHeight:16});
+
+  /* preload default map json */
+  this.load.tilemapTiledJSON('map',maps[currentMapKey].json);
+}
+
+function create(){
+  // UI buttons switch maps
+  document.getElementById('btn-forest').onclick=()=>switchScene.call(this,'forest');
+  document.getElementById('btn-desert').onclick =()=>switchScene.call(this,'desert');
+
+  /* animations */
+  this.anims.create({key:'cow_walk',frames:this.anims.generateFrameNumbers('animals',{start:0,end:3}),frameRate:5,repeat:-1});
+
+  /* groups */
+  animalGroup=this.add.group();
+
+  /* input */
+  cursors=this.input.keyboard.addKeys({up:'W',down:'S',left:'A',right:'D'});
+
+  /* first map */
+  loadMap.call(this,currentMapKey);
+}
+
+function update(_,dt){
+  const s=200*dt/1000;
+  if(cursors.left.isDown)  cam.scrollX-=s;
+  if(cursors.right.isDown) cam.scrollX+=s;
+  if(cursors.up.isDown)    cam.scrollY-=s;
+  if(cursors.down.isDown)  cam.scrollY+=s;
+}
+
+/******** MAP LOADER (generic) ********/
+function loadMap(key){
+  this.anims.resumeAll();
+  this.cameras.main.fadeOut(200,0,0,0,(c,prog)=>{ if(prog===1){
+      this.children.removeAll();
+      this.cache.tilemap.remove('map');
+      this.load.tilemapTiledJSON('map',maps[key].json);
+      this.load.once('complete',()=>{
+        buildScene.call(this,key);
+        this.cameras.main.fadeIn(200);
+      });
+      this.load.start();
+  }});
+}
+
+function buildScene(key){
+  this.cameras.main.setBackgroundColor(maps[key].bg);
+  const map=this.make.tilemap({key:'map'});
+  maps[key].tilesets.forEach(ts=>{
+    map.addTilesetImage(ts,ts);
+  });
+  map.layers.forEach(l=>{
+    const tsArr=map.tilesets.map(t=>map.addTilesetImage(t.name,t.name));
+    map.createLayer(l.name,tsArr,0,0);
+  });
+
+  cam=this.cameras.main;
+  cam.setBounds(0,0,map.widthInPixels,map.heightInPixels);
+  cam.setRoundPixels(true);
+
+  animalGroup.clear(true,true);
+  EntityFactory.fromObjectLayer(this,map,'animals');
+}
+
+/******** ENTITY FACTORY ********/
+class EntityFactory{
+  static fromObjectLayer(scene,map,layerName){
+    const layer=map.getObjectLayer(layerName);
+    if(!layer) return;
+    const animalsTs = map.tilesets.find(t=>t.name==='animals');
+    const firstGid  = animalsTs.firstgid;
+    const cols      = animalsTs.image.width/TILE_W;
+
+    layer.objects.forEach(o=>{
+      const props = Object.fromEntries((o.properties||[]).map(p=>[p.name,p.value]));
+      const tileIndex = o.gid ? o.gid-firstGid : (props.frame||0);
+      const sprite = scene.add.sprite(o.x+o.width/2,o.y-o.height/2,'animals',tileIndex)
+                           .setOrigin(0.5,1)
+                           .setInteractive({pixelPerfect:true,useHandCursor:true})
+                           .play(props.anim||'cow_walk');
+
+      /* simple wander tween */
+      scene.tweens.add({targets:sprite,x:sprite.x+Phaser.Math.Between(-16,16),duration:3000,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
+
+      sprite.on('pointerdown',()=>alert(`Você clicou no(a) ${props.name||'animal'}!`));
+      animalGroup.add(sprite);
+    });
+  }
+}
+
+/******** SWITCH MAP ********/
+function switchScene(key){
+  if(key===currentMapKey) return;
+  currentMapKey=key;
+  loadMap.call(this,key);
+}
+</script>
+</body>
+</html>
