@@ -16,7 +16,14 @@ var monsters = {
         total_attack: 10,
         places_chance: {forest_chance:0.05},
         drops: {plant_essence:100},
-        basic_stats: {basic_life:80,agility:1,attack:10},
+        basic_stats: {
+            strength: 8,
+            life: 70,
+            vigor: 8,
+            dexterity: 15,
+            intelligence: 10,
+            luck: 13
+        },
         extra_stats: {extra_life:0,extra_agility:0,extra_attack:0},
     },
     blazercraw: {
@@ -36,7 +43,14 @@ var monsters = {
         total_attack: 8,
         places_chance: {cave_chance:0.05},
         drops: {fire_essence:100},
-        basic_stats: {basic_life:100,agility:1,attack:8},
+            basic_stats: {
+            strength: 8,
+            life: 70,
+            vigor: 8,
+            dexterity: 15,
+            intelligence: 10,
+            luck: 13
+        },
         extra_stats: {extra_life:0,extra_agility:0,extra_attack:0},
     },
     ripplebun: {
@@ -56,9 +70,18 @@ var monsters = {
         total_attack: 9,
         places_chance: {icecave_chance:0.05},
         drops: {water_essence:100},
-        basic_stats: {basic_life:90,agility:1,attack:9},
+        basic_stats: {
+            strength: 8,
+            life: 70,
+            vigor: 8,
+            dexterity: 15,
+            intelligence: 10,
+            luck: 13
+        },
         extra_stats: {extra_life:0,extra_agility:0,extra_attack:0},
     },
+
+    /*
     gloomglop: {
         slug: "gloomglop",
         name: "Gloomglop",
@@ -1138,6 +1161,6 @@ var monsters = {
     drops: {fire_essence:300},
     basic_stats: {basic_life:7000,agility:1,attack:550},
     extra_stats: {extra_life:0,extra_agility:0,extra_attack:0},
-  }
+  }*/
 
 };

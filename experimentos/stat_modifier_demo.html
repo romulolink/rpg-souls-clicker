@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stat Modifier Demo</title>
+<style>
+body { font-family: Arial, sans-serif; line-height: 1.4; padding: 20px;}
+h1 { font-size: 24px; margin-bottom: 0.5em;}
+table { border-collapse: collapse; margin-bottom: 1em;}
+th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: center;}
+button { margin: 2px 0 2px 0; padding: 6px 10px; }
+#items { margin-top: 10px;}
+</style>
+</head>
+<body>
+<h1>Stat & Modifier System Demo</h1>
+
+<table id="statsTable">
+<thead><tr><th>Stat</th><th>Base</th><th>Final</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<div>
+<button id="btnFlat">Add Sword (+5 ATK flat)</button>
+<button id="btnPctAdd">Add Ring (+10% ATK add)</button>
+<button id="btnPctMult">Add Blessing (x1.20 ATK mult)</button>
+<button id="btnCombo">Add Armor (+3 DEF flat, +5% DEF add)</button>
+<button id="btnRemove">Remove Last Item</button>
+<button id="btnReset">Reset Items</button>
+</div>
+
+<h3>Equipped Items:</h3>
+<ul id="items"></ul>
+
+<script>
+// --- Enums ----------------------------------------------------
+const StatType = { ATTACK:'Attack', DEFENCE:'Defence', AGILITY:'Agility' };
+const ModifierType = { FLAT:'Flat', PERCENT_ADD:'PercentAdd', PERCENT_MULT:'PercentMult' };
+
+// --- Data structures ------------------------------------------
+class StatModifier {
+  constructor(stat, mode, value) {
+    this.stat = stat;
+    this.mode = mode;
+    this.value = value;
+  }
+}
+
+class ItemData {
+  constructor(name, modifiers) {
+    this.name = name;
+    this.modifiers = modifiers; // array of StatModifier
+  }
+}
+
+// --- Stat Controller ------------------------------------------
+class StatController {
+  constructor(baseStats) {
+    this.baseStats = {...baseStats}; // copy
+    this.modifiers = {}; // stat -> array<StatModifier>
+    this.cachedFinal = {};
+    Object.keys(baseStats).forEach(stat => {
+      this.modifiers[stat] = [];
+      this.cachedFinal[stat] = baseStats[stat];
+    });
+  }
+
+  addItem(item) {
+    item.modifiers.forEach(m => {
+      this.modifiers[m.stat].push(m);
+      this.recalculate(m.stat);
+    });
+  }
+
+  removeItem(item) {
+    item.modifiers.forEach(m => {
+      const arr = this.modifiers[m.stat];
+      const idx = arr.indexOf(m);
+      if (idx !== -1) arr.splice(idx,1);
+      this.recalculate(m.stat);
+    });
+  }
+
+  recalculate(stat) {
+    const base = this.baseStats[stat];
+    let flat=0, pctAdd=0, pctMult=1;
+    this.modifiers[stat].forEach(m=>{
+      if (m.mode===ModifierType.FLAT) flat += m.value;
+      else if (m.mode===ModifierType.PERCENT_ADD) pctAdd += m.value;
+      else if (m.mode===ModifierType.PERCENT_MULT) pctMult *= 1+m.value;
+    });
+    this.cachedFinal[stat] = (base + flat) * (1 + pctAdd) * pctMult;
+  }
+
+  getStat(stat) { return this.cachedFinal[stat].toFixed(2); }
+}
+
+// --- Demo setup -----------------------------------------------
+const baseStats = {
+  [StatType.ATTACK]: 10,
+  [StatType.DEFENCE]: 5,
+  [StatType.AGILITY]: 7
+};
+
+const statCtrl = new StatController(baseStats);
+const equippedItems = [];
+
+// Items definitions
+const sword = new ItemData('Sword', [
+  new StatModifier(StatType.ATTACK, ModifierType.FLAT, 5)
+]);
+const ring = new ItemData('Ring', [
+  new StatModifier(StatType.ATTACK, ModifierType.PERCENT_ADD, 0.10)
+]);
+const blessing = new ItemData('Blessing', [
+  new StatModifier(StatType.ATTACK, ModifierType.PERCENT_MULT, 0.20)
+]);
+const armor = new ItemData('Armor', [
+  new StatModifier(StatType.DEFENCE, ModifierType.FLAT, 3),
+  new StatModifier(StatType.DEFENCE, ModifierType.PERCENT_ADD, 0.05)
+]);
+
+function updateUI(){
+  const tbody = document.querySelector('#statsTable tbody');
+  tbody.innerHTML='';
+  Object.values(StatType).forEach(stat=>{
+    const tr = document.createElement('tr');
+    const tdStat = document.createElement('td');
+    tdStat.textContent = stat;
+    const tdBase = document.createElement('td');
+    tdBase.textContent = baseStats[stat];
+    const tdFinal = document.createElement('td');
+    tdFinal.textContent = statCtrl.getStat(stat);
+    tr.appendChild(tdStat); tr.appendChild(tdBase); tr.appendChild(tdFinal);
+    tbody.appendChild(tr);
+  });
+  const ul = document.getElementById('items');
+  ul.innerHTML='';
+  equippedItems.forEach(it=>{
+    const li=document.createElement('li');
+    li.textContent=it.name;
+    ul.appendChild(li);
+  });
+}
+
+function addItem(item){
+  statCtrl.addItem(item);
+  equippedItems.push(item);
+  updateUI();
+}
+function removeLast(){
+  const item = equippedItems.pop();
+  if(item){
+    statCtrl.removeItem(item);
+    updateUI();
+  }
+}
+function reset(){
+  while(equippedItems.length) removeLast();
+}
+
+document.getElementById('btnFlat').onclick = ()=>addItem(sword);
+document.getElementById('btnPctAdd').onclick = ()=>addItem(ring);
+document.getElementById('btnPctMult').onclick = ()=>addItem(blessing);
+document.getElementById('btnCombo').onclick = ()=>addItem(armor);
+document.getElementById('btnRemove').onclick = ()=>removeLast();
+document.getElementById('btnReset').onclick = ()=>reset();
+
+// Initial UI
+updateUI();
+</script>
+
+</body>
+</html>

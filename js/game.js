@@ -444,6 +444,30 @@ function discardResource(_resource, amount = 1){
     
     }
 
+
+    function selectCurrentClass(monster){
+
+
+        for(m in myMonstersData){
+
+            if(myMonstersData[m].slug === monster){
+
+                currentMonster = myMonstersData[m];
+
+                setCustomMethods(currentMonster);
+
+                showNotification("The monster <b>" + currentMonster.name + "</b> was selected");
+
+                player_data.current_monster_slug = monster;
+
+                return;
+            }
+
+
+        }
+    
+    }
+
 /*
  * Calculation Functions
  */
@@ -821,11 +845,11 @@ function checkResourceCost(ui_element, x, i) {
 
 function setCustomMethods(monster) {
     monster.getLifeTotal = function() {
-        return this.basic_stats.basic_life + this.extra_stats.extra_life;
+        return this.basic_stats.life;// + this.extra_stats.extra_life;
     };
 
     monster.calculateTotalAttack = function() {
-        return this.basic_stats.attack + this.extra_stats.extra_attack;
+        return this.basic_stats.strength;// + this.extra_stats.extra_attack;
     }; 
 }
 
@@ -1807,6 +1831,35 @@ function checkAllMonstersAchievement(){
 }
 
 
+function selectInitialClasss(class_slug){
+
+    selectClassByName(class_slug, false);
+
+    $('#onLoadModal').modal('hide');
+
+    if(myClassData.length > 0){
+      currentMonster = myClassData[0];
+      selectCurrentClass(currentMonster.slug);
+    }
+
+    try {
+
+        achievements.IMRAchievement1.enabled = true;
+
+        activateAchievement('IMRAchievement1');
+
+    }
+    catch(err) {
+       console.log("error_" + err);
+    }
+
+
+
+    InitNames();
+
+}
+
+
 function selectInitialMonster(monster_slug){
 
     addMonsterByName(monster_slug, false);
@@ -1833,6 +1886,35 @@ function selectInitialMonster(monster_slug){
 
     InitNames();
 
+}
+
+
+function selectClassByName(class_slug, showNotification = true) {
+
+    for (m in classes){
+
+        let player_char = JSON.parse(JSON.stringify(classes[m]));
+        
+        if(player_char.slug === class_slug){
+            
+            player_char.total++;          
+
+            myClassData.push(player_char);
+
+            let message = "the monster " + player_char.name + " has just been acquired!";
+
+            if(showNotification){
+
+                openModal("Congratulations! New Character!", message, 'default');
+                
+              //  showNotification(message);
+            }
+
+            break;
+        }
+
+    } 
+    
 }
 
 

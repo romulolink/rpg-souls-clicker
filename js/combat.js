@@ -84,7 +84,7 @@ function updateDisplayCombat() {
     updateProgressBarCombat('current-monster-mini-combat-lifeBar', (player.current_life / player.getLifeTotal()) * 100, player.current_life + '/' + player.getLifeTotal());
     updateProgressBarCombat('player-attack-speed-bar', playerSpeedProgress.value, playerSpeedProgress.value);
     document.getElementById('player-health').textContent = player.getLifeTotal().toString();
-    document.getElementById('player-attack-speed').textContent = player.basic_stats.agility.toString();
+    document.getElementById('player-attack-speed').textContent = player.basic_stats.vigor.toString();
     document.getElementById('player-level').textContent = "Lv. " + player.level;
     document.getElementById('player-level-mini-combat').textContent = "Lv. " + player.level;
     let playerXpBarCombat = document.getElementById('player-xpBar-combat');
@@ -105,7 +105,7 @@ function updateDisplayCombat() {
     updateProgressBarCombat('enemy-monster-mini-combat-lifeBar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.basic_life);
     updateProgressBarCombat('enemy-attack-speed-bar', enemySpeedProgress.value, enemySpeedProgress.value);
     document.getElementById('enemy-health').textContent = enemy.getLifeTotal().toString();
-    document.getElementById('enemy-attack-speed').textContent = enemy.basic_stats.agility.toString();
+    document.getElementById('enemy-attack-speed').textContent = enemy.basic_stats.vigor.toString();
     document.getElementById('enemy-level').textContent = "Lv. " + enemy.level;
     document.getElementById('enemy-level-mini-combat').textContent = "Lv. " + enemy.level;
     document.getElementById('enemy-monster-name').textContent = enemy.name;
@@ -149,8 +149,8 @@ function simulateCombat(monster_id = 0) {
 
     _startCombat = true;
 
-    let playerAdditionalDamage = additionalDamages[MONSTERS_TYPES[player.monster_type]][MONSTERS_TYPES[enemy.monster_type]];
-    let opponentAdditionalDamage = additionalDamages[MONSTERS_TYPES[enemy.monster_type]][MONSTERS_TYPES[player.monster_type]];
+   // let playerAdditionalDamage = additionalDamages[MONSTERS_TYPES[player.monster_type]][MONSTERS_TYPES[enemy.monster_type]];
+   // let opponentAdditionalDamage = additionalDamages[MONSTERS_TYPES[enemy.monster_type]][MONSTERS_TYPES[player.monster_type]];
 
  
     playerAttackInterval = setInterval(function () {
@@ -160,8 +160,8 @@ function simulateCombat(monster_id = 0) {
 
         removeAllElementarPowerClass();
 
-        if(playerAdditionalDamage > 1)
-          playerAdditionalDamage = 1;
+     //   if(playerAdditionalDamage > 1)
+     //     playerAdditionalDamage = 1;
 
 
     }else{
@@ -171,7 +171,7 @@ function simulateCombat(monster_id = 0) {
     }
 
 
-    progressBarCombat(playerSpeedProgress, progressCombatPlayer, enemy, player, playerAdditionalDamage);
+    progressBarCombat(playerSpeedProgress, progressCombatPlayer, enemy, player)//, playerAdditionalDamage);
 
     if (enemy.current_life <= 0) {
 
