@@ -1,11 +1,11 @@
 @font-face {
-  font-family: 'Dimbo';
-  src: url('../fonts/Dimbo_Regular.ttf') format('truetype')
+  font-family: 'ZTFloogn-ExtraBold';
+  src: url('../fonts/ZTFloogn-ExtraBold.ttf') format('truetype')
 }
 
 @font-face {
-  font-family: 'Outfit';
-  src: url('../fonts/Outfit-Regular.ttf') format('truetype')
+  font-family: 'Pixel Digivolve';
+  src: url('../fonts/Pixel\ Digivolve.otf') format('truetype')
 }
 
 :not(input):not(textarea),
@@ -22,7 +22,7 @@ input, button, textarea, :focus {
   /* Firefox */
   * {
     scrollbar-width: auto;
-    scrollbar-color: #6ab982 #ffffff;
+    scrollbar-color: #232937 #ffffff;
   }
 
   /* Chrome, Edge, and Safari */
@@ -93,10 +93,10 @@ h6{
 
 p{
 
-    font-family: Outfit;
+    font-family: 'Pixel Digivolve';
     letter-spacing: 0.5px;
     font-size: 1vw;
-    font-weight: bold;
+    font-weight: normal;
 }
 
 .mini-combat-wrapper{
@@ -118,7 +118,7 @@ background-size: 100% 100%;
   margin-right: 50px;
   border-radius: 5px;
   color:#333;
-  font-family: Outfit;
+  font-family: 'Pixel Digivolve';
   -moz-background-size: 100% 100%;
 -webkit-background-size: 100% 100%;
 background-size: 100% 100%;
@@ -295,7 +295,7 @@ img.silhouette {
     height: 100vh;
     background-color: #00c0ff !important;
     color: black;
-    font-family: Outfit;
+    font-family: 'Pixel Digivolve';
     text-align: center;
     clip-path: circle(0%);
     animation-name: circleAnimation;
@@ -381,7 +381,7 @@ background-size: 100% 100%;
     font-weight: bolder;
     text-align: center;
     text-anchor: middle;
-    font-family: Outfit;
+    font-family: 'Pixel Digivolve';
     color: #1e3439;
 }
 
@@ -406,8 +406,8 @@ background-size: 100% 100%;
     font-weight: bolder;
     text-align: center;
     text-anchor: middle;
-    font-family: Outfit;
-    color: #1e3439;
+    font-family: 'Pixel Digivolve';
+    color: #c3b99c;
 }
 
 
@@ -507,7 +507,7 @@ background-size: 100% 100%;
   position: fixed;
   bottom: 0px;
   left: 0%;
-  color: black;
+  color: #c3b99c;
   transition: opacity 0.5s, top 0.5s;
   z-index: 999;
 }
@@ -522,7 +522,7 @@ background-size: 100% 100%;
 .available:hover .buyButton {
   display: block;
   cursor: url('../img/icons/cursor-sword.png'), auto; 
-  color: black;
+  color: #c3b99c;
 }
 
 .ocean{
@@ -552,9 +552,9 @@ background-size: 100% 100%;
 .btn {
    margin-top: 5px;
    font-size: 1vw;
-   font-weight: bold;
+   font-weight: normal;
    letter-spacing: 1px;
-   font-family: Outfit;
+   font-family: 'Pixel Digivolve';
    overflow: hidden;
 }
 
@@ -631,14 +631,14 @@ background-size: 100% 100%;
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: #333;
+    background-color: #232937f8;
+    color: #c3b99c;
 }
 
 
 .IMR_confirmation_modal-content {
     background-color: transparent;
-    background-image: url('../img/UI/blank.png');
+    background-image: url('../img/UI/notification_bg.png');
     background-size: cover;
     -moz-background-size: 100% 100%;
 -webkit-background-size: 100% 100%;
@@ -651,7 +651,7 @@ background-size: 100% 100%;
     border: 0px solid #888;
     width: 40vw;
     max-width: 40vw;
-    color: #333;
+    color: #c3b99c;
     height: 40vh;
     text-align: center;
     text-anchor: middle;
@@ -674,7 +674,7 @@ background-size: 100% 100%;
     border: 0px solid #888;
     width: 98vw;
     max-width: 98vw;
-    color: #333;
+    color: #c3b99c;
     height: 95vh;
     text-align: center;
     text-anchor: middle;
@@ -718,7 +718,7 @@ background-size: 100% 100%;
     border: 0px solid #888;
     width: 40vw;
     max-width: 70vw;
-    color: #333;
+    color: #c3b99c;
     height: 31vh;
     text-align: center;
     text-anchor: middle;
@@ -732,7 +732,7 @@ background-size: 100% 100%;
     height: 17px;
 }
 .close {
-    color: #000;
+    color: #c3b99c;
     float: right;
     font-size: 28px;
     font-weight: bold;
@@ -769,7 +769,7 @@ background-size: 100% 100%;
 }
 
 .close-btn {
-    color: #000;
+    color: #c3b99c;
     float: right;
     font-size: 28px;
     font-weight: bold;
@@ -839,7 +839,7 @@ background-size: 100% 100%;
     font-size: 1.2vw;
     font-weight: bolder;
     z-index: 150;
-    color: #333 !important;
+    color: #c3b99c !important;
 }
 
 .notification div{
@@ -858,14 +858,14 @@ background-size: 100% 100%;
 
     margin: 5px;
     font-weight: bold;
-    color: #333;
+    color: #ffffff;
 }
 
 .character-card h4 {
 
     margin: 5px;
     font-weight: bold;
-    color: #333;
+    color: #ffffff;
 }
 
 .number-circle {
@@ -949,7 +949,7 @@ h6 {
 
     float: left;
     padding: 5px;
-    color: #333;
+    color: #ffffff;
     font-family: Outfit;
 
 }
@@ -1279,9 +1279,10 @@ h6 {
 .logo {
   display: flex;
   align-items: center;
-  font-size: 1.5vw;
-  font-family: Outfit;
-  color: #333;
+  font-size: 1.3vw;
+  font-weight: normal;
+  font-family: 'Pixel Digivolve';
+  color: #ffffff;
  /* position: absolute;
   left: 50px;
   top: 10px;*/
@@ -1315,7 +1316,7 @@ h6 {
 
 .coin-hud span{
 
-   color: #574300;
+   color: #ffffff;
 }
 
 #my-image {

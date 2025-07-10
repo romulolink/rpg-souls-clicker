@@ -38,8 +38,8 @@ function preload() {
   this.load.image("animals",  TILESET_ANIMALS);
 
   this.load.spritesheet('boar', BOAR, {
-      frameWidth: 30,
-      frameHeight: 23
+      frameWidth: 32,
+      frameHeight: 32
     });
 }
 

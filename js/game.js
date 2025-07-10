@@ -1839,10 +1839,7 @@ function selectInitialClasss(class_slug){
     if(myClassData.length > 0){
 
     
-
       currentMonster = myClassData[0];
-
-       alert("You aaaaa have selected the class: " + currentMonster.slug);
 
       selectCurrentClass(currentMonster.slug);
 
