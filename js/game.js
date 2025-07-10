@@ -1783,9 +1783,9 @@ function addMonster(x) {
 
             myMonstersData.push(monster);
 
-            let message = "the monster " + monster.name + " has just been acquired!";
+            let message = "the character " + monster.name + " has just been acquired!";
 
-            openModal("New Monster!", message, 'default');
+            openModal("New Character!", message, 'default');
 
             updateMuseumData();
 
@@ -1933,11 +1933,11 @@ function addMonsterByName(monster_slug, showNotification = true) {
 
             myMonstersData.push(monster);
 
-            let message = "the monster " + monster.name + " has just been acquired!";
+            let message = "the class " + monster.name + " has just been selected!";
 
             if(showNotification){
 
-                openModal("Congratulations! New Monster!", message, 'default');
+                openModal("Congratulations! New Character!", message, 'default');
                 
                 showNotification(message);
             }

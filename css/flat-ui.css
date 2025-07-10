@@ -2014,7 +2014,7 @@ textarea[class*="span"] {
 }
 .progress {
   background: #ebedef;
-  border-radius: 32px;
+  border-radius: 0px;
   height: 12px;
   -webkit-box-shadow: none;
   -moz-box-shadow: none;

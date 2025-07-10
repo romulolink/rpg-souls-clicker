@@ -186,9 +186,9 @@ background-size: 100% 100%;
 
 .image-container{
 
-    background-color: #edddbb;
+   /* background-color: #edddbb;*/
     height: 180px;
-    border-radius: 10px;
+    border-radius: 0px;
     margin: 6px;
 
 }
@@ -1405,6 +1405,8 @@ h6 {
   background-image: linear-gradient(to right, #e15d41, #e15d41);
   -webkit-transition: width .0s ease !important;
   transition: width .35s ease !important;
+  color: #ffffff;
+  font-family: 'Pixel Digivolve';
 }
 
 .progress-bar-red {
@@ -1413,6 +1415,8 @@ h6 {
   -webkit-transition: width .0s ease !important;
   transition: width .0s ease !important;
   grid-area:1/1;
+    color: #ffffff;
+  font-family: 'Pixel Digivolve';
 }
 
 .progress-bar-green {
@@ -1421,6 +1425,8 @@ h6 {
   -webkit-transition: width .0s ease !important;
   transition: width .0s ease !important;
   grid-area:1/1;
+  color: #ffffff;
+  font-family: 'Pixel Digivolve';
   
 }
 
@@ -1438,12 +1444,14 @@ h6 {
   background-image: linear-gradient(to right, #c449f5, #c449f5);
   -webkit-transition: width .0s ease !important;
   transition: width .35s ease !important;
+  color: #ffffff;
+  font-family: 'Pixel Digivolve';
 }
 
 
 .progress {
     background: whitesmoke;
-    border: 1px solid #ddd;
+    border: 0px solid #ddd;
     background-image: linear-gradient(to right, white, whitesmoke);
     align-items: center;
     align-content: center;
