@@ -14,7 +14,7 @@ var classes = {
         places_chance: { forest_chance: 0.05 },
         drops: { plant_essence: 100 },
         basic_stats: {
-            strength: 15,
+            strength: 30,
             life: 120,
             vigor: 12,
             dexterity: 8,
