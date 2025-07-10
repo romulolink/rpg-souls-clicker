@@ -641,32 +641,32 @@ h6 {
 
 .btn.btn-brown {
   background-color: #e2cfa8;
-  color: #75685f;
+  color: #171717;
 }
 .btn.btn-brown:hover,
 .btn.btn-brown:focus,
 .btn-group:focus .btn.btn-brow.dropdown-toggle {
-  background-color: #c3b18a;
+  background-color: #1e1e1e;
 }
 .btn.btn-brow:active,
 .btn-group.open .btn.btn-primary.dropdown-toggle,
 .btn.btn-primary.active {
-  background-color: #faf5cf;
+  background-color: #1e1e1e;
 }
 
 .btn.btn-brown2 {
-  background-color: #edddbb;
+  background-color: #191919;
   color: #aaa68d;
 }
 .btn.btn-brown2:hover,
 .btn.btn-brown2:focus,
 .btn-group:focus .btn.btn-brow.dropdown-toggle {
-  background-color: #cfbc93;
+  background-color: #1d1c1c;
 }
 .btn.btn-brow2:active,
 .btn-group.open .btn.btn-primary.dropdown-toggle,
 .btn.btn-primary.active {
-  background-color: #a89469; 
+  background-color: #1a1a1a; 
 }
 
 .btn.btn-info {
