@@ -70,15 +70,18 @@
             "expandedObjectLayers": [
                 6
             ],
-            "scale": 1.5,
-            "selectedLayer": 0,
+            "scale": 1,
+            "selectedLayer": 8,
             "viewCenter": {
-                "x": 511.3333333333333,
-                "y": 559.6666666666666
+                "x": 541,
+                "y": 503.5
             }
         },
         "world_map.tmx#animals": {
             "scaleInDock": 0.75
+        },
+        "world_map.tmx#graveyard": {
+            "scaleInDock": 1
         },
         "world_map.tmx#graveyard-props": {
             "scaleInDock": 1,
@@ -104,14 +107,14 @@
     "map.lastUsedFormat": "tmx",
     "openFiles": [
         "world_map.tmx",
-        "animals.tsx"
+        "graveyard.tsx"
     ],
     "project": "world1.tiled-project",
     "recentFiles": [
         "graveyard.tsx",
+        "world_map.tmx",
         "graveyard-props.tsx",
         "ground.tsx",
-        "world_map.tmx",
         "graveyard-props2.tsx",
         "animals.tsx",
         "Medieval-Props.tsx",
