@@ -14,6 +14,8 @@ let _startCombat = false;
 var useElementalRune = true;
 const baseVigorInterval = 1000;
 const baseAttackSpeed = 5; // Adjusted to match the original code's logic
+let enableIdleCombat = false; // Set to true if you want to enable idle combat
+let currentEnemyID = ''; 
 
 
 var MONSTERS_TYPES = {
@@ -86,7 +88,7 @@ function updateDisplayCombat() {
     updateProgressBarCombat('current-monster-mini-combat-lifeBar', (player.current_life / player.getLifeTotal()) * 100, player.current_life + '/' + player.getLifeTotal());
     updateProgressBarCombat('player-attack-speed-bar', playerSpeedProgress.value, playerSpeedProgress.value);
     document.getElementById('player-health').textContent = player.getLifeTotal().toString();
-    document.getElementById('player-attack-speed').textContent = player.basic_stats.vigor.toString();
+    document.getElementById('player-attack-speed').textContent = player.basic_stats.stamina.toString();
     document.getElementById('player-level').textContent = "Lv. " + player.level;
     document.getElementById('player-level-mini-combat').textContent = "Lv. " + player.level;
     let playerXpBarCombat = document.getElementById('player-xpBar-combat');
@@ -107,7 +109,7 @@ function updateDisplayCombat() {
     updateProgressBarCombat('enemy-monster-mini-combat-lifeBar', (enemy.current_life / enemy.getLifeTotal()) * 100, enemy.current_life + '/' + enemy.basic_stats.life);
     updateProgressBarCombat('enemy-attack-speed-bar', enemySpeedProgress.value, enemySpeedProgress.value);
     document.getElementById('enemy-health').textContent = enemy.getLifeTotal().toString();
-    document.getElementById('enemy-attack-speed').textContent = enemy.basic_stats.vigor.toString();
+    document.getElementById('enemy-attack-speed').textContent = enemy.basic_stats.stamina.toString();
     document.getElementById('enemy-level').textContent = "Lv. " + enemy.level;
     document.getElementById('enemy-level-mini-combat').textContent = "Lv. " + enemy.level;
     document.getElementById('enemy-monster-name').textContent = enemy.name;
@@ -124,8 +126,11 @@ function startCombat() {
     simulateCombat();
 }
 // Função para simular o combate
-function simulateCombat(monster_id = 0) {
+function simulateCombat(monster_id = 0, enemyID = '', scene) {
 
+    alert(enemyID);
+
+    currentEnemyID = enemyID;
 
     if(monster_id >= 0){
 
@@ -179,11 +184,21 @@ function simulateCombat(monster_id = 0) {
 
         clearInterval(playerAttackInterval);
         clearInterval(enemyAttackInverval);
-        setTimeout(resetEnemyStats, 3000);
 
-      newCombatTimeout = setTimeout(function() {
-          simulateCombat(enemy.monster_id);
-        }, 3000);
+        if(enableIdleCombat == true){
+
+            setTimeout(resetEnemyStats, 3000);
+
+            newCombatTimeout = setTimeout(function() {
+                simulateCombat(enemy.monster_id,enemyID,scene);
+                }, 3000);
+        }else{
+
+            setTimeout(resetEnemyStats, 3000);
+            removeEnemy(scene,enemyID);
+
+            openTab('tab-explore');
+        }
 
         enemy.current_life = 0;
         StatsController.AddXp(enemy.basic_stats.life);
@@ -225,7 +240,7 @@ function simulateCombat(monster_id = 0) {
 
             return;
         }
-    }, baseVigorInterval - player.basic_stats.vigor * baseAttackSpeed);
+    }, baseVigorInterval - player.basic_stats.stamina * baseAttackSpeed);
 
 
     enemyAttackInverval = setInterval(function () {
@@ -248,7 +263,7 @@ function simulateCombat(monster_id = 0) {
 
         }
         
-    }, baseVigorInterval - enemy.basic_stats.vigor * baseAttackSpeed);
+    }, baseVigorInterval - enemy.basic_stats.stamina * baseAttackSpeed);
 }
 
 

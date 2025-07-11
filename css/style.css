@@ -23,6 +23,7 @@ input, button, textarea, :focus {
   * {
     scrollbar-width: auto;
     scrollbar-color: #232937 #ffffff;
+    
   }
 
   /* Chrome, Edge, and Safari */
@@ -43,6 +44,11 @@ input, button, textarea, :focus {
 span{
 
     font-size: 1vw;
+}
+
+#gameCanvas{
+
+  cursor: url('../img/icons/cursor-sword.png'), auto !important; 
 }
 
 h6{
@@ -177,6 +183,13 @@ background-size: 100% 100%;
 .alert {
    text-align: left;
    height: 70px;
+   background-color: #2a1d0d;
+  background-blend-mode: multiply;
+  border: 2px solid white;
+  border-radius: 0 !important;
+  box-shadow: 0 0 0 2px rgb(0, 0, 0);
+  color: #c3b99c !important;
+
 }
 
 .align-right{
@@ -394,11 +407,12 @@ background-size: 100% 100%;
     background-color: black;
     background-color: rgba(0, 0, 0, 0.3);
     color: #75685f;
+    border-bottom: 1px solid white;
     background-color: #2a1d0d;
     background-blend-mode: multiply;
     color: #c3b99c !important;
     margin: 0px auto;
-    height: 70px;
+    height: 50px;
     padding-top: 8px;
     z-index: 50;
     left: 0;
@@ -471,7 +485,7 @@ background-size: 100% 100%;
 .character-name{
     font-size: 1.3vw;
     float: left;
-    color: #333;
+    color: #ffe2b8;
 }
 
 .wave {
@@ -966,8 +980,24 @@ h6 {
     float: left;
     padding: 5px;
     color: #ffffff;
-    font-family: Outfit;
+    font-family: 'Pixel Digivolve';
+    font-size: 0.8vw;
+     text-shadow:
+     1px  0   0 #000,
+    -1px  0   0 #000,
+     0    1px 0 #000,
+     0   -1px 0 #000,
+     1px  1px 0 #000,
+    -1px  1px 0 #000,
+     1px -1px 0 #000,
+    -1px -1px 0 #000;
+   
 
+}
+
+
+.label span{
+   box-shadow: 0 0 0 2px rgb(0, 0, 0);
 }
 
 .icon-16 {
@@ -1099,12 +1129,19 @@ h6 {
   padding: 2px;
   margin: 1px;
   height: 80px;
+  width: 80px;
+
 }
 
 
 .item .btn {
 
     height: 60px;
+    background-image: url('../img/UI/blank.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-color: transparent !important;
+
 }
 
 .resource-cost-caption{

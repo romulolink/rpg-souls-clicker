@@ -532,8 +532,12 @@ h6 {
 }
 .btn.disabled,
 .btn[disabled] {
-  background-color: #bdc3c7;
-  color: rgba(255, 255, 255, 0.75);
+  background-color: #2a1d0d;
+  background-blend-mode: multiply;
+  border: 2px solid white;
+  border-radius: 0 !important;
+  box-shadow: 0 0 0 2px rgb(0, 0, 0);
+  color: #c3b99c !important;
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
@@ -555,7 +559,13 @@ h6 {
   margin-right: -2px;
 }
 .btn.btn-primary {
-  background-color: #eeae42;
+  background-color: #2a1d0d;
+  background-blend-mode: multiply;
+  border: 2px solid white;
+  border-radius: 0 !important;
+  box-shadow: 0 0 0 2px rgb(0, 0, 0);
+  color: #c3b99c !important;
+
 }
 .btn.btn-primary:hover,
 .btn.btn-primary:focus,

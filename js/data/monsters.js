@@ -12,14 +12,14 @@ var monsters = {
         rarity: "rare",
         evolutions: 3,
         current_xp: 0,
-        current_life: 80,
+        current_life: 40,
         total_attack: 10,
         places_chance: {forest_chance:0.05},
         drops: {plant_essence:100},
         basic_stats: {
-            strength: 8,
+            strength: 2,
             life: 70,
-            vigor: 1,
+            stamina: 1,
             dexterity: 15,
             intelligence: 10,
             luck: 13
@@ -46,7 +46,7 @@ var monsters = {
             basic_stats: {
             strength: 8,
             life: 70,
-            vigor: 1,
+            stamina: 1,
             dexterity: 15,
             intelligence: 10,
             luck: 13
@@ -73,7 +73,7 @@ var monsters = {
         basic_stats: {
             strength: 8,
             life: 70,
-            vigor: 1,
+            stamina: 1,
             dexterity: 15,
             intelligence: 10,
             luck: 13

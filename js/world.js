@@ -18,6 +18,7 @@ const CONFIG = {
 };
 new Phaser.Game(CONFIG);
 
+
 /* ---- Caminhos de assets ---- */
 const MAP_JSON         = "js/data/world.json";
 const TILESET_GROUND   = "img/tileset/FarmRPG16x16-TinyAssetPack/Tileset/tileset.png";
@@ -45,10 +46,25 @@ function preload() {
     });
 }
 
+
+/* ---------- helper: remove enemy by id ★ ---------- */
+function removeEnemy(scene, id) {
+  const index = scene.enemies.findIndex(e => e.getData('id') === id);
+  if (index !== -1) {
+    scene.enemies[index].destroy();   // actually deletes the sprite
+    scene.enemies.splice(index, 1);   // keep array in sync
+  }
+}
+
 /* ---- CREATE ---- */
 function create() {
   /* -- Mapa -- */
   const map = this.make.tilemap({ key: "map" });
+
+  this.enemies      = [];  // central enemy list
+  this.enemyCounter = 0;   // simple id generator
+
+  this.input.setDefaultCursor('url(../img/icons/cursor-sword.png), auto'); // cursor personalizado
 
   const TILE  = 16;   // largura/altura reais do tile
   const PAD   = 0;    // padding/spacing que você extraiu
@@ -78,15 +94,26 @@ function create() {
 
   objects.forEach(obj => {
 
+
+    const enemyId = `enemy-${this.enemyCounter++}`;   // e.g. enemy-0, enemy-1 …
+
     /* 3.  cria sprite já com o recorte correto */
     const sprite = this.add.sprite(obj.x, obj.y, 'boar', 2)
       .setOrigin(0, 0)
+      .setName(enemyId)            // Phaser-side: can fetch later with this.children.getByName(id)
+      .setData('id', enemyId)     // extra: retrieve with sprite.getData('id')
       //.setCrop(96, 300, obj.width, obj.height)   // 👈 usa cálculo automático
-      .setInteractive({ pixelPerfect: true, useHandCursor: true });
+      .setInteractive({ pixelPerfect: true}); 
         
+      this.game.canvas.setAttribute(`data-${enemyId}`, ''); 
+
+      // Track in the local enemy list
+      this.enemies.push(sprite);
+
       sprite.on("pointerdown", () => {
-      
-      openCombat(1);
+
+        this.input.setDefaultCursor('url(../img/icons/cursor-sword.png), auto'); // cursor de espada
+        openCombat(1,enemyId,this);
 
     });
 
@@ -112,7 +139,7 @@ if (targetObj) {
 
   const zone = this.add.zone(x + width /2, y + height / 2, width, height)
     .setOrigin(0.5)
-    .setInteractive({ useHandCursor: true });
+    .setInteractive({ });
 
   // DEBUG: contorno da área clicável
   const debug = this.add.graphics();
@@ -126,6 +153,7 @@ if (targetObj) {
 
   // listener só para esta zone
   zone.on('pointerdown', () => {
+    this.input.setDefaultCursor('url(../img/icons/cursor-sword.png), auto'); // cursor de espada
     showNotification("You need to find a key to open this door.");
   });
 } else {

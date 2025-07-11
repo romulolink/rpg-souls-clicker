@@ -573,7 +573,7 @@ function initDisplay() {
         } else {
             var clickHTML = `
                
-                <button style="height:35px" class="btn btn-default btn-block disabled"><image class="icon" src="${obj.icon_path}" /> ${obj.name}</button>
+                <button style="height:35px" class="btn btn-block disabled"><image class="icon" src="${obj.icon_path}" /> ${obj.name}</button>
 
                  <div class="progress">
                   <div id="${obj.slug}-progressBar" class="progress-bar rounded bg-danger" role="progressbar" style="width: 0%;"
@@ -586,7 +586,7 @@ function initDisplay() {
 
         var clickHTMLShort = `
        
-        <button style="" class="btn btn-default btn-block disabled"><image class="icon" src="${obj.icon_resource}" />
+        <button style="" class="btn btn-block disabled"><image class="icon" src="${obj.icon_resource}" />
           <span class="${obj.slug}-total number-circle" id="${obj.slug}-total">1</span><br/><span>${obj.name}</span></button>
         `;
 
@@ -1089,7 +1089,7 @@ function AddInventorySlot(_item){
         <div class="row item" id="${_item.slug}-inventory-row">
             <div class="" onmouseout="fadeOutAndDestroyCaption()" onmouseover="addCaption(this,inventory.${_item.slug}, false)" onmousedown="selectItem(inventory.${_item.slug})">
 
-                <button id="${_item.slug}-inventory" style="" class="btn btn-brown2 btn-block"><image class="icon" src="${_item.icon_path}" /><span class="number-circle" id="${_item.slug}-item-amount"> </span>
+                <button id="${_item.slug}-inventory" style="" class="btn"><image class="icon" src="${_item.icon_path}" /><span class="number-circle" id="${_item.slug}-item-amount"> </span>
                 </button>
 
             </div>
@@ -1112,7 +1112,7 @@ function AddInventoryEmptySlot(){
         <div class="row item emptySlot" id="#">
             <div class="">
 
-                <button id="#" style="" class="btn btn-brown2 btn-block">
+                <button id="#" style="" class="btn btn-block">
                 </button>
 
             </div>
@@ -1460,7 +1460,7 @@ function closeMiniCombat(){
     modal.style.display = 'none';
 }
 
-function openCombat(monster_id = 0) {
+function openCombat(monster_id = 0, enemyID = '', scene) {
 
 
     if(_startCombat){
@@ -1473,7 +1473,7 @@ function openCombat(monster_id = 0) {
 
     var modal = document.getElementById('combat-modal');
 
-    simulateCombat(monster_id);
+    simulateCombat(monster_id, enemyID, scene);
 
     modal.style.display = 'block';
 
