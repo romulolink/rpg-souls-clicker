@@ -2388,7 +2388,7 @@ function calculatePlayTimeByDate(playTime, format = 'm') {
 
         } else {
 
-          showNotification("Requirements not met to buy this island: collect the remaining resources");
+          showNotification("Requirements not met to buy this island: collect the remaining resources",5000);
 
         }
       }

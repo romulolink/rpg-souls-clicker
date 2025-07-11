@@ -13,7 +13,7 @@
 
 
     <!-- Optional theme -->
-     <link rel="stylesheet" href="js/vendor/bootstrap-theme.css">
+    <link rel="stylesheet" href="js/vendor/bootstrap-theme.css">
 
 
     <!-- Latest compiled and minified JavaScript -->
@@ -22,13 +22,11 @@
 
     <script src="js/vendor/angular.js"></script>
 
-    <link rel="stylesheet" href="css/flat-ui.css" type="text/css" />
-
 
     <!-- Latest compiled and minified Bootstrap JavaScript -->
-    <script src="js/vendor/bootstrap.js"></script>
+    <!-- script src="js/vendor/bootstrap.js"></script -->
 
-    <link rel="stylesheet" href="css/flat-ui.css" type="text/css" />
+    <link rel="stylesheet" href="css/flat-ui.css" type="text/css">
 
     <link rel="stylesheet" type="text/css" href="css/style.css">
     
@@ -81,22 +79,34 @@
 
     .start-button {
 
-      background-image: url('img/UI/notification_bg.png');
-      background-color: #3498db;
+      background-image: url(img/UI/button.png) !important;
+      background-size: cover;      /* faz a imagem cobrir toda a div  */
+      background-position: center; /* centraliza qualquer recorte     */
+      background-repeat: no-repeat;/* evita repetições                */
+      color: rgb(255, 255, 255) !important;
+      background-color: transparent !important;
+      height: 70px;
+      font-weight: bold;
+      font-size: x-large;
+      vertical-align: middle;
+      padding-top: 15px;
+
+     /* background-image: url('img/UI/notification_bg.png');*/
+     /* background-color: #3498db;
       color: #333;
       padding: 10px 30px 30px;
       border: 2px solid white;
       height: 40px;
       font-weight: bold;
-
+      */
 
     }
 
     .start-button:hover {
 
-      color: #333;
+      color: #fb6363;
       cursor: url('img/icons/pointer.png'), auto;
-      border: 2px solid white;
+     /* border: 2px solid white;*/
 
     }
 
@@ -169,8 +179,8 @@
          </div>
 
           <!-- Seu conteúdo aqui -->
-          <div class="bottom-position">
-            <a href="game.html" class="start-button btn btn-lg btn-danger">START</a>
+          <div class="bottom-position start-button">
+            <a href="game.html" class="">START</a>
           </div>
 
 

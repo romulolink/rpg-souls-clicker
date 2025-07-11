@@ -23,6 +23,7 @@ const MAP_JSON         = "js/data/world.json";
 const TILESET_GROUND   = "img/tileset/FarmRPG16x16-TinyAssetPack/Tileset/tileset.png";
 const TILESET_TREES    = "img/tileset/FarmRPG16x16-TinyAssetPack/Objects/trees.png";
 const TILESET_PROPS    = "img/tileset/FarmRPG16x16-TinyAssetPack/Objects/props.png";
+const TILESET_GRAVEYARD  = "img/tileset/graveyard-top-down/graveyard-tileset.png";
 const TILESET_ANIMALS    = "img/tileset/animals.png";
 const BOAR    = "img/sprites/boar.png";
 
@@ -36,6 +37,7 @@ function preload() {
   this.load.image("trees",  TILESET_TREES);
   this.load.image("props",  TILESET_PROPS);
   this.load.image("animals",  TILESET_ANIMALS);
+  this.load.image("graveyard",  TILESET_GRAVEYARD);
 
   this.load.spritesheet('boar', BOAR, {
       frameWidth: 32,
@@ -55,12 +57,14 @@ function create() {
   const treeSet    = map.addTilesetImage('trees',   'trees',   TILE, TILE, PAD, PAD);
   const propsSet   = map.addTilesetImage('props',   'props',   TILE, TILE, PAD, PAD);
   const animalsSet = map.addTilesetImage('animals', 'animals', TILE, TILE, PAD, PAD);
+  const graveyardSet = map.addTilesetImage('graveyard', 'graveyard', TILE, TILE, PAD, PAD);
   
   /* -- Cria camadas de tiles (ordem importa) -- */
   map.createLayer("ground", groundSet, 0, 0);
   map.createLayer("trees",  treeSet,   0, 0);
   map.createLayer("props",  propsSet,   0, 0);
   map.createLayer("animals",  animalsSet,   0, 0);
+  map.createLayer("graveyard",  graveyardSet,   0, 0);
 
 
   this.cameras.main.setRoundPixels(true);
@@ -70,21 +74,22 @@ function create() {
 
   /* -- Converte Object-Layer 'trees' em sprites balançando -- */
   const objects = map.getObjectLayer("animals")?.objects || [];
+  const building = map.getObjectLayer("building")?.objects || [];
+
   objects.forEach(obj => {
 
-  /* 3.  cria sprite já com o recorte correto */
-  const sprite = this.add.sprite(obj.x, obj.y, 'boar', 2)
-    .setOrigin(0, 0)
-    //.setCrop(96, 300, obj.width, obj.height)   // 👈 usa cálculo automático
-    .setInteractive({ pixelPerfect: true, useHandCursor: true });
+    /* 3.  cria sprite já com o recorte correto */
+    const sprite = this.add.sprite(obj.x, obj.y, 'boar', 2)
+      .setOrigin(0, 0)
+      //.setCrop(96, 300, obj.width, obj.height)   // 👈 usa cálculo automático
+      .setInteractive({ pixelPerfect: true, useHandCursor: true });
+        
+      sprite.on("pointerdown", () => {
       
-    sprite.on("pointerdown", () => {
-    
-    openCombat(1);
+      openCombat(1);
 
-  });
+    });
 
-  this.cameras.main.setZoom(2); 
     // Tween: brisa suave (x oscila ±2 px)
     this.tweens.add({
       targets: sprite,
@@ -95,9 +100,40 @@ function create() {
       ease: "Sine.easeInOut",
       delay: Math.random() * 500
     });
+
   });
 
+// localiza apenas o objeto chamado "building1"
+const targetObj = building.find(o => o.name === "building1");
+
+if (targetObj) {
+
+  const { x, y, width, height } = targetObj;
+
+  const zone = this.add.zone(x + width /2, y + height / 2, width, height)
+    .setOrigin(0.5)
+    .setInteractive({ useHandCursor: true });
+
+  // DEBUG: contorno da área clicável
+  const debug = this.add.graphics();
+  debug.lineStyle(2, 0xff0000, 1);          // (espessura, cor, alfa)
+  debug.strokeRect(
+    x,   // top-left X
+    y,   // top-left Y
+    width,
+    height
+  );
+
+  // listener só para esta zone
+  zone.on('pointerdown', () => {
+    showNotification("You need to find a key to open this door.");
+  });
+} else {
+  console.warn('building1 não encontrado na camada "building".');
+}
+
   /* -- Ajusta câmera para mostrar o mapa todo -- */
+  this.cameras.main.setZoom(2); 
   this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
   this.cameras.main.centerOn(map.widthInPixels, map.heightInPixels);
 

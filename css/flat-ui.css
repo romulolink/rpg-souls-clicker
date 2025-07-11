@@ -427,7 +427,7 @@ textarea {
   font-size: 1.3vw;
 }
 a {
-  color: #16a085;
+  color: #e8e5ac;
   text-decoration: underline;
   -webkit-transition: 0.25s;
   -moz-transition: 0.25s;
@@ -436,7 +436,7 @@ a {
   -webkit-backface-visibility: hidden;
 }
 a:hover {
-  color: #1abc9c;
+  color: #d95656;
   text-decoration: none;
   cursor: url('../img/icons/cursor-sword.png'), auto;
 
@@ -684,8 +684,7 @@ h6 {
 }
 .btn.btn-danger {
   background-color: #e74c3c !important;
-  background-image: none !important;
-  color: #5c0404;
+  color: #ffffff;
 }
 .btn.btn-danger:hover,
 .btn.btn-danger:focus,
