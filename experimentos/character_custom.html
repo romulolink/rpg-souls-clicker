@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Phaser – Arrow‑Ring Character Customizer</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+    body{background:#111;color:#eee;display:flex;flex-direction:column;align-items:center;padding:1rem;gap:1rem}
+    h1{font-size:1.2rem}
+    #wrapper{position:relative;display:inline-block}
+    canvas{border:2px solid #555;image-rendering:pixelated}
+    .ctrlRow{position:absolute;display:flex;align-items:center;gap:.35rem;pointer-events:auto}
+    .arrow{cursor:pointer;background:#444;border:none;border-radius:4px;width:26px;height:26px;font-weight:bold;font-size:1.1rem;line-height:1;color:#eee;transition:background .15s}
+    .arrow:hover{background:#666}
+    .num{min-width:28px;text-align:center;font-size:.75rem}
+    #buttons{display:flex;gap:1rem;margin-top:.5rem}
+    #buttons button{padding:.4rem .8rem;background:#444;border:none;border-radius:4px;color:#eee;cursor:pointer;font-size:.9rem}
+    #buttons button:hover{background:#666}
+  </style>
+</head>
+<body>
+  <h1>Character Customizer</h1>
+  <div id="wrapper">
+    <div id="game-container"></div>
+    <div id="overlay"></div>
+  </div>
+
+  <div id="buttons">
+    <button id="saveBtn">💾 Save</button>
+    <button id="loadBtn">📂 Load</button>
+  </div>
+<script>
+// ------------------------------------------------------------
+// DATA
+// ------------------------------------------------------------
+const PARTS=["skin","hair","shirt","pants"];
+const PALETTE={
+  skin:["#ffcc99","#d29b6d","#8d5524"],
+  hair:["#000000","#5c3a21","#a0522d","#ffffff"],
+  shirt:["#ff0000","#00ccff","#228b22","#ffff00","#ff69b4"],
+  pants:["#4b5320","#00008b","#8b4513","#708090","#2f4f4f"]
+};
+const character={skin:0,hair:0,shirt:0,pants:0};
+
+// ------------------------------------------------------------
+// Phaser setup
+// ------------------------------------------------------------
+const WIDTH=128,HEIGHT=160;
+let graphics;
+const game=new Phaser.Game({
+  type:Phaser.AUTO,width:WIDTH,height:HEIGHT,pixelArt:true,backgroundColor:"#87ceeb",parent:"game-container",
+  scene:{create(){graphics=this.add.graphics();drawCharacter();}}
+});
+
+function hex(p){return PALETTE[p][character[p]];}
+function drawCharacter(){
+  graphics.clear();
+  const bx=WIDTH/2-16,by=HEIGHT/2-32;
+  graphics.fillStyle(Phaser.Display.Color.HexStringToColor(hex("skin")).color);
+  graphics.fillRect(bx+8,by,16,16);
+  graphics.fillStyle(Phaser.Display.Color.HexStringToColor(hex("shirt")).color);
+  graphics.fillRect(bx+4,by+16,24,20);
+  graphics.fillStyle(Phaser.Display.Color.HexStringToColor(hex("skin")).color);
+  graphics.fillRect(bx-4,by+16,8,20);
+  graphics.fillRect(bx+24,by+16,8,20);
+  graphics.fillStyle(Phaser.Display.Color.HexStringToColor(hex("pants")).color);
+  graphics.fillRect(bx+4,by+36,10,20);
+  graphics.fillRect(bx+18,by+36,10,20);
+  graphics.fillStyle(Phaser.Display.Color.HexStringToColor(hex("hair")).color);
+  graphics.fillRect(bx+8,by-2,16,8);
+  updateNumbers();
+}
+
+// ------------------------------------------------------------
+// Arrow overlay setup
+// ------------------------------------------------------------
+const overlay=document.getElementById("overlay");
+const rowHeight=34;
+const startY=10;
+PARTS.forEach((part,i)=>{
+  // left row (◀ num)
+  const left=document.createElement("div");left.className="ctrlRow";
+  left.style.top=`${startY+i*rowHeight}px`;
+  left.style.left=`-${70}px`;
+  left.innerHTML=`<button class="arrow" data-part="${part}" data-dir="-1">◀</button><span class="num" id="num-${part}-l"></span>`;
+  overlay.appendChild(left);
+
+  // right row (num ▶)
+  const right=document.createElement("div");right.className="ctrlRow";
+  right.style.top=`${startY+i*rowHeight}px`;
+  right.style.left=`${WIDTH+44}px`;
+  right.innerHTML=`<span class="num" id="num-${part}-r"></span><button class="arrow" data-part="${part}" data-dir="1">▶</button>`;
+  overlay.appendChild(right);
+});
+
+overlay.addEventListener("click",e=>{
+  if(!e.target.classList.contains("arrow"))return;
+  const part=e.target.dataset.part;
+  const dir=parseInt(e.target.dataset.dir,10);
+  const max=PALETTE[part].length;
+  character[part]=(character[part]+dir+max)%max;
+  drawCharacter();
+});
+
+function updateNumbers(){
+  PARTS.forEach(p=>{
+    const text=`${character[p]+1}/${PALETTE[p].length}`;
+    const spanL=document.getElementById(`num-${p}-l`);
+    const spanR=document.getElementById(`num-${p}-r`);
+    if(spanL)spanL.textContent=text;
+    if(spanR)spanR.textContent=text;
+  });
+}
+
+// ------------------------------------------------------------
+// Save / Load
+// ------------------------------------------------------------
+function save(){localStorage.setItem("playerData",JSON.stringify(character));alert("Saved!");}
+function load(){
+  const data=localStorage.getItem("playerData");
+  if(!data){alert("No save");return;}
+  const parsed=JSON.parse(data);
+  PARTS.forEach(p=>{if(parsed[p]!==undefined){character[p]=parsed[p]%PALETTE[p].length;}});
+  drawCharacter();
+  alert("Loaded!");
+}
+
+document.getElementById("saveBtn").onclick=save;
+document.getElementById("loadBtn").onclick=load;
+</script>
+</body>
+</html>

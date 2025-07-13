@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Babylon.js Clicker RPG – Crit Edition</title>
+  <style>
+    html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;background:#111;color:#fff;font-family:sans-serif}
+    #renderCanvas{width:100%;height:100%;touch-action:none;image-rendering:pixelated}
+    .overlay{position:absolute;top:100px;left:10px;padding:8px 12px;background:rgba(0,0,0,.65);border:2px solid #fff;border-radius:8px}
+    button{margin-top:8px;padding:6px 10px;font-size:1rem;border:none;border-radius:6px;cursor:pointer;background:#ffd200;color:#111;font-weight:bold}
+    button:disabled{opacity:.4;cursor:not-allowed}
+    /* HP bars */
+    #hpBarWrap{position:absolute;top:0;left:0;width:100%;height:24px;background:rgb(42, 42, 42);border-bottom:2px solid #000;overflow:hidden}
+    #hpBarFill{position:absolute;top:0;left:0;z-index:2;height:100%;width:100%;background:#d22;transition:width .15s ease-out}
+    #hpBarDmg{position:absolute;top:0;left:0;height:100%;width:100%;background:#ffd200;opacity:1;pointer-events:none;transition:width .6s ease-out}
+    #hpText{position:absolute;top:0;left:0;width:100%;text-align:center;line-height:24px;font-weight:bold;pointer-events:none}
+    /* damage numbers */
+    .dmg{position:absolute;color:#ffd200;font-weight:bold;text-shadow:0 0 6px #000;pointer-events:none;opacity:1;animation:float 1s forwards}
+    .crit{color:#ff8;font-size:1.3rem;text-shadow:0 0 8px #f00,0 0 6px #000}
+    @keyframes float{0%{transform:translate(-50%,-10px);opacity:1}100%{transform:translate(-50%,-60px);opacity:0}}
+  </style>
+</head>
+<body>
+  <div id="hpBarWrap">
+    <div id="hpBarFill"></div>
+    <div id="hpBarDmg"></div>
+    <span id="hpText">HP 100 / 100</span>
+  </div>
+  <canvas id="renderCanvas"></canvas>
+  <div class="overlay" id="ui">
+    <div>Score: <span id="score">0</span></div>
+    <div>Multiplier: <span id="mult">1</span>x</div>
+    <div>Crit Chance: <span id="crit">10</span>%</div>
+    <button id="upgradeBtn">Upgrade Pwr (cost 10)</button>
+    <button id="critBtn">Upgrade Crit (cost 50)</button>
+  </div>
+
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script>
+    const canvas=document.getElementById('renderCanvas');
+    const engine=new BABYLON.Engine(canvas,true);
+    let scene,camera,coin;
+
+    function createScene(){
+      scene=new BABYLON.Scene(engine);
+      scene.clearColor=new BABYLON.Color4(0,0,0,1);
+      camera=new BABYLON.FreeCamera('cam',new BABYLON.Vector3(0,0,-5),scene);
+      camera.setTarget(BABYLON.Vector3.Zero());
+      camera.attachControl(canvas,true);
+
+      const light=new BABYLON.HemisphericLight('hemi',new BABYLON.Vector3(0,1,0),scene);
+      light.intensity=.9;
+
+      const coinTex=new BABYLON.Texture('../img/coin.png',scene,false,false,BABYLON.Texture.NEAREST_SAMPLINGMODE);
+      const mat=new BABYLON.StandardMaterial('coinMat',scene);
+      mat.diffuseTexture=coinTex;mat.emissiveTexture=coinTex;mat.backFaceCulling=false;
+      coin=BABYLON.MeshBuilder.CreatePlane('coin',{size:2},scene);
+      coin.material=mat;coin.billboardMode=BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+      const anim=new BABYLON.Animation('pulse','scaling',60,BABYLON.Animation.ANIMATIONTYPE_VECTOR3,BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+      anim.setKeys([{frame:0,value:new BABYLON.Vector3(1,1,1)},{frame:10,value:new BABYLON.Vector3(.8,.8,.8)},{frame:20,value:new BABYLON.Vector3(1,1,1)}]);
+      coin.animations.push(anim);
+      return scene;
+    }
+    scene=createScene();
+
+    // UI refs
+    const scoreSpan=document.getElementById('score');
+    const multSpan=document.getElementById('mult');
+    const critSpan=document.getElementById('crit');
+    const upgradeBtn=document.getElementById('upgradeBtn');
+    const critBtn=document.getElementById('critBtn');
+    const hpBarFill=document.getElementById('hpBarFill');
+    const hpBarDmg=document.getElementById('hpBarDmg');
+    const hpText=document.getElementById('hpText');
+
+    // Game vars
+    let score=0,mult=1,pwrCost=10;
+    let critChance=0.10,critCost=50; // 10%
+    let hp=100,maxHp=100;
+
+    function updateHPBars(){
+      const percent=(hp/maxHp)*100;
+      hpBarFill.style.width=percent+'%';
+      setTimeout(()=>{hpBarDmg.style.width=percent+'%';},50);
+      hpText.textContent=`HP ${Math.ceil(hp)} / ${maxHp}`;
+    }
+
+    function updateUI(){
+      scoreSpan.textContent=Math.floor(score);
+      multSpan.textContent=mult;
+      critSpan.textContent=Math.round(critChance*100);
+      upgradeBtn.textContent=`Upgrade Pwr (cost ${pwrCost})`;
+      critBtn.textContent=`Upgrade Crit (cost ${critCost})`;
+      upgradeBtn.disabled=score<pwrCost;
+      critBtn.disabled=score<critCost || critChance>=1;
+      updateHPBars();
+    }
+
+    function showDamage(dmg,isCrit){
+      const el=document.createElement('span');
+      el.className='dmg'+(isCrit?' crit':'');
+      el.textContent=(isCrit?'CRIT ':'-')+dmg;
+      el.style.left='50%';
+      el.style.top='40%';
+      document.body.appendChild(el);
+      el.addEventListener('animationend',()=>el.remove());
+    }
+
+    function flashCrit(){
+      const origCol=scene.clearColor.clone();
+      scene.clearColor=new BABYLON.Color4(1,0,0,1);
+      setTimeout(()=>{scene.clearColor=origCol;},80);
+    }
+
+    scene.onPointerObservable.add(info=>{
+      if(info.type===BABYLON.PointerEventTypes.POINTERDOWN){
+        const pick=scene.pick(scene.pointerX,scene.pointerY);
+        if(pick.hit&&pick.pickedMesh===coin){
+          coin.beginAnimation('pulse',0,20,false);
+          const isCrit=Math.random()<critChance;
+          const dmg=mult*(isCrit?2:1);
+          score+=dmg;
+          hp=Math.max(0,hp-dmg);
+          showDamage(dmg,isCrit);
+          if(isCrit) flashCrit();
+          updateUI();
+          if(hp===0){
+            setTimeout(()=>{hp=maxHp;updateUI();},600);
+          }
+        }
+      }
+    });
+
+    upgradeBtn.addEventListener('click',()=>{
+      if(score>=pwrCost){
+        score-=pwrCost;mult++;pwrCost=Math.round(pwrCost*1.6);updateUI();
+      }
+    });
+    critBtn.addEventListener('click',()=>{
+      if(score>=critCost&&critChance<1){
+        score-=critCost;
+        critChance=Math.min(1,critChance+0.05); // +5%
+        critCost=Math.round(critCost*1.8);
+        updateUI();
+      }
+    });
+
+    updateUI();
+    engine.runRenderLoop(()=>scene.render());
+    window.addEventListener('resize',()=>engine.resize());
+  </script>
+</body>
+</html>

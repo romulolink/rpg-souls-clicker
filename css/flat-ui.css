@@ -532,7 +532,7 @@ h6 {
 }
 .btn.disabled,
 .btn[disabled] {
-  background-color: #2a1d0d;
+  background-color: #131418;
   background-blend-mode: multiply;
   border: 2px solid white;
   border-radius: 0 !important;
@@ -559,7 +559,7 @@ h6 {
   margin-right: -2px;
 }
 .btn.btn-primary {
-  background-color: #2a1d0d;
+  background-color: #1f222a;
   background-blend-mode: multiply;
   border: 2px solid white;
   border-radius: 0 !important;
@@ -631,10 +631,9 @@ h6 {
 
 
 .btn.btn-dark-transparent {
-  background-color: black;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: #1f222a(0, 0, 0, 0.3);
   color: #75685f;
-  background-color: #2a1d0d;
+  background-color: #1f222a;
   background-blend-mode: multiply;
   border:2px solid white;
   border-radius: 0 !important;
@@ -707,7 +706,7 @@ h6 {
   background-color: #2c81ba;
 }
 .btn.btn-danger {
-  background-color: #2a1d0d;
+  background-color: #1f222a;
   background-blend-mode: multiply;
   border:2px solid white;
   border-radius: 0 !important;
@@ -726,7 +725,7 @@ h6 {
   background-color: #c44133 !important;
 }
 .btn.btn-success {
-  background-color: #2a1d0d;
+  background-color: #1f222a;
   background-blend-mode: multiply;
   border:2px solid white;
   border-radius: 0 !important;

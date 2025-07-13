@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Auto-Battle + Stat System Demo</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;line-height:1.4;padding:20px}
+h1{font-size:24px;margin-bottom:.5em}
+table{border-collapse:collapse;margin-bottom:1em}
+th,td{border:1px solid #ccc;padding:6px 10px;text-align:center}
+button{margin:2px 0;padding:6px 10px}
+#items{margin-top:10px}
+
+#battlefield{display:flex;gap:32px;margin-top:30px}
+.enemy{position:relative;width:80px;height:80px;background:#555;border-radius:6px}
+.bar{position:absolute;left:0;height:6px;border-radius:3px}
+.hp{top:-16px;background:#e74c3c}
+.stm{top:-8px;background:#f1c40f}
+.bar-bg{position:absolute;left:0;top:0;width:100%;height:100%;background:#333;border-radius:inherit}
+.bar-wrapper{position:absolute;left:0;width:100%}
+</style>
+</head>
+<body>
+<h1>Stat & Modifier + Auto-Battle Demo</h1>
+
+<table id="statsTable"><thead><tr><th>Stat</th><th>Base</th><th>Final</th></tr></thead><tbody></tbody></table>
+
+<div>
+<button id="btnFlat">Add Sword (+5 ATK flat)</button>
+<button id="btnPctAdd">Add Ring (+10% ATK add)</button>
+<button id="btnPctMult">Add Blessing (x1.20 ATK mult)</button>
+<button id="btnCombo">Add Armor (+3 DEF flat,+5% DEF add)</button>
+<button id="btnRemove">Remove Last Item</button>
+<button id="btnReset">Reset Items</button>
+</div>
+
+<h3>Equipped Items:</h3>
+<ul id="items"></ul>
+
+<hr>
+<h2>Battlefield</h2>
+<div id="battlefield"></div>
+
+<script>
+// ---------- ENUMs -------------------------------------------------
+const StatType        ={ATTACK:'Attack',DEFENCE:'Defence',AGILITY:'Agility'};
+const ModifierType    ={FLAT:'Flat',PERCENT_ADD:'PercentAdd',PERCENT_MULT:'PercentMult'};
+const WeaponType      ={DAGGER:'Dagger',AXE:'Axe',SWORD:'Sword',MAGIC:'Magic'};
+
+// ---------- Data --------------------------------------------------
+class StatModifier{constructor(stat,mode,value){this.stat=stat;this.mode=mode;this.value=value;}}
+class ItemData{constructor(name,modifiers,weaponType=null){this.name=name;this.modifiers=modifiers;this.weaponType=weaponType;}}
+class StatController{
+  constructor(baseStats){
+    this.baseStats={...baseStats};
+    this.modifiers={};this.cachedFinal={};
+    Object.keys(baseStats).forEach(s=>{this.modifiers[s]=[];this.cachedFinal[s]=baseStats[s];});
+  }
+  addItem(it){it.modifiers.forEach(m=>{this.modifiers[m.stat].push(m);this.recalculate(m.stat);});}
+  removeItem(it){it.modifiers.forEach(m=>{const a=this.modifiers[m.stat];const i=a.indexOf(m);if(i!==-1)a.splice(i,1);this.recalculate(m.stat);});}
+  recalculate(stat){const base=this.baseStats[stat];let f=0,pa=0,pm=1;
+    this.modifiers[stat].forEach(m=>{if(m.mode===ModifierType.FLAT)f+=m.value;
+      else if(m.mode===ModifierType.PERCENT_ADD)pa+=m.value;
+      else if(m.mode===ModifierType.PERCENT_MULT)pm*=1+m.value;});
+    this.cachedFinal[stat]=(base+f)*(1+pa)*pm;}
+  getStat(stat){return +this.cachedFinal[stat].toFixed(2);}
+}
+
+// ---------- Player Setup -----------------------------------------
+const baseStats     ={[StatType.ATTACK]:10,[StatType.DEFENCE]:5,[StatType.AGILITY]:7};
+const statCtrl      =new StatController(baseStats);
+const equippedItems =[];
+
+const sword    =new ItemData('Sword',[new StatModifier(StatType.ATTACK,ModifierType.FLAT,5)],WeaponType.SWORD);
+const ring     =new ItemData('Ring',[new StatModifier(StatType.ATTACK,ModifierType.PERCENT_ADD,0.10)]);
+const blessing =new ItemData('Blessing',[new StatModifier(StatType.ATTACK,ModifierType.PERCENT_MULT,0.20)]);
+const armor    =new ItemData('Armor',[
+    new StatModifier(StatType.DEFENCE,ModifierType.FLAT,3),
+    new StatModifier(StatType.DEFENCE,ModifierType.PERCENT_ADD,0.05)
+]);
+
+// ---------- Enemy Setup ------------------------------------------
+class Enemy{
+  constructor(name,hp,stm,atk,def,resistTable){
+    this.name=name;this.maxHP=hp;this.hp=hp;this.maxStm=stm;this.stm=stm;
+    this.atk=atk;this.def=def;this.resist=resistTable;
+    this.el = this.createDOM();
+  }
+  createDOM(){
+    const wrapper=document.createElement("div");
+    wrapper.className='enemy';
+    wrapper.innerHTML=`
+       <div class="bar-wrapper" style="top:-16px"><div class="bar-bg"></div><div class="bar hp"></div></div>
+       <div class="bar-wrapper" style="top:-8px"><div class="bar-bg"></div><div class="bar stm"></div></div>`;
+    document.getElementById('battlefield').appendChild(wrapper);
+    return wrapper;
+  }
+  updateBars(){
+    this.el.querySelector('.hp').style.width=(this.hp/this.maxHP*100)+'%';
+    this.el.querySelector('.stm').style.width=(this.stm/this.maxStm*100)+'%';
+    if(this.hp<=0)this.el.style.filter='grayscale(1)';
+  }
+}
+
+const enemies=[
+  new Enemy('Goblin',35,10,6,2,{[WeaponType.DAGGER]:0.5,[WeaponType.AXE]:1.2}),
+  new Enemy('Skeleton',50,15,8,3,{[WeaponType.SWORD]:0.7,[WeaponType.MAGIC]:1.3}),
+  new Enemy('Orc',70,12,12,5,{[WeaponType.AXE]:0.6,[WeaponType.DAGGER]:1.25})
+];
+enemies.forEach(e=>e.updateBars());
+
+// ---------- UI helpers -------------------------------------------
+function updateUI(){
+  const tbody=document.querySelector('#statsTable tbody');tbody.innerHTML='';
+  Object.values(StatType).forEach(s=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${s}</td><td>${baseStats[s]}</td><td>${statCtrl.getStat(s)}</td>`;
+    tbody.appendChild(tr);
+  });
+  const ul=document.getElementById('items');ul.innerHTML='';
+  equippedItems.forEach(it=>ul.innerHTML+=`<li>${it.name}</li>`);
+}
+
+function addItem(item){statCtrl.addItem(item);equippedItems.push(item);updateUI();}
+function removeLast(){const it=equippedItems.pop();if(it){statCtrl.removeItem(it);updateUI();}}
+function reset(){while(equippedItems.length)removeLast();}
+
+// ---------- Buttons ----------------------------------------------
+document.getElementById('btnFlat').onclick  =()=>addItem(sword);
+document.getElementById('btnPctAdd').onclick=()=>addItem(ring);
+document.getElementById('btnPctMult').onclick=()=>addItem(blessing);
+document.getElementById('btnCombo').onclick =()=>addItem(armor);
+document.getElementById('btnRemove').onclick=()=>removeLast();
+document.getElementById('btnReset').onclick =()=>reset();
+updateUI();
+
+// ---------- Auto-Battle Loop -------------------------------------
+function playerWeapon(){ // último equipado com tipo, senão Sword
+  for(let i=equippedItems.length-1;i>=0;--i)if(equippedItems[i].weaponType)return equippedItems[i].weaponType;
+  return WeaponType.SWORD;
+}
+let playerHP=100,playerMaxHP=100,playerSTM=20,playerMaxSTM=20;
+
+function hit(dmg,def){return Math.max(1,dmg-def);} // simples
+
+function battleTick(){
+  // --- Player turn ---
+  const wpn=playerWeapon();
+  enemies.filter(e=>e.hp>0).forEach(e=>{
+    let dmg=hit(statCtrl.getStat(StatType.ATTACK),e.def);
+    const mult=e.resist[wpn]??1; // fraqueza/resistência
+    dmg=Math.round(dmg*mult);
+    e.hp=Math.max(0,e.hp-dmg);
+  });
+
+  // --- Enemy turn ---
+  enemies.filter(e=>e.hp>0).forEach(e=>{
+    let dmg=hit(e.atk,statCtrl.getStat(StatType.DEFENCE));
+    playerHP=Math.max(0,playerHP-dmg);
+  });
+
+  // Bars
+  enemies.forEach(e=>e.updateBars());
+  document.title=`Player HP: ${playerHP}`;
+
+  // Stop if batalha acabou
+  if(playerHP<=0||enemies.every(e=>e.hp<=0)){clearInterval(loop);document.title+=' (battle ended)';}
+}
+const loop=setInterval(battleTick,1000);
+</script>
+</body>
+</html>

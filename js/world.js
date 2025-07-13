@@ -99,16 +99,27 @@ function create() {
 
     /* 3.  cria sprite já com o recorte correto */
     const sprite = this.add.sprite(obj.x, obj.y, 'boar', 2)
-      .setOrigin(0, 0)
-      .setName(enemyId)            // Phaser-side: can fetch later with this.children.getByName(id)
-      .setData('id', enemyId)     // extra: retrieve with sprite.getData('id')
-      //.setCrop(96, 300, obj.width, obj.height)   // 👈 usa cálculo automático
-      .setInteractive({ pixelPerfect: true}); 
-        
+    .setOrigin(0, 0)
+    .setName(enemyId)            // Phaser-side: can fetch later with this.children.getByName(id)
+    .setData('id', enemyId)     // extra: retrieve with sprite.getData('id')
+    //.setCrop(96, 300, obj.width, obj.height)   // 👈 usa cálculo automático
+    .setInteractive({ pixelPerfect: true}); 
+     
       this.game.canvas.setAttribute(`data-${enemyId}`, ''); 
 
       // Track in the local enemy list
       this.enemies.push(sprite);
+
+      sprite.on('pointerover', () => {
+          sprite.setTint(0x999999); // muda a cor do sprite
+
+      });
+
+      sprite.on('pointerout', () => {
+
+        sprite.clearTint(); // muda a cor do sprite
+
+      });
 
       sprite.on("pointerdown", () => {
 
@@ -154,7 +165,16 @@ if (targetObj) {
   // listener só para esta zone
   zone.on('pointerdown', () => {
     this.input.setDefaultCursor('url(../img/icons/cursor-sword.png), auto'); // cursor de espada
-    showNotification("You need to find a key to open this door.");
+
+
+    if(getItemAmount("plant_essence") > 0){
+
+      showNotification("New Location discovered: Building 1", 2000);
+    }else{
+      showNotification("You need to find a key to open this door.");
+    }
+
+
   });
 } else {
   console.warn('building1 não encontrado na camada "building".');

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Babylon.js • Viewer Tiled (layer única)</title>
+  <style>
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#202020}
+    #renderCanvas{width:100%;height:100%;image-rendering:pixelated;touch-action:none}
+  </style>
+</head>
+<body>
+  <canvas id="renderCanvas"></canvas>
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script>
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Util: calcula UV considerando margin & spacing do tileset
+  // BL, TL, TR, BR ‑ para coincidir com ordem default do Babylon (invertY true)
+  // ─────────────────────────────────────────────────────────────────────────────
+  function buildUV(idx, cols, tw, th, atlasW, atlasH, margin, spacing){
+    const col = idx % cols;
+    const row = Math.floor(idx / cols);
+
+    const u0 = (margin + col * (tw + spacing)) / atlasW;
+    const v0 = 1 - (margin + row * (th + spacing)) / atlasH;
+    const u1 = (margin + col * (tw + spacing) + tw) / atlasW;
+    const v1 = 1 - (margin + row * (th + spacing) + th) / atlasH;
+
+    return [u0,v1,  u0,v0,  u1,v0,  u1,v1];
+  }
+
+  async function main(){
+    // Carrega o mapa (já embutido o tileset)
+    const map = await fetch('../js/data/world2.json').then(r => r.json());
+
+    // ─────────── Babylon ────────────
+    const canvas = document.getElementById('renderCanvas');
+    const engine = new BABYLON.Engine(canvas, true);
+    const scene  = new BABYLON.Scene(engine);
+
+    // Câmera ortográfica cobrindo todo o mapa
+    const w = map.width  * map.tilewidth;
+    const h = map.height * map.tileheight;
+    const cam = new BABYLON.FreeCamera('cam', new BABYLON.Vector3(w/2, -h/2, -10), scene);
+    cam.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+    cam.orthoLeft   = 0;
+    cam.orthoRight  = w;
+    cam.orthoTop    = 0;
+    cam.orthoBottom = -h;
+
+    // ─────────── Tilesets ────────────
+    const tilesets = {}; // keyed por firstgid
+
+    for(const ts of map.tilesets){
+      // Textura nearest, clamp
+      const tex = new BABYLON.Texture(ts.image.replace('..','../..'), scene, false, false, BABYLON.Texture.NEAREST_SAMPLINGMODE);
+      tex.wrapU = tex.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+      const mat = new BABYLON.StandardMaterial('m'+ts.firstgid, scene);
+      mat.diffuseTexture = mat.emissiveTexture = tex;
+      mat.disableLighting = true;
+      tilesets[ts.firstgid] = {...ts, tex, mat};
+    }
+
+    // Helper: devolve tileset e id local
+    function getTileset(gid){
+      let chosen=null, maxFirst=0;
+      for(const first in tilesets){
+        const f = +first;
+        if(gid >= f && f > maxFirst){ maxFirst = f; chosen = tilesets[first]; }
+      }
+      return {ts: chosen, localId: gid - maxFirst};
+    }
+
+    // ─────────── Renderiza somente a primeira layer visível ou a "ground" ────────────
+    const targetLayer = map.layers.find(l => l.type==='tilelayer' && l.visible && (l.name==='ground')) ||
+                        map.layers.find(l => l.type==='tilelayer' && l.visible);
+
+    if(!targetLayer){ console.warn('Nenhuma layer visível encontrada.'); }
+    else {
+      targetLayer.data.forEach((gid,i)=>{
+        if(!gid) return;
+        const {ts, localId} = getTileset(gid);
+        if(!ts) return;
+
+        const x = (i % map.width) * map.tilewidth + map.tilewidth/2;
+        const y = -(Math.floor(i / map.width) * map.tileheight + map.tileheight/2);
+
+        const plane = BABYLON.MeshBuilder.CreatePlane('t', {size: map.tilewidth}, scene);
+        plane.position.set(x, y, 0);
+        plane.material = ts.mat;
+
+        const uv = buildUV(
+          localId,
+          ts.columns,
+          ts.tilewidth,
+          ts.tileheight,
+          ts.imagewidth,
+          ts.imageheight,
+          ts.margin || 0,
+          ts.spacing || 0
+        );
+        plane.setVerticesData(BABYLON.VertexBuffer.UVKind, uv, false);
+      });
+    }
+
+    engine.runRenderLoop(() => scene.render());
+    window.addEventListener('resize', () => engine.resize());
+  }
+  main();
+  </script>
+</body>
+</html>

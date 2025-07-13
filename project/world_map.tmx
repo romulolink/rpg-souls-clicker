@@ -3,9 +3,7 @@
  <editorsettings>
   <export target="../js/data/world.json" format="json"/>
  </editorsettings>
- <tileset firstgid="1" name="ground" class="ground" tilewidth="16" tileheight="16" tilecount="240" columns="12" objectalignment="center">
-  <image source="../img/tileset/FarmRPG16x16-TinyAssetPack/Tileset/tileset.png" width="192" height="320"/>
- </tileset>
+ <tileset firstgid="1" source="ground.tsx"/>
  <tileset firstgid="241" name="trees" class="trees" tilewidth="16" tileheight="16" tilecount="30" columns="10">
   <grid orientation="orthogonal" width="48" height="16"/>
   <image source="../img/tileset/FarmRPG16x16-TinyAssetPack/Objects/trees.png" width="160" height="48"/>

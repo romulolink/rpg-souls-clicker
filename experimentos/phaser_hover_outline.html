@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Phaser • Sprite com Outline & Hover</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+  <style>
+    html,body{margin:0;width:100%;height:100%;background:#222;overflow:hidden}
+    #gameContainer{width:100%;height:100%}
+  </style>
+</head>
+<body>
+  <!-- contêiner onde o Phaser insere o <canvas> automaticamente -->
+  <div id="gameContainer"></div>
+
+
+
+  <script>
+
+
+  const config = {
+    type: Phaser.AUTO,
+    width: 512,
+    height: 512,
+    backgroundColor: 0x222222,
+    parent: 'gameContainer',
+    input: { mouse: { capture: true } },
+    scene: {
+      preload() {
+        this.load.image('coin', '../img/UI/coin.png');
+      },
+      create() {
+        this.outlinePipeline = this.renderer.pipelines.add('outline', new OutlinePipeline(this.game));
+
+        const coin = this.add.sprite(256, 256, 'coin')
+                        .setInteractive({ useHandCursor: true });
+
+        coin.on('pointerover', () => {
+          coin.setPipeline('outline');
+
+        });
+
+        coin.on('pointerout', () => {
+          coin.resetPipeline();
+
+        });
+      }
+    }
+  };
+
+  new Phaser.Game(config);
+  </script>
+</body>
+</html>

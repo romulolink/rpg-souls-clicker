@@ -128,8 +128,6 @@ function startCombat() {
 // Função para simular o combate
 function simulateCombat(monster_id = 0, enemyID = '', scene) {
 
-    alert(enemyID);
-
     currentEnemyID = enemyID;
 
     if(monster_id >= 0){
