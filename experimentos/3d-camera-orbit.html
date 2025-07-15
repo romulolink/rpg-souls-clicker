@@ -1,0 +1,234 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Cube with OrbitControls, WASD Movement, Conditional Camera Follow, Collisions, and Zoom</title>
+    <style>
+        body { margin: 0; background: #808080; } /* Gray background */
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x808080); // Gray scene background
+        
+        // Camera setup
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 1.5, 3); // Initial position: slightly above and behind cube
+        
+        // Renderer setup
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        
+        // Player Cube
+        const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff }); // Cyan player cube
+        const playerCube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        scene.add(playerCube);
+        
+        // Plane (larger size)
+        const planeGeometry = new THREE.PlaneGeometry(100, 100); // Large 100x100 plane
+        const planeMaterial = new THREE.MeshBasicMaterial({ color: 0x808080, side: THREE.DoubleSide }); // Gray plane
+        const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+        plane.rotation.x = Math.PI / 2;
+        plane.position.y = -0.5;
+        scene.add(plane);
+        
+        // Grid helper for better visualization
+        const gridHelper = new THREE.GridHelper(100, 100);
+        scene.add(gridHelper);
+        
+        // Generate 10 random red cubes
+        const staticCubes = [];
+        const cubeCount = 10;
+        const minDistance = 2; // Minimum distance between cubes to avoid overlap
+        const planeSize = 100; // Plane dimensions
+        const redCubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red for static cubes
+
+        function generateRandomPosition(existingPositions) {
+            let position;
+            let valid = false;
+            while (!valid) {
+                position = new THREE.Vector3(
+                    (Math.random() - 0.5) * (planeSize - 1),
+                    0,
+                    (Math.random() - 0.5) * (planeSize - 1)
+                );
+                valid = true;
+                // Check for overlap with existing cubes and player
+                for (let pos of existingPositions) {
+                    if (position.distanceTo(pos) < minDistance) {
+                        valid = false;
+                        break;
+                    }
+                }
+                // Check against player cube
+                if (position.distanceTo(playerCube.position) < minDistance) {
+                    valid = false;
+                }
+            }
+            return position;
+        }
+
+        // Create static cubes
+        const existingPositions = [];
+        for (let i = 0; i < cubeCount; i++) {
+            const position = generateRandomPosition(existingPositions);
+            existingPositions.push(position);
+            const cube = new THREE.Mesh(cubeGeometry, redCubeMaterial);
+            cube.position.copy(position);
+            scene.add(cube);
+            staticCubes.push(cube);
+        }
+        
+        // OrbitControls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 1;
+        controls.maxDistance = 20; // Allow zoom-out
+        controls.enableZoom = true; // Enable zoom with scroll wheel
+        controls.zoomSpeed = 1.0; // Zoom speed
+        controls.target.copy(playerCube.position); // Initial target is player cube
+        
+        // Flag to track if OrbitControls is active
+        let isOrbitControlsActive = false;
+        
+        controls.addEventListener('start', () => {
+            isOrbitControlsActive = true;
+        });
+        
+        controls.addEventListener('end', () => {
+            isOrbitControlsActive = false;
+        });
+        
+        // WASD movement controls
+        const moveSpeed = 0.1;
+        const keys = {
+            w: false,
+            a: false,
+            s: false,
+            d: false
+        };
+        
+        document.addEventListener('keydown', (event) => {
+            switch (event.key.toLowerCase()) {
+                case 'w': keys.w = true; break;
+                case 'a': keys.a = true; break;
+                case 's': keys.s = true; break;
+                case 'd': keys.d = true; break;
+            }
+        });
+        
+        document.addEventListener('keyup', (event) => {
+            switch (event.key.toLowerCase()) {
+                case 'w': keys.w = false; break;
+                case 'a': keys.a = false; break;
+                case 's': keys.s = false; break;
+                case 'd': keys.d = false; break;
+            }
+        });
+        
+        // Collision detection
+        function checkCollision(newPosition) {
+            const playerBox = new THREE.Box3().setFromObject(playerCube);
+            playerBox.min.set(newPosition.x - 0.5, newPosition.y - 0.5, newPosition.z - 0.5);
+            playerBox.max.set(newPosition.x + 0.5, newPosition.y + 0.5, newPosition.z + 0.5);
+            
+            for (let cube of staticCubes) {
+                const cubeBox = new THREE.Box3().setFromObject(cube);
+                if (playerBox.intersectsBox(cubeBox)) {
+                    return true; // Collision detected
+                }
+            }
+            return false; // No collision
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Attempt to move player cube with WASD
+            const newPosition = playerCube.position.clone();
+            if (keys.w) newPosition.z -= moveSpeed;
+            if (keys.s) newPosition.z += moveSpeed;
+            if (keys.a) newPosition.x -= moveSpeed;
+            if (keys.d) newPosition.x += moveSpeed;
+            
+            // Only update position if no collision
+            if (!checkCollision(newPosition)) {
+                playerCube.position.copy(newPosition);
+            }
+            
+            // Update OrbitControls target to follow player cube
+            controls.target.copy(playerCube.position);
+            
+            // Maintain camera position behind cube only if moving with WASD and OrbitControls is not active
+            const isMoving = keys.w || keys.a || keys.s || keys.d;
+            if (isMoving && !isOrbitControlsActive) {
+                const offset = new THREE.Vector3(0, 1.5, 3); // Camera offset: above and behind
+                const desiredPosition = playerCube.position.clone().add(offset);
+                camera.position.lerp(desiredPosition, 0.1); // Smoothly interpolate to desired position
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+    </script>
+</body>
+</html>

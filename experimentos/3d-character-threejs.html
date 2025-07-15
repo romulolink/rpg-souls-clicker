@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Jogo 3D – Pulo, Colisão & Tiro</title>
+<style>
+  body{margin:0;overflow:hidden;background:#000}
+  #info{position:absolute;top:10px;left:10px;color:#fff;font-family:sans-serif;z-index:1}
+</style>
+</head>
+<body>
+<div id="info">WASD mover • Espaço pular • Clique esquerdo/Enter atirar</div>
+<script type="module" src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+<script type="module" src="./OrbitControls.min.js"></script>
+<script>
+const scene   = new THREE.Scene();
+scene.background = new THREE.Color(0x222222);
+
+const camera  = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
+const renderer= new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+document.body.appendChild(renderer.domElement);
+
+
+const controls = new OrbitControls( camera, renderer.domElement );
+
+//controls.update() must be called after any manual changes to the camera's transform
+camera.position.set( 0, 20, 100 );
+controls.update();
+
+/* ------------------------------------------------------------------
+   Ground & helpers
+------------------------------------------------------------------ */
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(100,100),
+  new THREE.MeshStandardMaterial({color:0x444444})
+);
+ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
+
+const grid = new THREE.GridHelper(100,100,0xffffff,0x888888);
+grid.position.y = 0.01; scene.add(grid);
+
+/* ------------------------------------------------------------------
+   Player
+------------------------------------------------------------------ */
+const player = new THREE.Mesh(
+  new THREE.BoxGeometry(1,1,1),
+  new THREE.MeshStandardMaterial({color:0x00ffcc})
+);
+player.position.y = 0.5; scene.add(player);
+let playerBox = new THREE.Box3().setFromObject(player);
+
+/* ------------------------------------------------------------------
+   Obstacles (destroyable)
+------------------------------------------------------------------ */
+const obstacles = [];
+const obstacleGeom = new THREE.BoxGeometry(1,1,1);
+const obstacleMat  = new THREE.MeshStandardMaterial({color:0xff4444});
+
+function addObstacle(x,z){
+  const mesh = new THREE.Mesh(obstacleGeom,obstacleMat);
+  mesh.position.set(x,0.5,z); scene.add(mesh);
+  obstacles.push({mesh,box:new THREE.Box3().setFromObject(mesh)});
+}
+
+for(let x=-20;x<=20;x+=5)
+  for(let z=-20;z<=20;z+=5)
+    if(!(x===0&&z===0)) addObstacle(x,z);
+
+/* ------------------------------------------------------------------
+   Lights
+------------------------------------------------------------------ */
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
+const dirLight = new THREE.DirectionalLight(0xffffff,0.8);
+dirLight.position.set(5,10,7.5); scene.add(dirLight);
+
+/* ------------------------------------------------------------------
+   Input
+------------------------------------------------------------------ */
+const keys = {w:false,a:false,s:false,d:false,' ':false};
+window.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
+window.addEventListener('keyup',  e=>keys[e.key.toLowerCase()]=false);
+
+/* ------------------------------------------------------------------
+   Jump & gravity
+------------------------------------------------------------------ */
+let velocityY = 0, isOnGround = true;
+const gravity = -0.01, jumpForce = 0.2;
+
+function applyGravity(){
+  velocityY += gravity;
+  player.position.y += velocityY;
+  if(player.position.y<=0.5){
+    player.position.y = 0.5; velocityY = 0; isOnGround = true;
+  }
+}
+function jump(){ if(isOnGround && keys[' ']){ velocityY = jumpForce; isOnGround = false; }}
+
+/* ------------------------------------------------------------------
+   Movement & collision
+------------------------------------------------------------------ */
+const speed = 0.1;
+function willCollide(dx,dz){
+  const nextBox = playerBox.clone().translate(new THREE.Vector3(dx,0,dz));
+  return obstacles.some(o=>nextBox.intersectsBox(o.box));
+}
+function movePlayer(){
+  let dx=0,dz=0;
+  if(keys.w) dz+=speed; if(keys.s) dz-=speed;
+  if(keys.a) dx+=speed; if(keys.d) dx-=speed;
+  const sin=Math.sin(player.rotation.y), cos=Math.cos(player.rotation.y);
+  const movX = dx*cos - dz*sin, movZ = dz*cos + dx*sin;
+  if(!willCollide(movX,movZ)){
+    player.position.x += movX; player.position.z += movZ;
+    playerBox.translate(new THREE.Vector3(movX,0,movZ));
+  }
+}
+
+/* ------------------------------------------------------------------
+   Projectiles
+------------------------------------------------------------------ */
+const projectiles = [];
+const projGeom = new THREE.SphereGeometry(0.15,8,8);
+const projMat  = new THREE.MeshStandardMaterial({color:0xffff00});
+const projSpeed = 0.4;
+function shoot(){
+  const bullet = new THREE.Mesh(projGeom,projMat);
+  bullet.position.copy(player.position).add(new THREE.Vector3(0,0.2,0));
+  // forward vector (negative Z axis in local space)
+  const dir = new THREE.Vector3(0,0,-1).applyAxisAngle(new THREE.Vector3(0,1,0),player.rotation.y).negate().normalize();
+  projectiles.push({mesh:bullet,dir,start:performance.now()});
+  scene.add(bullet);
+}
+window.addEventListener('click', shoot);
+window.addEventListener('keydown',e=>{ if(e.key==='Enter') shoot(); });
+
+function updateProjectiles(){
+  const now = performance.now();
+  for(let i=projectiles.length-1;i>=0;i--){
+    const p = projectiles[i];
+    p.mesh.position.addScaledVector(p.dir,projSpeed);
+    // lifetime
+    if(now - p.start > 3000){
+      scene.remove(p.mesh); projectiles.splice(i,1); continue;
+    }
+    // collision with obstacles
+    const pBox = new THREE.Box3().setFromObject(p.mesh);
+    for(let j=obstacles.length-1;j>=0;j--){
+      if(pBox.intersectsBox(obstacles[j].box)){
+        // remove obstacle
+        scene.remove(obstacles[j].mesh); obstacles.splice(j,1);
+        // remove projectile
+        scene.remove(p.mesh); projectiles.splice(i,1);
+        break;
+      }
+    }
+  }
+}
+
+/* ------------------------------------------------------------------
+   Camera
+------------------------------------------------------------------ */
+function updateCamera(){
+  const offset = new THREE.Vector3(0,3,-6);
+  const camPos = offset.clone().applyAxisAngle(new THREE.Vector3(0,1,0),player.rotation.y);
+  camera.position.copy(player.position).add(camPos);
+  camera.lookAt(player.position);
+}
+
+/* ------------------------------------------------------------------
+   Main loop
+------------------------------------------------------------------ */
+function animate(){
+  requestAnimationFrame(animate);
+  jump(); applyGravity(); movePlayer();
+  updateProjectiles(); updateCamera();
+  // required if controls.enableDamping or controls.autoRotate are set to true
+	controls.update();
+  renderer.render(scene,camera);
+}
+animate();
+
+/* ------------------------------------------------------------------
+   Resize
+------------------------------------------------------------------ */
+window.addEventListener('resize',()=>{
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+camera.position.set(0,3,-6); camera.lookAt(player.position);
+</script>
+</body>
+</html>
