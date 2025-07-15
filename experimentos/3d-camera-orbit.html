@@ -1,48 +1,9 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Three.js Cube with OrbitControls, WASD Movement, Conditional Camera Follow, Collisions, and Zoom</title>
+    <title>Three.js Cube with Pixel Art Sprite on Front Face, OrbitControls, Camera-Directed WASD Movement, Camera Look-At, Collisions, Zoom, and Min Height</title>
     <style>
         body { margin: 0; background: #808080; } /* Gray background */
         canvas { display: block; }
@@ -59,16 +20,35 @@
         // Camera setup
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(0, 1.5, 3); // Initial position: slightly above and behind cube
+        const minCameraHeight = 3.5; // Minimum camera height above ground
         
         // Renderer setup
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
         
-        // Player Cube
+        // Player Cube with Pixel Art Sprite on Front Face
         const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const cubeMaterial = new THREE.MeshBasicMaterial({ color: 0x00ffff }); // Cyan player cube
-        const playerCube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        
+        // Simple 16x16 pixel art smiley face as data URL (replace with your own sprite URL if needed)
+        const spriteDataURL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAEKADAAQAAAABAAAAEAAAAAD/7QCaAAAAvUlEQVQ4T63MsQ1CMRBE0WtoKfgA8QNqKEYH7/AN/gTLfYAmXgBBAy0sLWyM+EW2McZ7M/PdzOzuu6/3q1+1eF2r+2q8c2fKmc0mXde5lH9o0zRNk+12e+3uZ7IZD9gM99uM5H3Odt3v+/7SNG2MMe4t4uM0TdP3fb/PZDI5z3Oex2S2+x0W2O12u5/NZvL7fZ/PZDL5/W4ul1m3/76u1WmaZr7f7/ve3w/4fv+3bZqmaeZ5T9e1Zma2kJ99Xls3pwAAAABJRU5ErkJggg==';
+        
+        // Create texture with NearestFilter for pixel art crispness
+        const texture = new THREE.TextureLoader().load(spriteDataURL);
+        texture.magFilter = THREE.NearestFilter; // Crisp pixel art when zoomed in
+        texture.minFilter = THREE.NearestFilter; // Crisp pixel art when zoomed out
+        
+        // Create materials array for cube faces
+        const materials = [
+            new THREE.MeshBasicMaterial({ color: 0x00ffff }), // Right face
+            new THREE.MeshBasicMaterial({ color: 0x00ffff }), // Left face
+            new THREE.MeshBasicMaterial({ color: 0x00ffff }), // Top face
+            new THREE.MeshBasicMaterial({ color: 0x00ffff }), // Bottom face
+            new THREE.MeshBasicMaterial({ map: texture }),     // Front face (sprite)
+            new THREE.MeshBasicMaterial({ color: 0x00ffff })  // Back face
+        ];
+        
+        const playerCube = new THREE.Mesh(cubeGeometry, materials);
         scene.add(playerCube);
         
         // Plane (larger size)
@@ -128,11 +108,12 @@
         
         // OrbitControls
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
+        controls.enableDamping = false;
+        controls.dampingFactor = 0.025; // Reduced from 0.05 to make camera follow more responsively
         controls.screenSpacePanning = false;
+        controls.maxPolarAngle = Math.PI / 2; // Limit vertical rotation to prevent flipping
         controls.minDistance = 1;
-        controls.maxDistance = 20; // Allow zoom-out
+        controls.maxDistance = 7; // Allow zoom-out
         controls.enableZoom = true; // Enable zoom with scroll wheel
         controls.zoomSpeed = 1.0; // Zoom speed
         controls.target.copy(playerCube.position); // Initial target is player cube
@@ -201,12 +182,32 @@
         function animate() {
             requestAnimationFrame(animate);
             
+            // Enforce minimum camera height at the start of the loop
+            if (camera.position.y < minCameraHeight) {
+                camera.position.y = minCameraHeight;
+            }
+            
             // Attempt to move player cube with WASD
             const newPosition = playerCube.position.clone();
-            if (keys.w) newPosition.z -= moveSpeed;
-            if (keys.s) newPosition.z += moveSpeed;
-            if (keys.a) newPosition.x -= moveSpeed;
-            if (keys.d) newPosition.x += moveSpeed;
+            
+            // Get camera's forward direction (projected onto XZ plane)
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction); // Get camera's forward direction
+            direction.y = 0; // Project onto XZ plane (horizontal movement)
+            direction.normalize(); // Normalize to unit vector
+            
+            if (keys.w) {
+                // Move forward in camera's direction
+                const moveVector = direction.clone().multiplyScalar(moveSpeed);
+                newPosition.add(moveVector);
+            }
+            if (keys.s) {
+                // Move backward (opposite of camera's direction)
+                const moveVector = direction.clone().multiplyScalar(-moveSpeed);
+                newPosition.add(moveVector);
+            }
+            if (keys.a) newPosition.x -= moveSpeed; // Left along X
+            if (keys.d) newPosition.x += moveSpeed; // Right along X
             
             // Only update position if no collision
             if (!checkCollision(newPosition)) {
@@ -214,17 +215,17 @@
             }
             
             // Update OrbitControls target to follow player cube
-            controls.target.copy(playerCube.position);
-            
-            // Maintain camera position behind cube only if moving with WASD and OrbitControls is not active
-            const isMoving = keys.w || keys.a || keys.s || keys.d;
-            if (isMoving && !isOrbitControlsActive) {
-                const offset = new THREE.Vector3(0, 1.5, 3); // Camera offset: above and behind
-                const desiredPosition = playerCube.position.clone().add(offset);
-                camera.position.lerp(desiredPosition, 0.1); // Smoothly interpolate to desired position
+            if (!isOrbitControlsActive) {
+                controls.target.copy(playerCube.position);
             }
             
             controls.update();
+            
+            // Enforce minimum camera height after OrbitControls update
+            if (camera.position.y < minCameraHeight) {
+                camera.position.y = minCameraHeight;
+            }
+            
             renderer.render(scene, camera);
         }
         
