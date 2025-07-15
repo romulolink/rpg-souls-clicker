@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RPG Equipment Screen (v2)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --bg:#1e1e1e;
+    --panel:#2d2d2d;
+    --accent:#4caf50;
+    --radius:10px;
+  }
+  body{
+    margin:0; font-family:sans-serif; background:var(--bg); color:#fff; display:flex; flex-direction:column; align-items:center; padding:18px;
+  }
+  h1{margin:0 0 12px; font-size:1.5rem;}
+  #stage{
+    display:grid;
+    grid-template-columns:auto 200px auto;
+    gap:18px;
+    align-items:center;
+  }
+  .col{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .slot{
+    background:var(--panel);
+    border-radius:var(--radius);
+    width:140px; text-align:center; padding:10px;
+  }
+  .slot button{
+    margin-top:6px; width:100%;
+  }
+  #player{
+    width:200px; height:260px; background:#555;
+    border:3px solid var(--accent); border-radius:var(--radius);
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; color:#ddd;
+  }
+  #stats{
+    margin-top:20px; background:var(--panel); padding:14px 24px; border-radius:var(--radius); width:240px; text-align:center;
+  }
+  #controls{margin-top:10px; display:flex; gap:10px;}
+  button{cursor:pointer;}
+</style>
+</head>
+<body>
+
+<h1>🛡️ RPG Equipment Screen</h1>
+
+<div id="stage">
+  <!-- Left column -->
+  <div class="col">
+    <div class="slot" data-slot="head">
+      <strong>Head</strong>
+      <div class="item-name" id="head-name">None</div>
+      <button onclick="equip('head')">Equip / Cycle</button>
+    </div>
+    <div class="slot" data-slot="leftHand">
+      <strong>Left Hand</strong>
+      <div class="item-name" id="leftHand-name">None</div>
+      <button onclick="equip('leftHand')">Equip / Cycle</button>
+    </div>
+    <div class="slot" data-slot="ring">
+      <strong>Ring</strong>
+      <div class="item-name" id="ring-name">None</div>
+      <button onclick="equip('ring')">Equip / Cycle</button>
+    </div>
+  </div>
+
+  <!-- Player image -->
+  <div id="player">PLAYER</div>
+
+  <!-- Right column -->
+  <div class="col">
+    <div class="slot" data-slot="rightHand">
+      <strong>Right Hand</strong>
+      <div class="item-name" id="rightHand-name">None</div>
+      <button onclick="equip('rightHand')">Equip / Cycle</button>
+    </div>
+    <div class="slot" data-slot="pendant">
+      <strong>Pendant</strong>
+      <div class="item-name" id="pendant-name">None</div>
+      <button onclick="equip('pendant')">Equip / Cycle</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div id="stats">
+  <strong>Stats</strong><br>
+  Strength: <span id="str">10</span><br>
+  Defense: <span id="def">10</span><br>
+  Agility: <span id="agi">10</span>
+</div>
+
+<!-- Save / Load -->
+<div id="controls">
+  <button onclick="saveLoadout()">💾 Save</button>
+  <button onclick="loadLoadout()">📂 Load</button>
+</div>
+
+<script>
+/* ---------- base & item definitions ---------- */
+const baseStats = {str:10,def:10,agi:10};
+
+const itemPool = {
+  head: [
+    {name:'None', bonus:{}},
+    {name:'Leather Cap', bonus:{def:1}},
+    {name:'Iron Helm', bonus:{def:3,str:1}}
+  ],
+  leftHand: [
+    {name:'None', bonus:{}},
+    {name:'Wooden Shield', bonus:{def:2}},
+    {name:'Steel Shield', bonus:{def:4}}
+  ],
+  rightHand: [
+    {name:'None', bonus:{}},
+    {name:'Short Sword', bonus:{str:3}},
+    {name:'Long Sword', bonus:{str:5,agi:-1}}
+  ],
+  ring: [
+    {name:'None', bonus:{}},
+    {name:'Agility Ring', bonus:{agi:2}},
+    {name:'Power Ring', bonus:{str:2}}
+  ],
+  pendant: [
+    {name:'None', bonus:{}},
+    {name:'Guard Pendant', bonus:{def:2}},
+    {name:'Swift Pendant', bonus:{agi:3}}
+  ]
+};
+
+const equipped = {
+  head:0,
+  leftHand:0,
+  rightHand:0,
+  ring:0,
+  pendant:0
+};
+
+/* ---------- functions ---------- */
+function equip(slot){
+  // cycle to next item in that pool
+  equipped[slot] = (equipped[slot] + 1) % itemPool[slot].length;
+  document.getElementById(`${slot}-name`).innerText = itemPool[slot][equipped[slot]].name;
+  updateStats();
+}
+
+function updateStats(){
+  const final = {...baseStats};
+  for(const slot in equipped){
+    const item = itemPool[slot][equipped[slot]];
+    for(const s in item.bonus){
+      final[s] += item.bonus[s];
+    }
+  }
+  ['str','def','agi'].forEach(k=>document.getElementById(k).innerText = final[k]);
+}
+
+function saveLoadout(){
+  localStorage.setItem('rpgLoadout', JSON.stringify(equipped));
+  alert('Load‑out saved!');
+}
+
+function loadLoadout(){
+  const data = JSON.parse(localStorage.getItem('rpgLoadout')||'null');
+  if(!data){ alert('No save found.'); return; }
+  Object.assign(equipped, data);
+  // refresh UI text
+  for(const slot in equipped){
+    document.getElementById(`${slot}-name`).innerText = itemPool[slot][equipped[slot]].name;
+  }
+  updateStats();
+  alert('Load‑out loaded!');
+}
+
+/* ---------- init ---------- */
+updateStats();
+</script>
+
+</body>
+</html>

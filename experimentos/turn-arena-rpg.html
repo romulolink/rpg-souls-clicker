@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RPG Grid w/ HP + Crit</title>
+<style>
+:root { --zoom: 2; }
+html,body{
+  margin:0;height:100%;background:#111;color:#fff;font-family:monospace;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+#grid{
+  display:grid;grid-template-columns:repeat(16,1fr);grid-template-rows:repeat(16,1fr);
+  width:min(95vmin,95vmax);height:min(95vmin,95vmax);
+  transform:scale(var(--zoom));transform-origin:top left;
+}
+.cell{position:relative;border:1px solid #222;background:#333;}
+.obj{position:absolute;inset:0;margin:auto;display:flex;justify-content:center;align-items:flex-end;}
+.playerObj{width:80%;height:80%;background:rgba(0,255,0,.7);}
+.enemyObj {width:60%;height:60%;background:rgba(255,0,0,.7);}
+.hpwrap{position:absolute;bottom:-4px;left:0;width:100%;height:5px;border:1px solid #000;box-sizing:border-box;}
+.hpfill{height:100%;border:1px solid #fff;box-sizing:border-box;background:red;}
+.floating{
+  position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);pointer-events:none;
+  font-weight:bold;animation:floatFade .8s ease-out forwards;
+}
+.crit{animation:critPulse .3s ease-in-out;}
+@keyframes floatFade{to{transform:translate(-50%,-50%) translateY(-22px);opacity:0;}}
+@keyframes critPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.4);} }
+#hud{position:fixed;top:6px;left:6px;font-size:18px;}
+</style>
+</head>
+<body>
+<div id="hud"></div>
+<div id="grid"></div>
+
+<script>
+const SIZE=16,gridEl=document.getElementById('grid'),hud=document.getElementById('hud');
+const player={x:8,y:8,hp:20,max:20,atk:2,crit:20};          // 20 % crit
+const enemies=[];
+let zoom=2;
+
+const grid=[...Array(SIZE)].map(()=>Array(SIZE));
+for(let y=0;y<SIZE;y++)for(let x=0;x<SIZE;x++){
+  const d=document.createElement('div');d.className='cell';gridEl.appendChild(d);grid[y][x]=d;
+}
+function spawnEnemies(n){
+  while(enemies.length<n){
+    const x=Math.floor(Math.random()*SIZE),y=Math.floor(Math.random()*SIZE);
+    if((x===player.x&&y===player.y)||enemies.some(e=>e.x===x&&e.y===y))continue;
+    enemies.push({x,y,hp:6,max:6,atk:1,crit:10});           // 10 % crit
+  }
+}
+spawnEnemies(6);
+
+function clearCell(c){c.innerHTML='';}
+function addObj(cell,cls,unit){
+  const o=document.createElement('div');o.className=`obj ${cls}`;
+  // HP bar
+  const wrap=document.createElement('div');wrap.className='hpwrap';
+  const fill=document.createElement('div');fill.className='hpfill';
+  fill.style.width=`${(unit.hp/unit.max)*100}%`;
+  fill.style.background=`hsl(${(unit.hp/unit.max)*120},80%,45%)`;
+  wrap.appendChild(fill);o.appendChild(wrap);cell.appendChild(o);
+}
+
+function draw(){
+  for(let y=0;y<SIZE;y++)for(let x=0;x<SIZE;x++)clearCell(grid[y][x]);
+  addObj(grid[player.y][player.x],'playerObj',player);
+  enemies.forEach(e=>e.hp>0&&addObj(grid[e.y][e.x],'enemyObj',e));
+  hud.textContent=`HP: ${player.hp}`;
+}
+
+function floatTxt(x,y,txt,color,isCrit){
+  const s=document.createElement('span');
+  s.className='floating';if(isCrit)s.classList.add('crit');
+  s.style.color=color;s.textContent=txt;
+  grid[y][x].appendChild(s);s.addEventListener('animationend',()=>s.remove());
+}
+function rnd(n){return Math.floor(Math.random()*n);}
+function doAttack(attacker,defender,x,y){
+  const isCrit=rnd(100)<attacker.crit;
+  const dmg=isCrit?attacker.atk*2:attacker.atk;
+  defender.hp=Math.max(0,defender.hp-dmg);
+  floatTxt(x,y,`-${dmg}${isCrit?'!' :''}`, attacker===player?'red':'lime',isCrit);
+}
+
+function inBounds(x,y){return x>=0&&x<SIZE&&y>=0&&y<SIZE;}
+
+function movePlayer(dx,dy){
+  const nx=player.x+dx,ny=player.y+dy;if(!inBounds(nx,ny))return;
+  player.x=nx;player.y=ny;enemyTurn();combat();draw();
+  if(player.hp<=0)alert("Game Over");
+}
+function enemyTurn(){
+  enemies.forEach(e=>{
+    if(e.hp<=0)return;
+    const dx=player.x-e.x,dy=player.y-e.y;
+    let tx=e.x,ty=e.y;
+    if(Math.abs(dx)>Math.abs(dy))tx+=dx>0?1:-1;else if(dy)ty+=dy>0?1:-1;
+    const occupied=enemies.some(o=>o!==e&&o.x===tx&&o.y===ty);
+    if(tx===player.x&&ty===player.y){
+      doAttack(e,player,player.x,player.y);
+    }else if(!occupied&&inBounds(tx,ty)){e.x=tx;e.y=ty;}
+  });
+}
+function combat(){
+  enemies.forEach(e=>{
+    if(e.hp<=0)return;
+    const dist=Math.abs(e.x-player.x)+Math.abs(e.y-player.y);
+    if(dist===1){
+      doAttack(player,e,e.x,e.y);
+      if(e.hp>0)doAttack(e,player,player.x,player.y);
+    }
+  });
+}
+
+document.addEventListener('keydown',e=>{
+  if(player.hp<=0)return;
+  switch(e.key.toLowerCase()){
+    case'w':movePlayer(0,-1);break;case's':movePlayer(0,1);break;
+    case'a':movePlayer(-1,0);break;case'd':movePlayer(1,0);break;
+    case'+':case'=':zoom=Math.min(4,zoom+.5);setZoom();break;
+    case'-':zoom=Math.max(1,zoom-.5);setZoom();break;
+  }
+});
+function setZoom(){document.documentElement.style.setProperty('--zoom',zoom);}
+draw();
+</script>
+</body>
+</html>
