@@ -20,7 +20,7 @@
                 default: 'arcade',
                 arcade: {
                     gravity: { y: 0 },
-                    debug: false
+                    debug: true
                 }
             },
             scene: {
@@ -41,19 +41,25 @@
         let cursors;
         let fogMap;
         const tileSize = 16;
-        const mapWidth = 100; // Aumentado para compensar tiles menores
+        const mapWidth = 100;
         const mapHeight = 100;
-        const fogRadius = 6; // Ajustado para cobrir uma área proporcional com tiles menores
+        const fogRadius = 6;
 
         function preload() {
-            this.load.image('tiles', 'tileset.png'); // Certifique-se de que o caminho está correto
+            this.load.image('tiles', 'tileset.png');
             this.load.spritesheet('player', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
         }
 
         function create() {
-            // Cria um mapa com tiles variados
-            const mapData = Array(mapHeight).fill().map(() => 
-                Array(mapWidth).fill().map(() => Phaser.Math.Between(0, 9))
+            // Cria um mapa com tiles variados e bordas
+            const mapData = Array(mapHeight).fill().map((_, y) => 
+                Array(mapWidth).fill().map((_, x) => {
+                    // Adiciona tiles de parede nas bordas (usando um índice de tile específico, por exemplo, 10 para parede)
+                    if (x === 0 || x === mapWidth - 1 || y === 0 || y === mapHeight - 1) {
+                        return 10; // Índice do tile de parede
+                    }
+                    return Phaser.Math.Between(0, 9); // Tiles normais no interior
+                })
             );
             const map = this.make.tilemap({ 
                 data: mapData,
@@ -63,17 +69,24 @@
             const tileset = map.addTilesetImage('tiles', 'tiles', 16, 16, 0, 0);
             const layer = map.createLayer(0, tileset, 0, 0).setScale(1);
 
+            // Configura as colisões para os tiles de parede (índice 10)
+            map.setCollision(10);
+
             // Inicializa o fogMap (0 = coberto, 1 = descoberto)
             fogMap = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
-            loadFogState();
+            //loadFogState();
 
             fogLayer = this.add.graphics();
             fogLayer.setDepth(10);
             updateFogOfWar(50, 50);
 
             player = this.physics.add.sprite(mapWidth * tileSize / 2, mapHeight * tileSize / 2, 'player', 4);
-            player.setOrigin(0.5, 0.5);
-            player.setCollideWorldBounds(true);
+            player.setOrigin(0, 0);
+
+            // Adiciona colisão entre o jogador e as paredes
+            this.physics.add.collider(player, layer);
+
+            // Configura a câmera para seguir o jogador e limitar-se ao tamanho do mapa
             this.cameras.main.startFollow(player);
             this.cameras.main.setBounds(0, 0, mapWidth * tileSize, mapHeight * tileSize);
 
@@ -137,13 +150,13 @@
 
         function updateFogOfWar(centerX, centerY) {
             fogLayer.clear();
-            fogLayer.fillStyle(0x000000, 0.95); // Transparência de 95%
+            fogLayer.fillStyle(0x000000, 0.95);
 
             for (let y = 0; y < mapHeight; y++) {
                 for (let x = 0; x < mapWidth; x++) {
                     const distance = Phaser.Math.Distance.Between(x, y, centerX, centerY);
                     if (distance <= fogRadius) {
-                        fogMap[y][x] = 1; // Tile descoberto
+                        fogMap[y][x] = 1;
                     }
                     if (fogMap[y][x] === 0) {
                         fogLayer.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
