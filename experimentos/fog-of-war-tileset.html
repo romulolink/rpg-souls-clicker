@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser Tilemap with Fog of War</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
+        canvas { border: 1px solid white; }
+    </style>
+</head>
+<body>
+    <script>
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            },
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            }
+        };
+
+        const game = new Phaser.Game(config);
+
+        let player;
+        let fogLayer;
+        let cursors;
+        let fogMap;
+        const tileSize = 16;
+        const mapWidth = 100; // Aumentado para compensar tiles menores
+        const mapHeight = 100;
+        const fogRadius = 6; // Ajustado para cobrir uma área proporcional com tiles menores
+
+        function preload() {
+            this.load.image('tiles', 'tileset.png'); // Certifique-se de que o caminho está correto
+            this.load.spritesheet('player', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
+        }
+
+        function create() {
+            // Cria um mapa com tiles variados
+            const mapData = Array(mapHeight).fill().map(() => 
+                Array(mapWidth).fill().map(() => Phaser.Math.Between(0, 9))
+            );
+            const map = this.make.tilemap({ 
+                data: mapData,
+                tileWidth: tileSize, 
+                tileHeight: tileSize 
+            });
+            const tileset = map.addTilesetImage('tiles', 'tiles', 16, 16, 0, 0);
+            const layer = map.createLayer(0, tileset, 0, 0).setScale(1);
+
+            // Inicializa o fogMap (0 = coberto, 1 = descoberto)
+            fogMap = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
+            loadFogState();
+
+            fogLayer = this.add.graphics();
+            fogLayer.setDepth(10);
+            updateFogOfWar(50, 50);
+
+            player = this.physics.add.sprite(mapWidth * tileSize / 2, mapHeight * tileSize / 2, 'player', 4);
+            player.setOrigin(0.5, 0.5);
+            player.setCollideWorldBounds(true);
+            this.cameras.main.startFollow(player);
+            this.cameras.main.setBounds(0, 0, mapWidth * tileSize, mapHeight * tileSize);
+
+            this.anims.create({
+                key: 'left',
+                frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'idle',
+                frames: [{ key: 'player', frame: 4 }],
+                frameRate: 20
+            });
+
+            cursors = this.input.keyboard.createCursorKeys();
+        }
+
+        function update() {
+            const speed = 150;
+            let moving = false;
+
+            if (cursors.left.isDown) {
+                player.setVelocityX(-speed);
+                player.anims.play('left', true);
+                moving = true;
+            } else if (cursors.right.isDown) {
+                player.setVelocityX(speed);
+                player.anims.play('right', true);
+                moving = true;
+            } else {
+                player.setVelocityX(0);
+            }
+
+            if (cursors.up.isDown) {
+                player.setVelocityY(-speed);
+                player.anims.play(moving ? 'left' : 'idle', true);
+                moving = true;
+            } else if (cursors.down.isDown) {
+                player.setVelocityY(speed);
+                player.anims.play(moving ? 'right' : 'idle', true);
+                moving = true;
+            } else {
+                player.setVelocityY(0);
+            }
+
+            if (!moving) {
+                player.anims.play('idle', true);
+            }
+
+            const tileX = Math.floor(player.x / tileSize);
+            const tileY = Math.floor(player.y / tileSize);
+            updateFogOfWar(tileX, tileY);
+        }
+
+        function updateFogOfWar(centerX, centerY) {
+            fogLayer.clear();
+            fogLayer.fillStyle(0x000000, 0.95); // Transparência de 95%
+
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    const distance = Phaser.Math.Distance.Between(x, y, centerX, centerY);
+                    if (distance <= fogRadius) {
+                        fogMap[y][x] = 1; // Tile descoberto
+                    }
+                    if (fogMap[y][x] === 0) {
+                        fogLayer.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                    }
+                }
+            }
+
+            saveFogState();
+        }
+
+        function saveFogState() {
+            try {
+                localStorage.setItem('fogMap', JSON.stringify(fogMap));
+            } catch (e) {
+                console.error('Erro ao salvar fogMap no localStorage:', e);
+            }
+        }
+
+        function loadFogState() {
+            try {
+                const savedFogMap = localStorage.getItem('fogMap');
+                if (savedFogMap) {
+                    const parsedFogMap = JSON.parse(savedFogMap);
+                    if (Array.isArray(parsedFogMap) && parsedFogMap.length === mapHeight && parsedFogMap.every(row => Array.isArray(row) && row.length === mapWidth)) {
+                        fogMap = parsedFogMap;
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao carregar fogMap do localStorage:', e);
+            }
+        }
+    </script>
+</body>
+</html>
