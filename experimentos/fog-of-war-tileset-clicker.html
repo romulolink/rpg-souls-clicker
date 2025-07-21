@@ -47,7 +47,7 @@
         const tileSize = 32; // Alterado para 32 pixels (tiles de 32x32)
         const mapWidth = 100;
         const mapHeight = 100;
-        const fogRadius = 12;
+        const fogRadius = 6;
         const fadeDuration = 300; // Duração da animação de transição para tiles revelados
         const gradientRadius = fogRadius + 2; // Raio para transparência gradual em tiles não descobertos
         const minAlpha = 0.2; // Opacidade mínima para tiles não descobertos próximos ao jogador
@@ -57,7 +57,7 @@
 
         function preload() {
             this.load.image('tiles', 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png');
-            this.load.spritesheet('player', 'https://rpg-souls-clicker.vercel.app/img/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
+            this.load.spritesheet('player', 'https://rpg-souls-clicker.vercel.app/img/sprites/dude.png', { frameWidth: 32, frameHeight: 32 });
         }
 
         function create() {
@@ -83,7 +83,7 @@
 
             // Inicializa o fogMap (0 = coberto, 1 = descoberto)
             fogMap = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
-            loadFogState();
+            //loadFogState();
 
             // Criar textura sólida para o nevoeiro
             const solidGraphics = this.add.graphics();
