@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser Tilemap with Fog of War</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
+        canvas { border: 1px solid white; }
+    </style>
+</head>
+<body>
+    <script>
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: true
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            },
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            }
+        };
+
+        const game = new Phaser.Game(config);
+
+        let player;
+        let fogSprites;
+        let cursors;
+        let fogMap;
+        const tileSize = 16;
+        const mapWidth = 100;
+        const mapHeight = 100;
+        const fogRadius = 6;
+
+        function preload() {
+            this.load.image('tiles', 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png');
+            this.load.spritesheet('player', 'https://labs.phaser.io/assets/sprites/dude.png', { frameWidth: 32, frameHeight: 48 });
+        }
+
+        function create() {
+            // Cria um mapa com tiles variados e bordas
+            const mapData = Array(mapHeight).fill().map((_, y) => 
+                Array(mapWidth).fill().map((_, x) => {
+                    if (x === 0 || x === mapWidth - 1 || y === 0 || y === mapHeight - 1) {
+                        return 10; // Índice do tile de parede
+                    }
+                    return Phaser.Math.Between(0, 9); // Tiles normais no interior
+                })
+            );
+            const map = this.make.tilemap({ 
+                data: mapData,
+                tileWidth: tileSize, 
+                tileHeight: tileSize 
+            });
+            const tileset = map.addTilesetImage('tiles', 'tiles', 16, 16, 0, 0);
+            const layer = map.createLayer(0, tileset, 0, 0).setScale(1);
+
+            // Configura as colisões para os tiles de parede (índice 10)
+            map.setCollision(10);
+
+            // Inicializa o fogMap (0 = coberto, 1 = descoberto)
+            fogMap = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
+            
+            loadFogState();
+
+            // Criar textura de quadrado com bordas arredondadas e gradiente
+            const gradientGraphics = this.add.graphics();
+            const cornerRadius = tileSize / 100; // Raio dos cantos (25% do tamanho do tile)
+            for (let size = tileSize; size > 0; size -= 2) {
+                const alpha = size / tileSize; // Alpha varia de 1 (centro) a 0 (borda)
+                gradientGraphics.fillStyle(0x000000, alpha);
+                gradientGraphics.fillRoundedRect(
+                    (tileSize - size) / 2, // Centraliza o retângulo
+                    (tileSize - size) / 2,
+                    size,
+                    size,
+                    cornerRadius * (size / tileSize) // Ajusta o raio proporcionalmente
+                );
+            }
+            gradientGraphics.generateTexture('fogGradient', tileSize, tileSize);
+            gradientGraphics.destroy();
+
+            // Criar grupo de sprites para o nevoeiro
+            fogSprites = this.add.group();
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    const sprite = this.add.sprite(x * tileSize, y * tileSize, 'fogGradient');
+                    sprite.setOrigin(0);
+                    sprite.setDepth(10);
+                    sprite.setAlpha(fogMap[y][x] === 0 ? 0.95 : 0); // Opaco se coberto, transparente se descoberto
+                    fogSprites.add(sprite);
+                }
+            }
+
+            player = this.physics.add.sprite(mapWidth * tileSize / 2, mapHeight * tileSize / 2, 'player', 4);
+            player.setOrigin(0, 0);
+
+            // Adiciona colisão entre o jogador e as paredes
+            this.physics.add.collider(player, layer);
+
+            // Configura a câmera para seguir o jogador e limitar-se ao tamanho do mapa
+            this.cameras.main.startFollow(player);
+            this.cameras.main.setBounds(0, 0, mapWidth * tileSize, mapHeight * tileSize);
+
+            this.anims.create({
+                key: 'left',
+                frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'idle',
+                frames: [{ key: 'player', frame: 4 }],
+                frameRate: 20
+            });
+
+            cursors = this.input.keyboard.createCursorKeys();
+        }
+
+        function update() {
+            const speed = 150;
+            let moving = false;
+
+            if (cursors.left.isDown) {
+                player.setVelocityX(-speed);
+                player.anims.play('left', true);
+                moving = true;
+            } else if (cursors.right.isDown) {
+                player.setVelocityX(speed);
+                player.anims.play('right', true);
+                moving = true;
+            } else {
+                player.setVelocityX(0);
+            }
+
+            if (cursors.up.isDown) {
+                player.setVelocityY(-speed);
+                player.anims.play(moving ? 'left' : 'idle', true);
+                moving = true;
+            } else if (cursors.down.isDown) {
+                player.setVelocityY(speed);
+                player.anims.play(moving ? 'right' : 'idle', true);
+                moving = true;
+            } else {
+                player.setVelocityY(0);
+            }
+
+            if (!moving) {
+                player.anims.play('idle', true);
+            }
+
+            const tileX = Math.floor(player.x / tileSize);
+            const tileY = Math.floor(player.y / tileSize);
+            updateFogOfWar(tileX, tileY);
+        }
+
+        function updateFogOfWar(centerX, centerY) {
+            let updated = false;
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    const distance = Phaser.Math.Distance.Between(x, y, centerX, centerY);
+                    if (distance <= fogRadius && fogMap[y][x] === 0) {
+                        fogMap[y][x] = 1;
+                        updated = true;
+                    }
+                }
+            }
+
+            // Atualizar apenas os sprites afetados
+            if (updated) {
+                const sprites = fogSprites.getChildren();
+                let index = 0;
+                for (let y = 0; y < mapHeight; y++) {
+                    for (let x = 0; x < mapWidth; x++) {
+                        sprites[index].setAlpha(fogMap[y][x] === 0 ? 0.95 : 0);
+                        index++;
+                    }
+                }
+                saveFogState();
+            }
+        }
+
+        function saveFogState() {
+            try {
+                localStorage.setItem('fogMap', JSON.stringify(fogMap));
+            } catch (e) {
+                console.error('Erro ao salvar fogMap no localStorage:', e);
+            }
+        }
+
+        function loadFogState() {
+            try {
+                const savedFogMap = localStorage.getItem('fogMap');
+                if (savedFogMap) {
+                    const parsedFogMap = JSON.parse(savedFogMap);
+                    if (Array.isArray(parsedFogMap) && parsedFogMap.length === mapHeight && parsedFogMap.every(row => Array.isArray(row) && row.length === mapWidth)) {
+                        fogMap = parsedFogMap;
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao carregar fogMap do localStorage:', e);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phaser Tilemap with Fog of War</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
     <style>
         body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
         canvas { border: 1px solid white; }
@@ -20,7 +20,7 @@
                 default: 'arcade',
                 arcade: {
                     gravity: { y: 0 },
-                    debug: true
+                    debug: false
                 }
             },
             scene: {
@@ -37,13 +37,22 @@
         const game = new Phaser.Game(config);
 
         let player;
-        let fogLayer;
+        let fogSprites;
         let cursors;
         let fogMap;
+        let tilemap;
+        let isMoving = false; // Controla se o jogador está em movimento
+        let moveCooldown = 0; // Controla o tempo mínimo entre movimentações (em ms)
         const tileSize = 16;
         const mapWidth = 100;
         const mapHeight = 100;
-        const fogRadius = 6;
+        const fogRadius = 12;
+        const fadeDuration = 300; // Duração da animação de transição para tiles revelados
+        const gradientRadius = fogRadius + 2; // Raio para transparência gradual em tiles não descobertos
+        const minAlpha = 0.2; // Opacidade mínima para tiles não descobertos próximos ao jogador
+        const maxAlpha = 0.95; // Opacidade máxima para tiles não descobertos distantes
+        const moveDuration = 200; // Duração da animação de movimento (pulo)
+        const moveCooldownDuration = 200; // Tempo mínimo entre movimentações (em ms)
 
         function preload() {
             this.load.image('tiles', 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png');
@@ -54,34 +63,53 @@
             // Cria um mapa com tiles variados e bordas
             const mapData = Array(mapHeight).fill().map((_, y) => 
                 Array(mapWidth).fill().map((_, x) => {
-                    // Adiciona tiles de parede nas bordas (usando um índice de tile específico, por exemplo, 10 para parede)
                     if (x === 0 || x === mapWidth - 1 || y === 0 || y === mapHeight - 1) {
                         return 10; // Índice do tile de parede
                     }
                     return Phaser.Math.Between(0, 9); // Tiles normais no interior
                 })
             );
-            const map = this.make.tilemap({ 
+            tilemap = this.make.tilemap({ 
                 data: mapData,
                 tileWidth: tileSize, 
                 tileHeight: tileSize 
             });
-            const tileset = map.addTilesetImage('tiles', 'tiles', 16, 16, 0, 0);
-            const layer = map.createLayer(0, tileset, 0, 0).setScale(1);
+            const tileset = tilemap.addTilesetImage('tiles', 'tiles', 16, 16, 0, 0);
+            const layer = tilemap.createLayer(0, tileset, 0, 0).setScale(1);
 
-            // Configura as colisões para os tiles de parede (índice 10)
-            map.setCollision(10);
+            // Configura as colisões para os tiles de paredes (índice 10)
+            tilemap.setCollision(10);
 
             // Inicializa o fogMap (0 = coberto, 1 = descoberto)
             fogMap = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
-            //loadFogState();
+            loadFogState();
 
-            fogLayer = this.add.graphics();
-            fogLayer.setDepth(10);
-            updateFogOfWar(50, 50);
+            // Criar textura sólida para o nevoeiro
+            const solidGraphics = this.add.graphics();
+            solidGraphics.fillStyle(0x000000, maxAlpha); // Quadrado preto sólido com opacidade máxima
+            solidGraphics.fillRect(0, 0, tileSize, tileSize);
+            solidGraphics.generateTexture('fogSolid', tileSize, tileSize);
+            solidGraphics.destroy();
 
+            // Criar grupo de sprites para o nevoeiro
+            fogSprites = this.add.group();
+            for (let y = 0; y < mapHeight; y++) {
+                for (let x = 0; x < mapWidth; x++) {
+                    const sprite = this.add.sprite(x * tileSize, y * tileSize, 'fogSolid');
+                    sprite.setOrigin(0);
+                    sprite.setDepth(10);
+                    sprite.setAlpha(fogMap[y][x] === 0 ? maxAlpha : 0); // Opaco se coberto, transparente se descoberto
+                    fogSprites.add(sprite);
+                }
+            }
+
+            // Posicionar o jogador no centro do tile inicial
             player = this.physics.add.sprite(mapWidth * tileSize / 2, mapHeight * tileSize / 2, 'player', 4);
             player.setOrigin(0, 0);
+            player.setPosition(
+                Math.floor(player.x / tileSize) * tileSize,
+                Math.floor(player.y / tileSize) * tileSize
+            );
 
             // Adiciona colisão entre o jogador e as paredes
             this.physics.add.collider(player, layer);
@@ -103,6 +131,18 @@
                 repeat: -1
             });
             this.anims.create({
+                key: 'up',
+                frames: this.anims.generateFrameNumbers('player', { start: 0, end: 3 }), // Reutilizando 'left' para cima
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'down',
+                frames: this.anims.generateFrameNumbers('player', { start: 5, end: 8 }), // Reutilizando 'right' para baixo
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
                 key: 'idle',
                 frames: [{ key: 'player', frame: 4 }],
                 frameRate: 20
@@ -111,60 +151,150 @@
             cursors = this.input.keyboard.createCursorKeys();
         }
 
-        function update() {
-            const speed = 150;
-            let moving = false;
+        function update(time, delta) {
+            // Reduzir o cooldown com base no tempo decorrido
+            if (moveCooldown > 0) {
+                moveCooldown -= delta;
+                if (moveCooldown < 0) moveCooldown = 0;
+            }
 
+            // Impedir novos movimentos enquanto a animação está em andamento ou o cooldown não terminou
+            if (isMoving || moveCooldown > 0) {
+                return;
+            }
+
+            let targetX = player.x;
+            let targetY = player.y;
+            let animation = 'idle';
+
+            // Verificar entrada do jogador
             if (cursors.left.isDown) {
-                player.setVelocityX(-speed);
-                player.anims.play('left', true);
-                moving = true;
+                targetX -= tileSize;
+                animation = 'left';
             } else if (cursors.right.isDown) {
-                player.setVelocityX(speed);
-                player.anims.play('right', true);
-                moving = true;
-            } else {
-                player.setVelocityX(0);
-            }
-
-            if (cursors.up.isDown) {
-                player.setVelocityY(-speed);
-                player.anims.play(moving ? 'left' : 'idle', true);
-                moving = true;
+                targetX += tileSize;
+                animation = 'right';
+            } else if (cursors.up.isDown) {
+                targetY -= tileSize;
+                animation = 'up';
             } else if (cursors.down.isDown) {
-                player.setVelocityY(speed);
-                player.anims.play(moving ? 'right' : 'idle', true);
-                moving = true;
-            } else {
-                player.setVelocityY(0);
+                targetY += tileSize;
+                animation = 'down';
             }
 
-            if (!moving) {
+            // Processar movimento se uma tecla foi pressionada
+            if (targetX !== player.x || targetY !== player.y) {
+                // Verificar se o tile destino é válido (não é uma parede)
+                const tileX = Math.floor(targetX / tileSize);
+                const tileY = Math.floor(targetY / tileSize);
+                const tile = tilemap.getTileAt(tileX, tileY);
+
+                if (!tile || tile.index !== 10) { // Permitir movimento se não for uma parede
+                    isMoving = true;
+                    player.anims.play(animation, true);
+
+                    // Animar o movimento com efeito de pulo
+                    this.tweens.add({
+                        targets: player,
+                        x: targetX,
+                        y: targetY,
+                        duration: moveDuration,
+                        ease: 'Linear',
+                        onStart: () => {
+                            // Aumentar a escala para simular o início do pulo
+                            this.tweens.add({
+                                targets: player,
+                                scaleX: 1.2,
+                                scaleY: 1.2,
+                                duration: moveDuration / 2,
+                                ease: 'Sine.easeOut',
+                                yoyo: true // Voltar à escala original
+                            });
+                        },
+                        onComplete: () => {
+                            isMoving = false;
+                            moveCooldown = moveCooldownDuration; // Aplicar cooldown após o movimento
+                            player.anims.play('idle', true);
+                            // Garantir que a posição seja exata no centro do tile
+                            player.setPosition(
+                                Math.floor(player.x / tileSize) * tileSize,
+                                Math.floor(player.y / tileSize) * tileSize
+                            );
+                        }
+                    });
+                }
+            } else {
                 player.anims.play('idle', true);
             }
 
+            // Atualizar o fog of war
             const tileX = Math.floor(player.x / tileSize);
             const tileY = Math.floor(player.y / tileSize);
-            updateFogOfWar(tileX, tileY);
+            updateFogOfWar.call(this, tileX, tileY);
         }
 
         function updateFogOfWar(centerX, centerY) {
-            fogLayer.clear();
-            fogLayer.fillStyle(0x000000, 0.95);
+            let updated = false;
+            const sprites = fogSprites.getChildren();
 
-            for (let y = 0; y < mapHeight; y++) {
-                for (let x = 0; x < mapWidth; x++) {
+            // Limitar a verificação às células próximas ao jogador para otimizar
+            const minY = Math.max(0, centerY - gradientRadius);
+            const maxY = Math.min(mapHeight - 1, centerY + gradientRadius);
+            const minX = Math.max(0, centerX - gradientRadius);
+            const maxX = Math.min(mapWidth - 1, centerX + gradientRadius);
+
+            for (let y = minY; y <= maxY; y++) {
+                for (let x = minX; x <= maxX; x++) {
+                    const spriteIndex = y * mapWidth + x; // Calcular índice correto
+                    const sprite = sprites[spriteIndex];
                     const distance = Phaser.Math.Distance.Between(x, y, centerX, centerY);
-                    if (distance <= fogRadius) {
+
+                    // Verificar se o tile deve ser revelado
+                    if (distance <= fogRadius && fogMap[y][x] === 0) {
                         fogMap[y][x] = 1;
-                    }
-                    if (fogMap[y][x] === 0) {
-                        fogLayer.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                        updated = true;
+
+                        // Verificar se o sprite existe e não está sendo animado
+                        if (sprite && sprite.active && !this.tweens.isTweening(sprite)) {
+                            this.tweens.add({
+                                targets: sprite,
+                                alpha: 0,
+                                duration: fadeDuration,
+                                ease: 'Linear',
+                                onComplete: () => {
+                                    // Garantir que o sprite ainda existe antes de chamar setAlpha
+                                    if (sprite && sprite.active) {
+                                        sprite.setAlpha(0);
+                                    }
+                                }
+                            });
+                        } else if (sprite && sprite.active) {
+                            // Se já está sendo animado, apenas definir como transparente
+                            sprite.setAlpha(0);
+                        }
+                    } else if (fogMap[y][x] === 0 && sprite && sprite.active) {
+                        // Calcular opacidade para tiles não descobertos com base na distância
+                        let alpha;
+                        if (distance <= gradientRadius) {
+                            // Transparência gradual para tiles próximos
+                            const normalizedDistance = (distance - fogRadius) / (gradientRadius - fogRadius);
+                            alpha = Phaser.Math.Linear(minAlpha, maxAlpha, normalizedDistance);
+                        } else {
+                            // Opacidade máxima para tiles distantes
+                            alpha = maxAlpha;
+                        }
+                        // Aplicar opacidade apenas se não estiver sendo animado
+                        if (!this.tweens.isTweening(sprite)) {
+                            sprite.setAlpha(alpha);
+                        }
                     }
                 }
             }
 
-            saveFogState();
+            // Salvar o estado apenas se houve alterações
+            if (updated) {
+                saveFogState();
+            }
         }
 
         function saveFogState() {
