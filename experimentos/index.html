@@ -51,6 +51,7 @@
         }
 
         function create() {
+            
             const mapData = Array(mapHeight).fill().map((_, y) => 
                 Array(mapWidth).fill().map((_, x) => {
                     if (x === 0 || x === mapWidth - 1 || y === 0 || y === mapHeight - 1) {

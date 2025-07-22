@@ -1,14 +1,23 @@
-/* -------------------------------------------------------------
- *  Phaser 3 – Mapa Tiled com vários tilesets + árvores animadas
- * ----------------------------------------------------------- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phaser Multi-Biome with Fog of War and Procedural Elements</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #000; }
+        canvas { border: 1px solid white; }
+    </style>
+</head>
+<body>
+    <script>
+        // Funções dummy para testes
+        function openCombat(level, id, scene) { console.log(`Combat with ${id}`); }
+        function getItemAmount(item) { return 0; }
+        function showNotification(msg, time) { console.log(msg); }
 
-
-    // Funções dummy para testes
-    function openCombat(level, id, scene) { console.log(`Combat with ${id}`); }
-    function getItemAmount(item) { return 0; }
-    function showNotification(msg, time) { console.log(msg); }      
-
-    class MainScene extends Phaser.Scene {
+        class MainScene extends Phaser.Scene {
             constructor() {
                 super('MainScene');
             }
@@ -27,9 +36,7 @@
             }
         }
 
-
-  
-class BiomeScene extends Phaser.Scene {
+        class BiomeScene extends Phaser.Scene {
             constructor() {
                 super('BiomeScene');
             }
@@ -554,142 +561,25 @@ class BiomeScene extends Phaser.Scene {
             }
         }
 
-
- const config = {
-        type: Phaser.AUTO,
-        width  : window.innerWidth,
-        height: 640,
-        zoom: 1,
-        pixelArt: true,
-        backgroundColor: '#87ceeb',
-        parent : "gameCanvas",  // id do elemento HTML onde o canvas será inserido
-        physics: {
-            default: 'arcade',
-            arcade: {
-                gravity: { y: 0 },
-                debug: false
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: [MainScene, BiomeScene],
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
             }
-        },
-        scene: [MainScene, BiomeScene],
-        scale: {
-            mode: Phaser.Scale.FIT,
-            autoCenter: Phaser.Scale.CENTER_BOTH
-        }
-    };
+        };
 
-const game = new Phaser.Game(config);
-
-
-
-/* ---------- helper: remove enemy by id ★ ---------- */
-function removeEnemy(scene, id) {
-  const index = scene.enemies.findIndex(e => e.getData('id') === id);
-  if (index !== -1) {
-    scene.enemies[index].destroy();   // actually deletes the sprite
-    scene.enemies.splice(index, 1);   // keep array in sync
-  }
-}
-
-/* ---- CREATE ---- */
-function create() {
-  /* -- Mapa -- */
-  
-  this.cameras.main.setRoundPixels(true);
-  this.game.renderer.config.antialias = false;
-  this.game.renderer.config.pixelArt = true;
-  
-
-  /* -- Converte Object-Layer 'trees' em sprites balançando -- */
-  const objects = map.getObjectLayer("animals")?.objects || [];
-  const building = map.getObjectLayer("building")?.objects || [];
-
-  objects.forEach(obj => {
-
-
-    const enemyId = `enemy-${this.enemyCounter++}`;   // e.g. enemy-0, enemy-1 …
-
-    /* 3.  cria sprite já com o recorte correto */
-    const sprite = this.add.sprite(obj.x, obj.y, 'boar', 2)
-    .setOrigin(0, 0)
-    .setName(enemyId)            // Phaser-side: can fetch later with this.children.getByName(id)
-    .setData('id', enemyId)     // extra: retrieve with sprite.getData('id')
-    //.setCrop(96, 300, obj.width, obj.height)   // 👈 usa cálculo automático
-    .setInteractive({ pixelPerfect: true}); 
-     
-      this.game.canvas.setAttribute(`data-${enemyId}`, ''); 
-
-      // Track in the local enemy list
-      this.enemies.push(sprite);
-
-      sprite.on('pointerover', () => {
-          sprite.setTint(0x999999); // muda a cor do sprite
-
-      });
-
-      sprite.on('pointerout', () => {
-
-        sprite.clearTint(); // muda a cor do sprite
-
-      });
-
-      sprite.on("pointerdown", () => {
-
-        this.input.setDefaultCursor('url(../img/icons/cursor-sword.png), auto'); // cursor de espada
-        openCombat(1,enemyId,this);
-
-    });
-
-    // Tween: brisa suave (x oscila ±2 px)
-    this.tweens.add({
-      targets: sprite,
-      x: sprite.x + 2,
-      duration: 1000,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.easeInOut",
-      delay: Math.random() * 500
-    });
-
-  });
-
-// localiza apenas o objeto chamado "building1"
-const targetObj = building.find(o => o.name === "building1");
-
-if (targetObj) {
-
-  const { x, y, width, height } = targetObj;
-
-  const zone = this.add.zone(x + width /2, y + height / 2, width, height)
-    .setOrigin(0.5)
-    .setInteractive({ });
-
-  // DEBUG: contorno da área clicável
-  const debug = this.add.graphics();
-  debug.lineStyle(2, 0xff0000, 1);          // (espessura, cor, alfa)
-  debug.strokeRect(
-    x,   // top-left X
-    y,   // top-left Y
-    width,
-    height
-  );
-
-  // listener só para esta zone
-  zone.on('pointerdown', () => {
-    this.input.setDefaultCursor('url(../img/icons/cursor-sword.png), auto'); // cursor de espada
-
-
-    if(getItemAmount("plant_essence") > 0){
-
-      showNotification("New Location discovered: Building 1", 2000);
-    }else{
-      showNotification("You need to find a key to open this door.");
-    }
-
-
-  });
-} else {
-  console.warn('building1 não encontrado na camada "building".');
-}
-
-
-}
+        const game = new Phaser.Game(config);
+    </script>
+</body>
+</html>

@@ -3,33 +3,37 @@
  * ----------------------------------------------------------- */
 
 
-    // Funções dummy para testes
-    function openCombat(level, id, scene) { console.log(`Combat with ${id}`); }
-    function getItemAmount(item) { return 0; }
-    function showNotification(msg, time) { console.log(msg); }      
+  class Config {
+    static MAP_JSON          = "../js/data/world.json";
+    static TILESET_GROUND    = "../img/tileset/FarmRPG16x16-TinyAssetPack/Tileset/tileset.png";
+    static TILESET_TREES     = "../img/tileset/FarmRPG16x16-TinyAssetPack/Objects/trees.png";
+    static TILESET_PROPS     = "../img/tileset/FarmRPG16x16-TinyAssetPack/Objects/props.png";
+    static TILESET_GRAVEYARD = "../img/tileset/graveyard-top-down/graveyard-tileset.png";
+    static TILESET_ANIMALS   = "../img/tileset/animals.png";
+    static BOAR              = "../img/sprites/boar.png";
+  }
 
-    class MainScene extends Phaser.Scene {
-            constructor() {
-                super('MainScene');
-            }
-            preload() {
-                this.load.spritesheet('player', 'https://rpg-souls-clicker.vercel.app/img/sprites/dude.png', { frameWidth: 32, frameHeight: 32 });
-                // Adicione seus próprios caminhos para inimigos e NPCs
-                this.load.spritesheet('boar', '../img/sprites/boar.png', { frameWidth: 32, frameHeight: 32 });
-                this.load.spritesheet('npc', '../img/sprites/npc.png', { frameWidth: 32, frameHeight: 32 });
-            }
-            create() {
-                const biomes = [
-                    { id: 'biome1', tileset: 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png', startPos: { x: 50, y: 50 } },
-                    { id: 'biome2', tileset: 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png', startPos: { x: 5, y: 5 } },
-                ];
-                this.scene.start('BiomeScene', biomes[0]);
-            }
-        }
+
+  class MainScene extends Phaser.Scene {
+    
+      constructor() {
+          super('MainScene');
+      }
+      preload() {
+          this.load.spritesheet('player', 'https://rpg-souls-clicker.vercel.app/img/sprites/dude.png', { frameWidth: 32, frameHeight: 32 });
+      }
+      create() {
+          const biomes = [
+              { id: 'biome1', tileset: 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png', startPos: { x: 50, y: 50 } },
+              { id: 'biome2', tileset: 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png', startPos: { x: 5, y: 5 } },
+          ];
+          this.scene.start('BiomeScene', biomes[0]);
+      }
+  }
 
 
   
-class BiomeScene extends Phaser.Scene {
+        class BiomeScene extends Phaser.Scene {
             constructor() {
                 super('BiomeScene');
             }
@@ -39,7 +43,25 @@ class BiomeScene extends Phaser.Scene {
                 this.startPos = data.startPos;
             }
             preload() {
+
                 this.load.image(`tiles_${this.biomeId}`, this.tilesetUrl);
+
+                // mapa JSON exportado do Tiled
+                this.load.tilemapTiledJSON("map", Config.MAP_JSON);
+
+                // as chaves ('ground', 'trees') DEVEM ser iguais às usadas no .tsx / Tiled
+                this.load.image("ground", Config.TILESET_GROUND);
+                this.load.image("trees",  Config.TILESET_TREES);
+                this.load.image("props",  Config.TILESET_PROPS);
+                this.load.image("animals",  Config.TILESET_ANIMALS);
+                this.load.image("graveyard",  Config.TILESET_GRAVEYARD);
+
+                this.load.spritesheet('boar', Config.BOAR, {
+                    frameWidth: 32,
+                    frameHeight: 32
+                  });
+
+  
             }
             create() {
                 const tileSize = 32;
@@ -57,14 +79,35 @@ class BiomeScene extends Phaser.Scene {
                     { x: 95, y: 95, targetBiome: 'biome2', targetPos: { x: 5, y: 5 } },
                 ];
 
-                // Geração do tilemap com regiões
+
+                const map = this.make.tilemap({ key: "map" });
+
+                this.enemies      = [];  // central enemy list
+                this.enemyCounter = 0;   // simple id generator
+
+                const TILE  = 16;   // largura/altura reais do tile
+                const PAD   = 0;    // padding/spacing que você extraiu
+
+                const groundSet  = map.addTilesetImage('ground',  'ground',  TILE, TILE, PAD, PAD);
+                const treeSet    = map.addTilesetImage('trees',   'trees',   TILE, TILE, PAD, PAD);
+                const propsSet   = map.addTilesetImage('props',   'props',   TILE, TILE, PAD, PAD);
+                const animalsSet = map.addTilesetImage('animals', 'animals', TILE, TILE, PAD, PAD);
+                const graveyardSet = map.addTilesetImage('graveyard', 'graveyard', TILE, TILE, PAD, PAD);
+                
+                /* -- Cria camadas de tiles (ordem importa) -- */
+                map.createLayer("ground", groundSet, 0, 0);
+                map.createLayer("trees",  treeSet,   0, 0);
+                map.createLayer("props",  propsSet,   0, 0);
+                map.createLayer("animals",  animalsSet,   0, 0);
+                map.createLayer("graveyard",  graveyardSet,   0, 0).setDepth(100);
+
+
                 const mapData = Array(mapHeight).fill().map((_, y) => 
                     Array(mapWidth).fill().map((_, x) => {
                         if (x === 0 || x === mapWidth - 1 || y === 0 || y === mapHeight - 1) {
                             return 10;
                         }
-                        const isForest = x < mapWidth / 2;
-                        return isForest ? Phaser.Math.Between(0, 4) : Phaser.Math.Between(5, 9);
+                        return Phaser.Math.Between(0, 9);
                     })
                 );
                 this.tilemap = this.make.tilemap({ 
@@ -72,139 +115,13 @@ class BiomeScene extends Phaser.Scene {
                     tileWidth: tileSize, 
                     tileHeight: tileSize 
                 });
-                const tileset = this.tilemap.addTilesetImage(`tiles_${this.biomeId}`, `tiles_${this.biomeId}`, tileSize, tileSize, 0, 0);
+                
+                const tileset = this.tilemap.addTilesetImage(`tiles_${this.biomeId}`, `tiles_${this.biomeId}`, tileSize, 
+                                    
+                tileSize, 0, 0);
                 const layer = this.tilemap.createLayer(0, tileset, 0, 0).setScale(1).setDepth(0);
 
                 this.tilemap.setCollision(10);
-                
-                // Geração de inimigos
-                this.enemies = [];
-                this.enemyCounter = 0;
-                const maxEnemies = Phaser.Math.Between(10, 20);
-                for (let i = 0; i < maxEnemies; i++) {
-                    let attempts = 0;
-                    let x, y;
-                    do {
-                        x = Phaser.Math.Between(1, mapWidth - 2);
-                        y = Phaser.Math.Between(1, mapHeight - 2);
-                        attempts++;
-                    } while (
-                        attempts < 100 &&
-                        (this.tilemap.getTileAt(x, y)?.index in impassableTiles ||
-                        Phaser.Math.Distance.Between(x, y, this.startPos.x, this.startPos.y) < fogRadius + 2)
-                    );
-
-                    if (attempts < 100) {
-                        const enemyId = `enemy-${this.enemyCounter++}`;
-                        const sprite = this.add.sprite(x * tileSize, y * tileSize, 'boar', 2)
-                            .setOrigin(0, 0)
-                            .setName(enemyId)
-                            .setData('id', enemyId)
-                            .setInteractive({ pixelPerfect: true })
-                            .setDepth(30);
-                        this.enemies.push(sprite);
-                        this.game.canvas.setAttribute(`data-${enemyId}`, '');
-
-                        sprite.on('pointerover', () => sprite.setTint(0x999999));
-                        sprite.on('pointerout', () => sprite.clearTint());
-                        sprite.on("pointerdown", () => {
-                            this.input.setDefaultCursor('url(../img/icons/cursor-sword.png), auto');
-                            openCombat(1, enemyId, this);
-                        });
-
-                        this.tweens.add({
-                            targets: sprite,
-                            x: sprite.x + 2,
-                            duration: 1000,
-                            yoyo: true,
-                            repeat: -1,
-                            ease: "Sine.easeInOut",
-                            delay: Math.random() * 500
-                        });
-                    }
-                }
-
-                // Geração de zonas interativas
-                const maxZones = Phaser.Math.Between(3, 5);
-                for (let i = 0; i < maxZones; i++) {
-                    let attempts = 0;
-                    let x, y;
-                    do {
-                        x = Phaser.Math.Between(1, mapWidth - 2);
-                        y = Phaser.Math.Between(1, mapHeight - 2);
-                        attempts++;
-                    } while (
-                        attempts < 100 &&
-                        (this.tilemap.getTileAt(x, y)?.index in impassableTiles ||
-                        Phaser.Math.Distance.Between(x, y, this.startPos.x, this.startPos.y) < fogRadius + 2 ||
-                        this.enemies.some(enemy => enemy.x === x * tileSize && enemy.y === y * tileSize))
-                    );
-
-                    if (attempts < 100) {
-                        const zoneWidth = tileSize * 2;
-                        const zoneHeight = tileSize * 2;
-                        const zone = this.add.zone(x * tileSize + zoneWidth / 2, y * tileSize + zoneHeight / 2, zoneWidth, zoneHeight)
-                            .setOrigin(0.5)
-                            .setInteractive()
-                            .setDepth(40);
-
-                        const debug = this.add.graphics();
-                        debug.lineStyle(2, 0xff0000, 1);
-                        debug.strokeRect(x * tileSize, y * tileSize, zoneWidth, zoneHeight);
-
-                        zone.on('pointerdown', () => {
-                            this.input.setDefaultCursor('url(../img/icons/cursor-sword.png), auto');
-                            if (getItemAmount("plant_essence") > 0) {
-                                showNotification(`New Location discovered: Zone ${i + 1}`, 2000);
-                            } else {
-                                showNotification("You need to find a key to open this door.");
-                            }
-                        });
-                    }
-                }
-
-                // Geração de NPCs
-                const maxNPCs = Phaser.Math.Between(2, 4);
-                for (let i = 0; i < maxNPCs; i++) {
-                    let attempts = 0;
-                    let x, y;
-                    do {
-                        x = Phaser.Math.Between(1, mapWidth - 2);
-                        y = Phaser.Math.Between(1, mapHeight - 2);
-                        attempts++;
-                    } while (
-                        attempts < 100 &&
-                        (this.tilemap.getTileAt(x, y)?.index in impassableTiles ||
-                        Phaser.Math.Distance.Between(x, y, this.startPos.x, this.startPos.y) < fogRadius + 2 ||
-                        this.enemies.some(enemy => enemy.x === x * tileSize && enemy.y === y * tileSize))
-                    );
-
-                    if (attempts < 100) {
-                        const npcId = `npc-${i}`;
-                        const sprite = this.add.sprite(x * tileSize, y * tileSize, 'npc', 0)
-                            .setOrigin(0, 0)
-                            .setName(npcId)
-                            .setData('id', npcId)
-                            .setInteractive({ pixelPerfect: true })
-                            .setDepth(30);
-                        
-                        sprite.on('pointerover', () => sprite.setTint(0x999999));
-                        sprite.on('pointerout', () => sprite.clearTint());
-                        sprite.on("pointerdown", () => {
-                            showNotification(`NPC ${i + 1}: Hello, adventurer!`, 2000);
-                        });
-
-                        this.tweens.add({
-                            targets: sprite,
-                            x: sprite.x + 2,
-                            duration: 1000,
-                            yoyo: true,
-                            repeat: -1,
-                            ease: "Sine.easeInOut",
-                            delay: Math.random() * 500
-                        });
-                    }
-                }
 
                 this.fogMap = Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
                 this.loadFogState();
@@ -220,7 +137,7 @@ class BiomeScene extends Phaser.Scene {
                     for (let x = 0; x < mapWidth; x++) {
                         const sprite = this.add.sprite(x * tileSize, y * tileSize, 'fogSolid');
                         sprite.setOrigin(0);
-                        sprite.setDepth(100);
+                        sprite.setDepth(100); // Aumentar profundidade para garantir visibilidade
                         sprite.setAlpha(this.fogMap[y][x] === 0 ? maxAlpha : 0);
                         this.fogSprites.add(sprite);
                     }
@@ -232,7 +149,7 @@ class BiomeScene extends Phaser.Scene {
                     Math.floor(this.startPos.x) * tileSize,
                     Math.floor(this.startPos.y) * tileSize
                 );
-                this.player.setDepth(50);
+                this.player.setDepth(50); // Profundidade menor que a névoa
 
                 this.physics.add.collider(this.player, layer);
 
@@ -443,11 +360,7 @@ class BiomeScene extends Phaser.Scene {
                             !visited.has(key)
                         ) {
                             const tile = this.tilemap.getTileAt(newX, newY);
-                            const isOccupied = this.enemies?.some(enemy => 
-                                Math.floor(enemy.x / this.tileSize) === newX && 
-                                Math.floor(enemy.y / this.tileSize) === newY
-                            );
-                            if (!isOccupied && (!tile || !this.impassableTiles.includes(tile.index))) {
+                            if (!tile || !this.impassableTiles.includes(tile.index)) {
                                 visited.add(key);
                                 queue.push({
                                     x: newX,
@@ -480,7 +393,7 @@ class BiomeScene extends Phaser.Scene {
                         const spriteIndex = y * this.mapWidth + x;
                         const sprite = sprites[spriteIndex];
                         if (!sprite || !sprite.active) {
-                            continue;
+                            continue; // Pular sprites não inicializados
                         }
 
                         const distance = Phaser.Math.Distance.Between(x, y, centerX, centerY);
@@ -515,15 +428,6 @@ class BiomeScene extends Phaser.Scene {
                             if (!this.tweens.isTweening(sprite)) {
                                 sprite.setAlpha(alpha);
                             }
-                        }
-
-                        // Atualizar visibilidade de inimigos e NPCs
-                        if (this.enemies) {
-                            this.enemies.forEach(enemy => {
-                                const enemyTileX = Math.floor(enemy.x / this.tileSize);
-                                const enemyTileY = Math.floor(enemy.y / this.tileSize);
-                                enemy.setVisible(this.fogMap[enemyTileY]?.[enemyTileX] === 1);
-                            });
                         }
                     }
                 }

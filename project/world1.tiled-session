@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "world_map.tmx",
+    "activeFile": "ground.tsx",
     "expandedProjectPaths": [
         "."
     ],
@@ -71,10 +71,10 @@
                 6
             ],
             "scale": 1,
-            "selectedLayer": 8,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 541,
-                "y": 503.5
+                "x": 338,
+                "y": 384.5
             }
         },
         "world_map.tmx#animals": {
@@ -107,19 +107,20 @@
     "map.lastUsedFormat": "tmx",
     "openFiles": [
         "world_map.tmx",
-        "graveyard.tsx"
+        "trees.tsx",
+        "ground.tsx"
     ],
     "project": "world1.tiled-project",
     "recentFiles": [
-        "graveyard.tsx",
         "world_map.tmx",
-        "graveyard-props.tsx",
+        "trees.tsx",
         "ground.tsx",
-        "graveyard-props2.tsx",
         "animals.tsx",
+        "graveyard.tsx",
+        "graveyard-props.tsx",
+        "graveyard-props2.tsx",
         "Medieval-Props.tsx",
         "props.tsx",
-        "trees.tsx",
         "world_map..tmx"
     ],
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
