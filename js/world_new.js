@@ -4,9 +4,9 @@
 
 
     // Funções dummy para testes
-    function openCombat(level, id, scene) { console.log(`Combat with ${id}`); }
-    function getItemAmount(item) { return 0; }
-    function showNotification(msg, time) { console.log(msg); }      
+    //function openCombat(level, id, scene) { console.log(`Combat with ${id}`); }
+    //function getItemAmount(item) { return 0; }
+    //function showNotification(msg, time) { console.log(msg); }      
 
     class MainScene extends Phaser.Scene {
             constructor() {
