@@ -245,9 +245,10 @@ function simulateCombat(monster_id = 0, enemyID = '', scene) {
         progressBarCombat(enemySpeedProgress, progressCombatEnemy, player, enemy, opponentAdditionalDamage);
 
         if (player.current_life <= 0) {   
-            openModal("Battle", "Your monster was defeated", 'default');
+            openModal("Battle", "You were defeated", 'default');
             stopCombat();
             player.current_life = 0;
+            resetPlayerStats();
             resetEnemyStats();
             openTab('tab-explore');
 

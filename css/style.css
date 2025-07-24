@@ -1090,6 +1090,9 @@ h6 {
 
 }
 
+img{
+   image-rendering: pixelated !important;
+}
 
 .progress-content{
    background-color: #555;
@@ -1101,6 +1104,29 @@ h6 {
    background-color: #1f222a;
 
 }
+
+.padding-5{
+   padding: 5px;
+
+
+}
+
+.padding-10{
+   padding: 10px;
+}
+
+.padding-20{
+   padding: 20px;
+}
+
+.pixelated{
+  image-rendering: pixelated;
+}
+
+.bg-color-primary {
+   background-color: #1f222a;
+}
+
 .background-image {
    background-image: url("../img/bg2.jpg");
    background-size: cover;

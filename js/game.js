@@ -455,7 +455,7 @@ function discardResource(_resource, amount = 1){
 
                 setCustomMethods(currentMonster);
 
-                showNotification("The monster <b>" + currentMonster.name + "</b> was selected");
+                showNotification("The Class <b>" + currentMonster.name + "</b> was selected");
 
                 player_data.current_monster_slug = monster;
 
@@ -1838,7 +1838,6 @@ function selectInitialClasss(class_slug){
 
     if(myClassData.length > 0){
 
-    
       currentMonster = myClassData[0];
 
       selectCurrentClass(currentMonster.slug);

@@ -7,7 +7,7 @@ var monsters = {
         description: "an agressive boar",
         level: 1,
         total: 0,
-        icon_path: "img/sprites/boar.png",
+        icon_path: "img/sprites/boar_portrait.png",
         monster_type: "plant",
         rarity: "rare",
         evolutions: 3,

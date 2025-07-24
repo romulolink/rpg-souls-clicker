@@ -12,6 +12,7 @@ function saveGame() {
     localStorage['rpg_save[inventory]'] = btoa(JSON.stringify(inventory));
     localStorage['rpg_save[monsters]'] = btoa(JSON.stringify(monsters));
     localStorage['rpg_save[myMonstersData]'] = btoa(JSON.stringify(myMonstersData));
+    localStorage['rpg_save[myClassData]'] = btoa(JSON.stringify(myClassData));
     localStorage['rpg_save[defeatedEnemiesData]'] = btoa(JSON.stringify(defeatedEnemiesData));
     localStorage['rpg_save[player_data]'] = btoa(JSON.stringify(player_data));
     localStorage['rpg_save[terrainSlots]'] = btoa(terrainSlots);
@@ -90,6 +91,7 @@ function loadGame() {
 
     questsData = JSON.parse(atob(localStorage['rpg_save[questsData]']));
     myMonstersData = JSON.parse(atob(localStorage['rpg_save[myMonstersData]']));
+    myClassData = JSON.parse(atob(localStorage['rpg_save[myClassData]']));
     defeatedEnemiesData = JSON.parse(atob(localStorage['rpg_save[defeatedEnemiesData]']));
     islandsEnabled = JSON.parse(atob(localStorage['rpg_save[islandsEnabled]']));
     soldItems = JSON.parse(atob(localStorage['rpg_save[soldItems]']));
@@ -97,9 +99,17 @@ function loadGame() {
 
     verifySaveStructure(player_data,localStorage['rpg_save[player_data]'], false);
 
+    /*
     if(myMonstersData.length > 0){
       currentMonster = myMonstersData[0];
       selectCurrentMonster(currentMonster.slug);
+    }*/
+
+    if(myClassData.length > 0){
+      
+        currentClass = myClassData[0];
+        selectCurrentClass(currentClass.slug);
+
     }
 
      LoadNames();
