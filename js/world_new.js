@@ -543,10 +543,7 @@ class BiomeScene extends Phaser.Scene {
                 try {
                     const savedFogMap = localStorage.getItem(`fogMap_${this.biomeId}`);
                     if (savedFogMap) {
-                        const parsedFogMap = JSON.parse(savedFogMap);
-                        if (Array.isArray(parsedFogMap) && parsedFogMap.length === this.mapHeight && parsedFogMap.every(row => Array.isArray(row) && row.length === this.mapWidth)) {
-                            this.fogMap = parsedFogMap;
-                        }
+                        this.fogMap = JSON.parse(localStorage.getItem(`fogMap_${this.biomeId}`)) || Array(mapHeight).fill().map(() => Array(mapWidth).fill(0));
                     }
                 } catch (e) {
                     console.error('Erro ao carregar fogMap do localStorage:', e);
