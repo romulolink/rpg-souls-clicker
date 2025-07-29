@@ -1,4 +1,4 @@
-# 🕹️ [Game Title Here]
+# 🕹️ [RPG SOULS CLICKER]
 
 A retro-style top-down RPG game built using modern web technologies including **PhaserJS 3.70**, **Angular (for modular structure)**, and **modular JavaScript ES6**.
 
