@@ -70,6 +70,7 @@
       <button onclick="buyUpgrade('clickArea', 120, 1.9, 5)">Aumentar Área de Clique (Custo: <span id="clickAreaCost">120</span>) <span id="clickAreaLevel" class="upgrade-level">0/99</span></button>
       <button onclick="saveGame()">Salvar Jogo</button>
       <button onclick="loadGame()">Carregar Jogo</button>
+        <button onclick="clearSaves()">Deletar Save</button>
     </div>
     <div id="version-frame">Versão: v0.0.9</div>
   </div>
@@ -96,7 +97,30 @@
       canvas.parent('game-container');
       background(50);
       updateStats();
+      loadGame();
       startAutoSave();
+    }
+
+    function clearSaves() {
+      localStorage.removeItem('dopamineGameSave');
+      coins = 0;
+      upgrades = {
+        dropRate: { value: 1, level: 0 },
+        multiplier: { value: 1, level: 0 },
+        particleEffect: { value: 10, level: 0 },
+        autoCollector: { value: 0, level: 0 },
+        smallBallChance: { value: 50, level: 0 },
+        largeBallChance: { value: 10, level: 0 },
+        autoClicker: { value: 0, level: 0 },
+        clickArea: { value: 10, level: 0 }
+      };
+      collectors = [];
+      objects = [];
+      particles = [];
+      clickEffects = [];
+      spawnEffects = [];
+      updateStats();
+      showToast('Todos os saves foram limpos!');
     }
 
     function draw() {
