@@ -65,14 +65,13 @@
       <button onclick="buyUpgrade('multiplier', 50, 2, 2)">Multiplicador de Moedas (Custo: <span id="multiplierCost">50</span>) <span id="multiplierLevel" class="upgrade-level">0/99</span></button>
       <button href="https://www.google.com.br" onclick="buyUpgrade('particleEffect', 100, 1.5, 5)">Melhorar Partículas (Custo: <span id="particleEffectCost">100</span>) <span id="particleEffectLevel" class="upgrade-level">0/99</span></button>
       <button onclick="buyUpgrade('autoCollector', 200, 2, 1)">Adicionar Coletor (Custo: <span id="autoCollectorCost">200</span>) <span id="autoCollectorLevel" class="upgrade-level">0/99</span></button>
-      <button onclick="buyUpgrade('smallBallChance', 30, 1.8, 5)">Chance de Bolas Menores (Custo: <span id="smallBallChanceCost">30</span>) <span id="smallBallChanceLevel" class="upgrade-level">0/99</span></button>
       <button onclick="buyUpgrade('largeBallChance', 150, 2.2, 2)">Chance de Bolas Maiores (Custo: <span id="largeBallChanceCost">150</span>) <span id="largeBallChanceLevel" class="upgrade-level">0/99</span></button>
       <button onclick="buyUpgrade('autoClicker', 80, 1.7, 0.5)">Taxa de Auto-Clicker (Custo: <span id="autoClickerCost">80</span>) <span id="autoClickerLevel" class="upgrade-level">0/99</span></button>
       <button onclick="buyUpgrade('clickArea', 120, 1.9, 5)">Aumentar Área de Clique (Custo: <span id="clickAreaCost">120</span>) <span id="clickAreaLevel" class="upgrade-level">0/99</span></button>
       <button onclick="saveGame()">Salvar Jogo</button>
       <button onclick="loadGame()">Carregar Jogo</button>
     </div>
-    <div id="version-frame">Versão: v0.0.7</div>
+    <div id="version-frame">Versão: v0.0.8</div>
   </div>
   <script>
     let coins = 0;
@@ -281,7 +280,6 @@
           collectors.push({ x: width / 2, y: height / 2, vx: random(-2, 2), vy: random(-2, 2) });
           upgrades.autoCollector.value += increment;
         }
-        else if (type === 'smallBallChance') upgrades.smallBallChance.value += increment;
         else if (type === 'largeBallChance') upgrades.largeBallChance.value += increment;
         else if (type === 'autoClicker') upgrades.autoClicker.value += increment;
         else if (type === 'clickArea') upgrades.clickArea.value += increment;
@@ -312,7 +310,7 @@
     function updateStats() {
       document.getElementById('coins').innerText = formatLargeNumber(coins);
       document.getElementById('drop-rate').innerText = upgrades.dropRate.value.toFixed(1);
-      ['dropRate', 'multiplier', 'particleEffect', 'autoCollector', 'smallBallChance', 'largeBallChance', 'autoClicker', 'clickArea'].forEach(type => {
+      ['dropRate', 'multiplier', 'particleEffect', 'autoCollector', 'largeBallChance', 'autoClicker', 'clickArea'].forEach(type => {
         let baseCost = { dropRate: 10, multiplier: 50, particleEffect: 100, autoCollector: 200, smallBallChance: 30, largeBallChance: 150, autoClicker: 80, clickArea: 120 }[type];
         let costMultiplier = { dropRate: 1.5, multiplier: 2, particleEffect: 1.5, autoCollector: 2, smallBallChance: 1.8, largeBallChance: 2.2, autoClicker: 1.7, clickArea: 1.9 }[type];
         let cost = Math.round(baseCost * (1 + upgrades[type].level * costMultiplier));
