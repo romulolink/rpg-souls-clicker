@@ -6,6 +6,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-PVR4R17HFG"></script>
+
+  <script src="./ga-sdk/dist/GameAnalytics.min.js" />
+
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -102,6 +105,7 @@
     let clickEffects = [];
     let spawnEffects = [];
     let damageEffects = [];
+    
 
     function setup() {
       let canvas = createCanvas(windowWidth - 220, windowHeight);
@@ -115,6 +119,12 @@
       updateStats();
       loadGame();
       startAutoSave();
+
+      // Inicializar GameAnalytics
+      GameAnalytics("setEnabledInfoLog", true);
+      GameAnalytics("initialize", "59e28319882515cd0b7a00c0fa7bdbd3", "4753424e89922ada37e553eace0400d4872beb5b");
+
+      
     }
 
     function formatTime(ms) {
