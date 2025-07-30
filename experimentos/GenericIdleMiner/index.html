@@ -49,22 +49,24 @@
       <button onclick="buyUpgrade('smallBallChance', 30, 1.8, 5)">Chance de Bolas Menores (Custo: <span id="smallBallChanceCost">30</span>)</button>
       <button onclick="buyUpgrade('largeBallChance', 150, 2.2, 2)">Chance de Bolas Maiores (Custo: <span id="largeBallChanceCost">150</span>)</button>
       <button onclick="buyUpgrade('autoClicker', 80, 1.7, 0.5)">Taxa de Auto-Clicker (Custo: <span id="autoClickerCost">80</span>)</button>
-      <button onclick="buyUpgrade('clickArea', 120, 1.9, 5)">Aumentar Área de Clique (Custo: <span id="clickAreaCost">120</span>)</button>
+      <button onclick="buyUpgrade('clickArea', 120, 1.9, 5)">Aumentar Área de Clique (Custo: <span id="clickAreaCost">120</spanHe>)</button>
       <button onclick="saveGame()">Salvar Jogo</button>
       <button onclick="loadGame()">Carregar Jogo</button>
     </div>
-    <div id="version-frame">Versão: v0.0.4</div>
+    <div id="version-frame">Versão: v0.0.5</div>
   </div>
   <script>
     let coins = 0;
-    let dropRate = 1;
-    let multiplier = 1;
-    let particleEffect = 10;
-    let autoCollector = 0;
-    let smallBallChance = 50;
-    let largeBallChance = 10;
-    let autoClicker = 0;
-    let clickArea = 10;
+    let upgrades = {
+      dropRate: { value: 1, level: 0 },
+      multiplier: { value: 1, level: 0 },
+      particleEffect: { value: 10, level: 0 },
+      autoCollector: { value: 0, level: 0 },
+      smallBallChance: { value: 50, level: 0 },
+      largeBallChance: { value: 10, level: 0 },
+      autoClicker: { value: 0, level: 0 },
+      clickArea: { value: 10, level: 0 }
+    };
     let objects = [];
     let particles = [];
     let collectors = [];
@@ -74,12 +76,13 @@
       let canvas = createCanvas(windowWidth - 220, windowHeight);
       canvas.parent('game-container');
       background(50);
+      updateStats();
     }
 
     function draw() {
       background(50, 50, 80, 255);
       // Adicionar novos objetos com base na taxa de drop
-      if (frameCount % max(1, floor(60 / dropRate)) === 0) {
+      if (frameCount % max(1, floor(60 / upgrades.dropRate.value)) === 0) {
         let size = getRandomBallSize();
         let coinValue = calculateCoinValue(size);
         objects.push({
@@ -118,7 +121,7 @@
           let obj = objects[i];
           if (!obj.collected && dist(collector.x, collector.y, obj.x, obj.y) < obj.size + 15) {
             obj.collected = true;
-            coins += obj.coinValue * multiplier;
+            coins += obj.coinValue * upgrades.multiplier.value;
             updateStats();
             createParticleExplosion(obj.x, obj.y, obj.color);
             objects.splice(i, 1);
@@ -127,7 +130,7 @@
       }
 
       // Auto-clicker
-      if (autoClicker > 0 && frameCount % max(1, floor(60 / autoClicker)) === 0) {
+      if (upgrades.autoClicker.value > 0 && frameCount % max(1, floor(60 / upgrades.autoClicker.value)) === 0) {
         let target = objects.find(obj => !obj.collected);
         if (target) {
           simulateClick(target.x, target.y);
@@ -164,8 +167,8 @@
 
     function getRandomBallSize() {
       let rand = random(100);
-      let smallThreshold = smallBallChance;
-      let largeThreshold = largeBallChance;
+      let smallThreshold = upgrades.smallBallChance.value;
+      let largeThreshold = upgrades.largeBallChance.value;
       let mediumThreshold = 100 - smallThreshold - largeThreshold;
       if (mediumThreshold < 0) {
         smallThreshold = 50;
@@ -186,12 +189,12 @@
     function simulateClick(x, y) {
       for (let i = objects.length - 1; i >= 0; i--) {
         let obj = objects[i];
-        if (!obj.collected && dist(x, y, obj.x, obj.y) < obj.size + clickArea) {
+        if (!obj.collected && dist(x, y, obj.x, obj.y) < obj.size + upgrades.clickArea.value) {
           obj.collected = true;
-          coins += obj.coinValue * multiplier;
+          coins += obj.coinValue * upgrades.multiplier.value;
           updateStats();
           createParticleExplosion(obj.x, obj.y, obj.color);
-          clickEffects.push({ x: x, y: y, size: clickArea * 2, life: 30 });
+          clickEffects.push({ x: x, y: y, size: upgrades.clickArea.value * 2, life: 30 });
           objects.splice(i, 1);
         }
       }
@@ -202,7 +205,7 @@
     }
 
     function createParticleExplosion(x, y, baseColor) {
-      let particleCount = particleEffect;
+      let particleCount = upgrades.particleEffect.value;
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: x,
@@ -221,24 +224,28 @@
     }
 
     function buyUpgrade(type, baseCost, costMultiplier, increment) {
-      let cost = Math.floor(baseCost * Math.pow(costMultiplier, eval(type)));
+      let level = upgrades[type].level;
+      let cost = Math.round(baseCost * (1 + level * costMultiplier));
       if (coins >= cost) {
         coins -= cost;
-        if (type === 'dropRate') dropRate += increment;
-        else if (type === 'multiplier') multiplier += increment;
-        else if (type === 'particleEffect') particleEffect += increment;
+        upgrades[type].level += 1;
+        if (type === 'dropRate') upgrades.dropRate.value += increment;
+        else if (type === 'multiplier') upgrades.multiplier.value += increment;
+        else if (type === 'particleEffect') upgrades.particleEffect.value += increment;
         else if (type === 'autoCollector') {
           collectors.push({ x: width / 2, y: height / 2, vx: random(-2, 2), vy: random(-2, 2) });
-          autoCollector += increment;
+          upgrades.autoCollector.value += increment;
         }
-        else if (type === 'smallBallChance') smallBallChance += increment;
-        else if (type === 'largeBallChance') largeBallChance += increment;
-        else if (type === 'autoClicker') autoClicker += increment;
-        else if (type === 'clickArea') clickArea += increment;
+        else if (type === 'smallBallChance') upgrades.smallBallChance.value += increment;
+        else if (type === 'largeBallChance') upgrades.largeBallChance.value += increment;
+        else if (type === 'autoClicker') upgrades.autoClicker.value += increment;
+        else if (type === 'clickArea') upgrades.clickArea.value += increment;
         updateStats();
         createUpgradeParticles();
-        eval(type + 'Cost = Math.floor(baseCost * Math.pow(costMultiplier, eval(type)));');
-        document.getElementById(type + 'Cost').innerText = eval(type + 'Cost');
+        let nextCost = Math.round(baseCost * (1 + (level + 1) * costMultiplier));
+        document.getElementById(type + 'Cost').innerText = nextCost;
+      }else{
+        alert('Moedas insuficientes para comprar este upgrade! custo: ' + cost);
       }
     }
 
@@ -258,20 +265,20 @@
 
     function updateStats() {
       document.getElementById('coins').innerText = coins;
-      document.getElementById('drop-rate').innerText = dropRate.toFixed(1);
+      document.getElementById('drop-rate').innerText = upgrades.dropRate.value.toFixed(1);
+      // Atualizar custos iniciais
+      ['dropRate', 'multiplier', 'particleEffect', 'autoCollector', 'smallBallChance', 'largeBallChance', 'autoClicker', 'clickArea'].forEach(type => {
+        let baseCost = { dropRate: 10, multiplier: 50, particleEffect: 100, autoCollector: 200, smallBallChance: 30, largeBallChance: 150, autoClicker: 80, clickArea: 120 }[type];
+        let costMultiplier = { dropRate: 1.5, multiplier: 2, particleEffect: 1.5, autoCollector: 2, smallBallChance: 1.8, largeBallChance: 2.2, autoClicker: 1.7, clickArea: 1.9 }[type];
+        let cost = Math.round(baseCost * (1 + upgrades[type].level * costMultiplier));
+        document.getElementById(type + 'Cost').innerText = cost;
+      });
     }
 
     function saveGame() {
       let gameState = {
         coins: coins,
-        dropRate: dropRate,
-        multiplier: multiplier,
-        particleEffect: particleEffect,
-        autoCollector: autoCollector,
-        smallBallChance: smallBallChance,
-        largeBallChance: largeBallChance,
-        autoClicker: autoClicker,
-        clickArea: clickArea,
+        upgrades: upgrades,
         collectors: collectors.map(c => ({ x: c.x, y: c.y, vx: c.vx, vy: c.vy }))
       };
       localStorage.setItem('dopamineGameSave', JSON.stringify(gameState));
@@ -283,14 +290,16 @@
       if (savedState) {
         let gameState = JSON.parse(savedState);
         coins = gameState.coins || 0;
-        dropRate = gameState.dropRate || 1;
-        multiplier = gameState.multiplier || 1;
-        particleEffect = gameState.particleEffect || 10;
-        autoCollector = gameState.autoCollector || 0;
-        smallBallChance = gameState.smallBallChance || 50;
-        largeBallChance = gameState.largeBallChance || 10;
-        autoClicker = gameState.autoClicker || 0;
-        clickArea = gameState.clickArea || 10;
+        upgrades = gameState.upgrades || {
+          dropRate: { value: 1, level: 0 },
+          multiplier: { value: 1, level: 0 },
+          particleEffect: { value: 10, level: 0 },
+          autoCollector: { value: 0, level: 0 },
+          smallBallChance: { value: 50, level: 0 },
+          largeBallChance: { value: 10, level: 0 },
+          autoClicker: { value: 0, level: 0 },
+          clickArea: { value: 10, level: 0 }
+        };
         collectors = gameState.collectors ? gameState.collectors.map(c => ({
           x: c.x,
           y: c.y,
@@ -298,13 +307,6 @@
           vy: c.vy
         })) : [];
         updateStats();
-        // Atualizar custos dos upgrades
-        ['dropRate', 'multiplier', 'particleEffect', 'autoCollector', 'smallBallChance', 'largeBallChance', 'autoClicker', 'clickArea'].forEach(type => {
-          let baseCost = { dropRate: 10, multiplier: 50, particleEffect: 100, autoCollector: 200, smallBallChance: 30, largeBallChance: 150, autoClicker: 80, clickArea: 120 }[type];
-          let costMultiplier = { dropRate: 1.5, multiplier: 2, particleEffect: 1.5, autoCollector: 2, smallBallChance: 1.8, largeBallChance: 2.2, autoClicker: 1.7, clickArea: 1.9 }[type];
-          eval(type + 'Cost = Math.floor(baseCost * Math.pow(costMultiplier, eval(type)));');
-          document.getElementById(type + 'Cost').innerText = eval(type + 'Cost');
-        });
         alert('Jogo carregado com sucesso!');
       } else {
         alert('Nenhum jogo salvo encontrado.');
