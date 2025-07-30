@@ -4,17 +4,14 @@
   <meta charset="UTF-8">
   <title>Jogo Incremental Dopamina</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-PVR4R17HFG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-PVR4R17HFG');
   </script>
-
   <style>
     body { margin: 0; overflow: hidden; background: #1a1a1a; color: #fff; font-family: Arial, sans-serif; }
     #game-container { display: flex; }
@@ -73,29 +70,28 @@
         <p>Objetos por segundo: <span id="drop-rate">1</span></p>
         <p>Tempo de Jogo: <span id="play-time">00:00:00</span></p>
       </div>
-      <button onclick="buyUpgrade('dropRate', 10, 1.5, 0.5)">Aumentar Taxa de Drop (Custo: <span id="dropRateCost">10</span>) <span id="dropRateLevel" class="upgrade-level">0/999</span></button>
-      <button onclick="buyUpgrade('multiplier', 50, 2, 2)">Multiplicador de Moedas (Custo: <span id="multiplierCost">50</span>) <span id="multiplierLevel" class="upgrade-level">0/999</span></button>
-      <button href="https://www.google.com.br" onclick="buyUpgrade('particleEffect', 100, 1.5, 5)">Melhorar Partículas (Custo: <span id="particleEffectCost">100</span>) <span id="particleEffectLevel" class="upgrade-level">0/999</span></button>
-      <button onclick="buyUpgrade('autoCollector', 200, 2, 1)">Adicionar Coletor (Custo: <span id="autoCollectorCost">200</span>) <span id="autoCollectorLevel" class="upgrade-level">0/999</span></button>
-      <button onclick="buyUpgrade('largeBallChance', 150, 2.2, 2)">Chance de Bolas Maiores (Custo: <span id="largeBallChanceCost">150</span>) <span id="largeBallChanceLevel" class="upgrade-level">0/999</span></button>
-      <button onclick="buyUpgrade('autoClicker', 80, 1.7, 0.5)">Taxa de Auto-Clicker (Custo: <span id="autoClickerCost">80</span>) <span id="autoClickerLevel" class="upgrade-level">0/999</span></button>
-      <button onclick="buyUpgrade('clickArea', 120, 1.9, 5)">Aumentar Área de Clique (Custo: <span id="clickAreaCost">120</span>) <span id="clickAreaLevel" class="upgrade-level">0/999</span></button>
+      <button onclick="buyUpgrade('dropRate', 10, 1.5, 0.5)">Aumentar Taxa de Drop (Custo: <span id="dropRateCost">10</span>) <span id="dropRateLevel" class="upgrade-level">0/99</span></button>
+      <button onclick="buyUpgrade('multiplier', 50, 2, 2)">Multiplicador de Moedas (Custo: <span id="multiplierCost">50</span>) <span id="multiplierLevel" class="upgrade-level">0/99</span></button>
+      <button onclick="buyUpgrade('particleEffect', 100, 1.5, 5)">Melhorar Partículas (Custo: <span id="particleEffectCost">100</span>) <span id="particleEffectLevel" class="upgrade-level">0/99</span></button>
+      <button onclick="buyUpgrade('autoCollector', 200, 2, 1)">Adicionar Coletor (Custo: <span id="autoCollectorCost">200</span>) <span id="autoCollectorLevel" class="upgrade-level">0/99</span></button>
+      <button onclick="buyUpgrade('largeBallChance', 150, 2.2, 2)">Chance de Bolas Maiores (Custo: <span id="largeBallChanceCost">150</span>) <span id="largeBallChanceLevel" class="upgrade-level">0/99</span></button>
+      <button onclick="buyUpgrade('autoClicker', 80, 1.7, 0.5)">Taxa de Auto-Clicker (Custo: <span id="autoClickerCost">80</span>) <span id="autoClickerLevel" class="upgrade-level">0/99</span></button>
+      <button onclick="buyUpgrade('clickArea', 120, 1.9, 5)">Aumentar Área de Clique (Custo: <span id="clickAreaCost">120</span>) <span id="clickAreaLevel" class="upgrade-level">0/99</span></button>
       <button onclick="saveGame()">Salvar Jogo</button>
       <button onclick="loadGame()">Carregar Jogo</button>
-        <button onclick="clearSaves()">Deletar Save</button>
+      <button onclick="clearSaves()">Deletar Save</button>
     </div>
-    <div id="version-frame">Versão: v0.0.11</div>
+    <div id="version-frame">Versão: v0.0.12</div>
   </div>
   <script>
     let coins = 0;
     let startTime = Date.now();
-    let totalPlayTime = 0; // Tempo total em milissegundos
+    let totalPlayTime = 0;
     let upgrades = {
       dropRate: { value: 1, level: 0 },
       multiplier: { value: 1, level: 0 },
       particleEffect: { value: 10, level: 0 },
       autoCollector: { value: 0, level: 0 },
-      smallBallChance: { value: 50, level: 0 },
       largeBallChance: { value: 10, level: 0 },
       autoClicker: { value: 0, level: 0 },
       clickArea: { value: 10, level: 0 }
@@ -105,6 +101,7 @@
     let collectors = [];
     let clickEffects = [];
     let spawnEffects = [];
+    let damageEffects = [];
 
     function setup() {
       let canvas = createCanvas(windowWidth - 220, windowHeight);
@@ -120,29 +117,6 @@
       startAutoSave();
     }
 
-    function clearSaves() {
-      localStorage.removeItem('dopamineGameSave');
-      coins = 0;
-      upgrades = {
-        dropRate: { value: 1, level: 0 },
-        multiplier: { value: 1, level: 0 },
-        particleEffect: { value: 10, level: 0 },
-        autoCollector: { value: 0, level: 0 },
-        smallBallChance: { value: 50, level: 0 },
-        largeBallChance: { value: 10, level: 0 },
-        autoClicker: { value: 0, level: 0 },
-        clickArea: { value: 10, level: 0 }
-      };
-      collectors = [];
-      objects = [];
-      particles = [];
-      clickEffects = [];
-      spawnEffects = [];
-      totalPlayTime = 0;
-      updateStats();
-      showToast('Todos os saves foram limpos!');
-    }
-
     function formatTime(ms) {
       let seconds = Math.floor(ms / 1000);
       let hours = Math.floor(seconds / 3600);
@@ -154,20 +128,24 @@
 
     function draw() {
       background(50, 50, 80, 255);
-      totalPlayTime += deltaTime; // Adiciona o tempo desde o último frame
+      totalPlayTime += deltaTime;
       document.getElementById('play-time').innerText = formatTime(totalPlayTime);
+
       // Adicionar novos objetos com base na taxa de drop
       if (frameCount % max(1, floor(60 / upgrades.dropRate.value)) === 0) {
         let size = getRandomBallSize();
         let coinValue = calculateCoinValue(size);
+        let health = calculateHealth(size);
         let obj = {
           x: random(width),
           y: random(height),
           size: size,
           coinValue: coinValue,
+          health: health,
+          maxHealth: health,
           color: color(random(100, 255), random(100, 255), random(100, 255)),
           collected: false,
-          spawnScale: 0 // Para animação de spawn
+          spawnScale: 0
         };
         objects.push(obj);
         spawnEffects.push({ x: obj.x, y: obj.y, life: 20, size: obj.size });
@@ -189,10 +167,14 @@
       for (let i = objects.length - 1; i >= 0; i--) {
         let obj = objects[i];
         if (!obj.collected) {
-          obj.spawnScale = min(obj.spawnScale + 0.1, 1); // Animação de escala
-          fill(obj.color);
+          obj.spawnScale = min(obj.spawnScale + 0.1, 1);
+          let healthRatio = obj.health / obj.maxHealth;
+          fill(obj.color.levels[0], obj.color.levels[1] * healthRatio, obj.color.levels[2] * healthRatio);
           noStroke();
           ellipse(obj.x, obj.y, obj.size * obj.spawnScale);
+          // Desenhar barra de vida
+          fill(255, 0, 0);
+          rect(obj.x - obj.size / 2, obj.y - obj.size / 2 - 10, obj.size * healthRatio, 5);
         }
       }
 
@@ -200,7 +182,7 @@
       for (let collector of collectors) {
         collector.x += collector.vx;
         collector.y += collector.vy;
-        if (random() < 0.05) { // Mudar direção aleatoriamente
+        if (random() < 0.05) {
           collector.vx = random(-2, 2);
           collector.vy = random(-2, 2);
         }
@@ -211,11 +193,22 @@
         for (let i = objects.length - 1; i >= 0; i--) {
           let obj = objects[i];
           if (!obj.collected && dist(collector.x, collector.y, obj.x, obj.y) < obj.size + 15) {
-            obj.collected = true;
-            coins += obj.coinValue * upgrades.multiplier.value;
-            updateStats();
-            createParticleExplosion(obj.x, obj.y, obj.color);
-            objects.splice(i, 1);
+            let damage = 1 + upgrades.clickArea.value / 10;
+            obj.health -= damage;
+            damageEffects.push({
+              x: obj.x,
+              y: obj.y - 10,
+              text: `-${damage.toFixed(1)}`,
+              life: 30,
+              vy: -1
+            });
+            if (obj.health <= 0) {
+              obj.collected = true;
+              coins += obj.coinValue * upgrades.multiplier.value;
+              updateStats();
+              createParticleExplosion(obj.x, obj.y, obj.color);
+              objects.splice(i, 1);
+            }
           }
         }
       }
@@ -233,7 +226,7 @@
         let p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.1; // Gravidade
+        p.vy += 0.1;
         p.life -= 1;
         fill(p.color.levels[0], p.color.levels[1], p.color.levels[2], p.life);
         ellipse(p.x, p.y, p.size);
@@ -254,22 +247,29 @@
         if (effect.life <= 0) clickEffects.splice(i, 1);
       }
 
+      // Atualizar e desenhar efeitos de dano
+      for (let i = damageEffects.length - 1; i >= 0; i--) {
+        let effect = damageEffects[i];
+        effect.y += effect.vy;
+        effect.life -= 1;
+        fill(255, 255, 255, map(effect.life, 0, 30, 0, 255));
+        textSize(12);
+        textAlign(CENTER);
+        text(effect.text, effect.x, effect.y);
+        if (effect.life <= 0) damageEffects.splice(i, 1);
+      }
+
       // Limitar número de partículas para desempenho
       if (particles.length > 200) particles.splice(0, particles.length - 200);
+      if (damageEffects.length > 50) damageEffects.splice(0, damageEffects.length - 50);
     }
 
     function getRandomBallSize() {
       let rand = random(100);
-      let smallThreshold = upgrades.smallBallChance.value;
       let largeThreshold = upgrades.largeBallChance.value;
-      let mediumThreshold = 100 - smallThreshold - largeThreshold;
-      if (mediumThreshold < 0) {
-        smallThreshold = 50;
-        largeThreshold = 10;
-        mediumThreshold = 40;
-      }
+      let mediumThreshold = 100 - largeThreshold;
       if (rand < largeThreshold) return random(20, 30); // Bolas grandes
-      if (rand < largeThreshold + smallThreshold) return random(5, 10); // Bolas pequenas
+      if (rand < largeThreshold + 50) return random(5, 10); // Bolas pequenas
       return random(10, 20); // Bolas médias
     }
 
@@ -279,17 +279,34 @@
       return 10; // Bolas grandes
     }
 
+    function calculateHealth(size) {
+      if (size <= 10) return 1; // Bolas pequenas
+      if (size <= 20) return 3; // Bolas médias
+      return 5; // Bolas grandes
+    }
+
     function simulateClick(x, y) {
       let hit = false;
+      let damage = 1 + upgrades.clickArea.value / 10;
       for (let i = objects.length - 1; i >= 0; i--) {
         let obj = objects[i];
         if (!obj.collected && dist(x, y, obj.x, obj.y) < obj.size + upgrades.clickArea.value) {
-          obj.collected = true;
-          coins += obj.coinValue * upgrades.multiplier.value;
-          updateStats();
-          createParticleExplosion(obj.x, obj.y, obj.color);
+          obj.health -= damage;
+          damageEffects.push({
+            x: obj.x,
+            y: obj.y - 10,
+            text: `-${damage.toFixed(1)}`,
+            life: 30,
+            vy: -1
+          });
+          if (obj.health <= 0) {
+            obj.collected = true;
+            coins += obj.coinValue * upgrades.multiplier.value;
+            updateStats();
+            createParticleExplosion(obj.x, obj.y, obj.color);
+            objects.splice(i, 1);
+          }
           hit = true;
-          objects.splice(i, 1);
         }
       }
       clickEffects.push({ x: x, y: y, size: upgrades.clickArea.value * 2, life: 30 });
@@ -321,7 +338,7 @@
 
     function buyUpgrade(type, baseCost, costMultiplier, increment) {
       let level = upgrades[type].level;
-      if (level >= 999) {
+      if (level >= 99) {
         showToast('Upgrade atingiu o nível máximo (99)!');
         return;
       }
@@ -342,21 +359,12 @@
         updateStats();
         createUpgradeParticles();
         let nextCost = Math.round(baseCost * (1 + (level + 1) * costMultiplier));
-        document.getElementById(type + 'Cost').innerText = nextCost;
+        document.getElementById(type + 'Cost').innerText = formatLargeNumber(nextCost);
         document.getElementById(type + 'Level').innerText = `${upgrades[type].level}/99`;
       } else {
-        showToast('Moedas insuficientes para comprar este upgrade! Custo: ' + cost);
+        showToast('Moedas insuficientes para comprar este upgrade! Custo: ' + formatLargeNumber(cost));
       }
     }
-
-    // Adicionar ao final do <script> no index.html
-    function startAutoSave() {
-      setInterval(() => {
-        saveGame();
-        showToast('Jogo salvo automaticamente!');
-      }, 30000); // 30 segundos
-    }
-
 
     function createUpgradeParticles() {
       for (let i = 0; i < 50; i++) {
@@ -376,21 +384,19 @@
       document.getElementById('coins').innerText = formatLargeNumber(coins);
       document.getElementById('drop-rate').innerText = upgrades.dropRate.value.toFixed(1);
       ['dropRate', 'multiplier', 'particleEffect', 'autoCollector', 'largeBallChance', 'autoClicker', 'clickArea'].forEach(type => {
-        let baseCost = { dropRate: 10, multiplier: 50, particleEffect: 100, autoCollector: 200, smallBallChance: 30, largeBallChance: 150, autoClicker: 80, clickArea: 120 }[type];
-        let costMultiplier = { dropRate: 1.5, multiplier: 2, particleEffect: 1.5, autoCollector: 2, smallBallChance: 1.8, largeBallChance: 2.2, autoClicker: 1.7, clickArea: 1.9 }[type];
+        let baseCost = { dropRate: 10, multiplier: 50, particleEffect: 100, autoCollector: 200, largeBallChance: 150, autoClicker: 80, clickArea: 120 }[type];
+        let costMultiplier = { dropRate: 1.5, multiplier: 2, particleEffect: 1.5, autoCollector: 2, largeBallChance: 2.2, autoClicker: 1.7, clickArea: 1.9 }[type];
         let cost = Math.round(baseCost * (1 + upgrades[type].level * costMultiplier));
         document.getElementById(type + 'Cost').innerText = formatLargeNumber(cost);
         document.getElementById(type + 'Level').innerText = `${upgrades[type].level}/99`;
       });
     }
 
-    function showToast(message) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000); // Desaparece após 3 segundos
+    function startAutoSave() {
+      setInterval(() => {
+        saveGame();
+        showToast('Jogo salvo automaticamente!');
+      }, 30000);
     }
 
     function saveGame() {
@@ -398,7 +404,8 @@
         coins: coins,
         upgrades: upgrades,
         collectors: collectors.map(c => ({ x: c.x, y: c.y, vx: c.vx, vy: c.vy })),
-        totalPlayTime: totalPlayTime
+        totalPlayTime: totalPlayTime,
+        objects: objects.map(o => ({ x: o.x, y: o.y, size: o.size, coinValue: o.coinValue, health: o.health, maxHealth: o.maxHealth, color: o.color.levels, collected: o.collected, spawnScale: o.spawnScale }))
       };
       localStorage.setItem('dopamineGameSave', JSON.stringify(gameState));
       showToast('Jogo salvo com sucesso!');
@@ -414,7 +421,6 @@
           multiplier: { value: 1, level: 0 },
           particleEffect: { value: 10, level: 0 },
           autoCollector: { value: 0, level: 0 },
-          smallBallChance: { value: 50, level: 0 },
           largeBallChance: { value: 10, level: 0 },
           autoClicker: { value: 0, level: 0 },
           clickArea: { value: 10, level: 0 }
@@ -425,6 +431,17 @@
           vx: c.vx,
           vy: c.vy
         })) : [];
+        objects = gameState.objects ? gameState.objects.map(o => ({
+          x: o.x,
+          y: o.y,
+          size: o.size,
+          coinValue: o.coinValue,
+          health: o.health,
+          maxHealth: o.maxHealth,
+          color: color(o.color[0], o.color[1], o.color[2]),
+          collected: o.collected,
+          spawnScale: o.spawnScale
+        })) : [];
         totalPlayTime = gameState.totalPlayTime || 0;
         updateStats();
         showToast(`Jogo carregado com sucesso! Tempo total: ${formatTime(totalPlayTime)}`);
@@ -433,43 +450,64 @@
       }
     }
 
-    function windowResized() {
-      resizeCanvas(windowWidth - 220, windowHeight);
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000); // Desaparece após 3 segundos
+    }
+    
+    function clearSaves() {
+      localStorage.removeItem('dopamineGameSave');
+      coins = 0;
+      upgrades = {
+        dropRate: { value: 1, level: 0 },
+        multiplier: { value: 1, level: 0 },
+        particleEffect: { value: 10, level: 0 },
+        autoCollector: { value: 0, level: 0 },
+        largeBallChance: { value: 10, level: 0 },
+        autoClicker: { value: 0, level: 0 },
+        clickArea: { value: 10, level: 0 }
+      };
+      collectors = [];
+      objects = [];
+      particles = [];
+      clickEffects = [];
+      spawnEffects = [];
+      damageEffects = [];
+      totalPlayTime = 0;
+      updateStats();
+      showToast('Todos os saves foram limpos!');
     }
 
     function formatLargeNumber(number, locale = navigator.language) {
-        try {
-          // Verifica se o número é válido
-          if (isNaN(number) || number === null) return "0";
-
-          // Define os sufixos para diferentes ordens de grandeza
-          const suffixes = [
-            { threshold: 1e12, suffix: "T" }, // Trilhão
-            { threshold: 1e9, suffix: "B" },  // Bilhão
-            { threshold: 1e6, suffix: "M" },  // Milhão
-            { threshold: 1e3, suffix: "K" },  // Mil
-            { threshold: 1, suffix: "" }
-          ];
-
-          // Encontra o sufixo apropriado
-          const tier = suffixes.find(t => Math.abs(number) >= t.threshold) || suffixes[suffixes.length - 1];
-
-          // Calcula o número formatado
-          const scaled = number / tier.threshold;
-
-          // Formata o número com a API Intl para suportar diferentes idiomas
-          const formatter = new Intl.NumberFormat(locale, {
-            maximumFractionDigits: scaled >= 10 ? 0 : 1, // 1 casa decimal para números < 10, 0 para >= 10
-            minimumFractionDigits: 0
-          });
-
-          return `${formatter.format(scaled)}${tier.suffix}`;
-        } catch (error) {
-          console.error("Erro ao formatar número:", error);
-          return number.toString(); // Fallback para string pura
-        }
+      try {
+        if (isNaN(number) || number === null) return "0";
+        const suffixes = [
+          { threshold: 1e12, suffix: "T" },
+          { threshold: 1e9, suffix: "B" },
+          { threshold: 1e6, suffix: "M" },
+          { threshold: 1e3, suffix: "K" },
+          { threshold: 1, suffix: "" }
+        ];
+        const tier = suffixes.find(t => Math.abs(number) >= t.threshold) || suffixes[suffixes.length - 1];
+        const scaled = number / tier.threshold;
+        const formatter = new Intl.NumberFormat(locale, {
+          maximumFractionDigits: scaled >= 10 ? 0 : 1,
+          minimumFractionDigits: 0
+        });
+        return `${formatter.format(scaled)}${tier.suffix}`;
+      } catch (error) {
+        console.error("Erro ao formatar número:", error);
+        return number.toString();
       }
-    
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth - 220, windowHeight);
+    }
   </script>
 </body>
 </html>
