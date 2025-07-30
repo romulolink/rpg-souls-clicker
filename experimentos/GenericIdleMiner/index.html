@@ -60,6 +60,7 @@
       <div id="stats">
         <p>Moedas: <span id="coins">0</span></p>
         <p>Objetos por segundo: <span id="drop-rate">1</span></p>
+        <p>Tempo de Jogo: <span id="play-time">00:00:00</span></p>
       </div>
       <button onclick="buyUpgrade('dropRate', 10, 1.5, 0.5)">Aumentar Taxa de Drop (Custo: <span id="dropRateCost">10</span>) <span id="dropRateLevel" class="upgrade-level">0/99</span></button>
       <button onclick="buyUpgrade('multiplier', 50, 2, 2)">Multiplicador de Moedas (Custo: <span id="multiplierCost">50</span>) <span id="multiplierLevel" class="upgrade-level">0/99</span></button>
@@ -72,10 +73,12 @@
       <button onclick="loadGame()">Carregar Jogo</button>
         <button onclick="clearSaves()">Deletar Save</button>
     </div>
-    <div id="version-frame">Versão: v0.0.9</div>
+    <div id="version-frame">Versão: v0.0.10</div>
   </div>
   <script>
     let coins = 0;
+    let startTime = Date.now();
+    let totalPlayTime = 0; // Tempo total em milissegundos
     let upgrades = {
       dropRate: { value: 1, level: 0 },
       multiplier: { value: 1, level: 0 },
@@ -96,6 +99,11 @@
       let canvas = createCanvas(windowWidth - 220, windowHeight);
       canvas.parent('game-container');
       background(50);
+      let savedState = localStorage.getItem('dopamineGameSave');
+      if (savedState) {
+        let gameState = JSON.parse(savedState);
+        totalPlayTime = gameState.totalPlayTime || 0;
+      }
       updateStats();
       loadGame();
       startAutoSave();
@@ -119,12 +127,24 @@
       particles = [];
       clickEffects = [];
       spawnEffects = [];
+      totalPlayTime = 0;
       updateStats();
       showToast('Todos os saves foram limpos!');
     }
 
+    function formatTime(ms) {
+      let seconds = Math.floor(ms / 1000);
+      let hours = Math.floor(seconds / 3600);
+      seconds %= 3600;
+      let minutes = Math.floor(seconds / 60);
+      seconds %= 60;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
     function draw() {
       background(50, 50, 80, 255);
+      totalPlayTime += deltaTime; // Adiciona o tempo desde o último frame
+      document.getElementById('play-time').innerText = formatTime(totalPlayTime);
       // Adicionar novos objetos com base na taxa de drop
       if (frameCount % max(1, floor(60 / upgrades.dropRate.value)) === 0) {
         let size = getRandomBallSize();
@@ -366,7 +386,8 @@
       let gameState = {
         coins: coins,
         upgrades: upgrades,
-        collectors: collectors.map(c => ({ x: c.x, y: c.y, vx: c.vx, vy: c.vy }))
+        collectors: collectors.map(c => ({ x: c.x, y: c.y, vx: c.vx, vy: c.vy })),
+        totalPlayTime: totalPlayTime
       };
       localStorage.setItem('dopamineGameSave', JSON.stringify(gameState));
       showToast('Jogo salvo com sucesso!');
@@ -393,8 +414,9 @@
           vx: c.vx,
           vy: c.vy
         })) : [];
+        totalPlayTime = gameState.totalPlayTime || 0;
         updateStats();
-        showToast('Jogo carregado com sucesso!');
+        showToast(`Jogo carregado com sucesso! Tempo total: ${formatTime(totalPlayTime)}`);
       } else {
         showToast('Nenhum jogo salvo encontrado.');
       }
