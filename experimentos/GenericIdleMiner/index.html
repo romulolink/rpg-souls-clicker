@@ -1,0 +1,201 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo Incremental Dopamina</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; background: #1a1a1a; color: #fff; font-family: Arial, sans-serif; }
+    #game-container { display: flex; }
+    #ui { width: 200px; padding: 10px; background: #333; }
+    button { 
+      width: 100%; 
+      margin: 5px 0; 
+      padding: 10px; 
+      background: #6200ea; 
+      color: #fff; 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      transition: transform 0.2s, background 0.2s;
+    }
+    button:hover { background: #7c4dff; transform: scale(1.05); }
+    button:active { transform: scale(0.95); }
+    #stats { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="ui">
+      <div id="stats">
+        <p>Moedas: <span id="coins">0</span></p>
+        <p>Objetos por segundo: <span id="drop-rate">1</span></p>
+      </div>
+      <button onclick="buyUpgrade('dropRate', 10, 1.5, 0.5)">Aumentar Taxa de Drop (Custo: <span id="dropRateCost">10</span>)</button>
+      <button onclick="buyUpgrade('multiplier', 50, 2, 2)">Multiplicador de Moedas (Custo: <span id="multiplierCost">50</span>)</button>
+      <button onclick="buyUpgrade('particleEffect', 100, 1.5, 5)">Melhorar Partículas (Custo: <span id="particleEffectCost">100</span>)</button>
+    </div>
+  </div>
+  <script>
+    let coins = 0;
+    let dropRate = 1;
+    let multiplier = 1;
+    let particleEffect = 10;
+    let objects = [];
+    let particles = [];
+
+    function setup() {
+      let canvas = createCanvas(windowWidth - 220, windowHeight);
+      canvas.parent('game-container');
+      background(50);
+    }
+
+    function draw() {
+      background(50, 50, 80, 255);
+      // Adicionar novos objetos com base na taxa de drop
+      if (frameCount % max(1, floor(60 / dropRate)) === 0) {
+        objects.push({
+          x: random(width),
+          y: random(height),
+          size: random(10, 20),
+          color: color(random(100, 255), random(100, 255), random(100, 255)),
+          collected: false
+        });
+      }
+
+      // Atualizar e desenhar objetos
+      for (let i = objects.length - 1; i >= 0; i--) {
+        let obj = objects[i];
+        if (!obj.collected) {
+          fill(obj.color);
+          noStroke();
+          ellipse(obj.x, obj.y, obj.size);
+        }
+      }
+
+      // Atualizar e desenhar partículas
+      for (let i = particles.length - 1; i >= 0; i--) {
+        let p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.1; // Gravidade
+        p.life -= 1;
+        fill(p.color.levels[0], p.color.levels[1], p.color.levels[2], p.life);
+        ellipse(p.x, p.y, p.size);
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      // Limitar número de partículas para desempenho
+      if (particles.length > 200) particles.splice(0, particles.length - 200);
+    }
+
+    function mousePressed() {
+      for (let i = objects.length - 1; i >= 0; i--) {
+        let obj = objects[i];
+        if (!obj.collected && dist(mouseX, mouseY, obj.x, obj.y) < obj.size) {
+          obj.collected = true;
+          coins += 1 * multiplier;
+          updateStats();
+          createParticleExplosion(obj.x, obj.y, obj.color);
+          objects.splice(i, 1);
+        }
+      }
+    }
+
+    function createParticleExplosion(x, y, baseColor) {
+      let particleCount = particleEffect;
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: x,
+          y: y,
+          vx: random(-3, 3),
+          vy: random(-3, 3),
+          size: random(3, 8),
+          color: color(
+            constrain(baseColor.levels[0] + random(-50, 50), 0, 255),
+            constrain(baseColor.levels[1] + random(-50, 50), 0, 255),
+            constrain(baseColor.levels[2] + random(-50, 50), 0, 255)
+          ),
+          life: random(20, 60)
+        });
+      }
+    }
+
+    function buyUpgrade(type, baseCost, costMultiplier, increment) {
+      let cost = Math.floor(baseCost * Math.pow(costMultiplier, eval(type)));
+      if (coins >= cost) {
+        coins -= cost;
+        if (type === 'dropRate') dropRate += increment;
+        else if (type === 'multiplier') multiplier += increment;
+        else if (type === 'particleEffect') particleEffect += increment;
+        updateStats();
+        createUpgradeParticles();
+        eval(type + 'Cost = Math.floor(baseCost * Math.pow(costMultiplier, eval(type)));');
+        document.getElementById(type + 'Cost').innerText = eval(type + 'Cost');
+      }
+    }
+
+    function createUpgradeParticles() {
+      for (let i = 0; i < 50; i++) {
+        particles.push({
+          x: random(width),
+          y: random(height),
+          vx: random(-5, 5),
+          vy: random(-5, 5),
+          size: random(5, 10),
+          color: color(random(150, 255), random(100, 255), 0),
+          life: random(30, 80)
+        });
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('coins').innerText = coins;
+      document.getElementById('drop-rate').innerText = dropRate.toFixed(1);
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth - 220, windowHeight);
+    }
+  </script>
+</body>
+</html>
