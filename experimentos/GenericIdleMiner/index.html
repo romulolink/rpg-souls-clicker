@@ -37,6 +37,8 @@
       <button onclick="buyUpgrade('autoCollector', 200, 2, 1)">Adicionar Coletor (Custo: <span id="autoCollectorCost">200</span>)</button>
       <button onclick="buyUpgrade('smallBallChance', 30, 1.8, 5)">Chance de Bolas Menores (Custo: <span id="smallBallChanceCost">30</span>)</button>
       <button onclick="buyUpgrade('largeBallChance', 150, 2.2, 2)">Chance de Bolas Maiores (Custo: <span id="largeBallChanceCost">150</span>)</button>
+      <button onclick="buyUpgrade('autoClicker', 80, 1.7, 0.5)">Taxa de Auto-Clicker (Custo: <span id="autoClickerCost">80</span>)</button>
+      <button onclick="buyUpgrade('clickArea', 120, 1.9, 5)">Aumentar Área de Clique (Custo: <span id="clickAreaCost">120</span>)</button>
     </div>
   </div>
   <script>
@@ -45,11 +47,14 @@
     let multiplier = 1;
     let particleEffect = 10;
     let autoCollector = 0;
-    let smallBallChance = 50; // Porcentagem inicial de chance de bolas pequenas
-    let largeBallChance = 10; // Porcentagem inicial de chance de bolas grandes
+    let smallBallChance = 50; // Porcentagem de chance de bolas pequenas
+    let largeBallChance = 10; // Porcentagem de chance de bolas grandes
+    let autoClicker = 0; // Cliques por segundo
+    let clickArea = 10; // Raio da área de clique
     let objects = [];
     let particles = [];
     let collectors = [];
+    let clickEffects = [];
 
     function setup() {
       let canvas = createCanvas(windowWidth - 220, windowHeight);
@@ -91,12 +96,10 @@
           collector.vx = random(-2, 2);
           collector.vy = random(-2, 2);
         }
-        // Manter coletor dentro da tela
         collector.x = constrain(collector.x, 0, width);
         collector.y = constrain(collector.y, 0, height);
         fill(255, 215, 0);
         rect(collector.x - 15, collector.y - 15, 30, 30);
-        // Verificar colisão com objetos
         for (let i = objects.length - 1; i >= 0; i--) {
           let obj = objects[i];
           if (!obj.collected && dist(collector.x, collector.y, obj.x, obj.y) < obj.size + 15) {
@@ -106,6 +109,14 @@
             createParticleExplosion(obj.x, obj.y, obj.color);
             objects.splice(i, 1);
           }
+        }
+      }
+
+      // Auto-clicker
+      if (autoClicker > 0 && frameCount % max(1, floor(60 / autoClicker)) === 0) {
+        let target = objects.find(obj => !obj.collected);
+        if (target) {
+          simulateClick(target.x, target.y);
         }
       }
 
@@ -121,14 +132,34 @@
         if (p.life <= 0) particles.splice(i, 1);
       }
 
+      // Atualizar e desenhar efeitos de clique
+      for (let i = clickEffects.length - 1; i >= 0; i--) {
+        let effect = clickEffects[i];
+        effect.life -= 1;
+        let alpha = map(effect.life, 0, 30, 0, 100);
+        noFill();
+        stroke(255, 255, 0, alpha);
+        strokeWeight(2);
+        ellipse(effect.x, effect.y, effect.size * (30 - effect.life) / 30);
+        if (effect.life <= 0) clickEffects.splice(i, 1);
+      }
+
       // Limitar número de partículas para desempenho
       if (particles.length > 200) particles.splice(0, particles.length - 200);
     }
 
     function getRandomBallSize() {
       let rand = random(100);
-      if (rand < largeBallChance) return random(20, 30); // Bolas grandes
-      if (rand < largeBallChance + smallBallChance) return random(5, 10); // Bolas pequenas
+      let smallThreshold = smallBallChance;
+      let largeThreshold = largeBallChance;
+      let mediumThreshold = 100 - smallThreshold - largeThreshold;
+      if (mediumThreshold < 0) {
+        smallThreshold = 50;
+        largeThreshold = 10;
+        mediumThreshold = 40;
+      }
+      if (rand < largeThreshold) return random(20, 30); // Bolas grandes
+      if (rand < largeThreshold + smallThreshold) return random(5, 10); // Bolas pequenas
       return random(10, 20); // Bolas médias
     }
 
@@ -138,17 +169,22 @@
       return 10; // Bolas grandes
     }
 
-    function mousePressed() {
+    function simulateClick(x, y) {
       for (let i = objects.length - 1; i >= 0; i--) {
         let obj = objects[i];
-        if (!obj.collected && dist(mouseX, mouseY, obj.x, obj.y) < obj.size) {
+        if (!obj.collected && dist(x, y, obj.x, obj.y) < obj.size + clickArea) {
           obj.collected = true;
           coins += obj.coinValue * multiplier;
           updateStats();
           createParticleExplosion(obj.x, obj.y, obj.color);
+          clickEffects.push({ x: x, y: y, size: clickArea * 2, life: 30 });
           objects.splice(i, 1);
         }
       }
+    }
+
+    function mousePressed() {
+      simulateClick(mouseX, mouseY);
     }
 
     function createParticleExplosion(x, y, baseColor) {
@@ -183,6 +219,8 @@
         }
         else if (type === 'smallBallChance') smallBallChance += increment;
         else if (type === 'largeBallChance') largeBallChance += increment;
+        else if (type === 'autoClicker') autoClicker += increment;
+        else if (type === 'clickArea') clickArea += increment;
         updateStats();
         createUpgradeParticles();
         eval(type + 'Cost = Math.floor(baseCost * Math.pow(costMultiplier, eval(type)));');
