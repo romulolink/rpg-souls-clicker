@@ -22,6 +22,17 @@
     button:hover { background: #7c4dff; transform: scale(1.05); }
     button:active { transform: scale(0.95); }
     #stats { margin-bottom: 20px; }
+    #version-frame {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 14px;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
@@ -39,7 +50,10 @@
       <button onclick="buyUpgrade('largeBallChance', 150, 2.2, 2)">Chance de Bolas Maiores (Custo: <span id="largeBallChanceCost">150</span>)</button>
       <button onclick="buyUpgrade('autoClicker', 80, 1.7, 0.5)">Taxa de Auto-Clicker (Custo: <span id="autoClickerCost">80</span>)</button>
       <button onclick="buyUpgrade('clickArea', 120, 1.9, 5)">Aumentar Área de Clique (Custo: <span id="clickAreaCost">120</span>)</button>
+      <button onclick="saveGame()">Salvar Jogo</button>
+      <button onclick="loadGame()">Carregar Jogo</button>
     </div>
+    <div id="version-frame">Versão: v0.0.4</div>
   </div>
   <script>
     let coins = 0;
@@ -47,10 +61,10 @@
     let multiplier = 1;
     let particleEffect = 10;
     let autoCollector = 0;
-    let smallBallChance = 50; // Porcentagem de chance de bolas pequenas
-    let largeBallChance = 10; // Porcentagem de chance de bolas grandes
-    let autoClicker = 0; // Cliques por segundo
-    let clickArea = 10; // Raio da área de clique
+    let smallBallChance = 50;
+    let largeBallChance = 10;
+    let autoClicker = 0;
+    let clickArea = 10;
     let objects = [];
     let particles = [];
     let collectors = [];
@@ -245,6 +259,56 @@
     function updateStats() {
       document.getElementById('coins').innerText = coins;
       document.getElementById('drop-rate').innerText = dropRate.toFixed(1);
+    }
+
+    function saveGame() {
+      let gameState = {
+        coins: coins,
+        dropRate: dropRate,
+        multiplier: multiplier,
+        particleEffect: particleEffect,
+        autoCollector: autoCollector,
+        smallBallChance: smallBallChance,
+        largeBallChance: largeBallChance,
+        autoClicker: autoClicker,
+        clickArea: clickArea,
+        collectors: collectors.map(c => ({ x: c.x, y: c.y, vx: c.vx, vy: c.vy }))
+      };
+      localStorage.setItem('dopamineGameSave', JSON.stringify(gameState));
+      alert('Jogo salvo com sucesso!');
+    }
+
+    function loadGame() {
+      let savedState = localStorage.getItem('dopamineGameSave');
+      if (savedState) {
+        let gameState = JSON.parse(savedState);
+        coins = gameState.coins || 0;
+        dropRate = gameState.dropRate || 1;
+        multiplier = gameState.multiplier || 1;
+        particleEffect = gameState.particleEffect || 10;
+        autoCollector = gameState.autoCollector || 0;
+        smallBallChance = gameState.smallBallChance || 50;
+        largeBallChance = gameState.largeBallChance || 10;
+        autoClicker = gameState.autoClicker || 0;
+        clickArea = gameState.clickArea || 10;
+        collectors = gameState.collectors ? gameState.collectors.map(c => ({
+          x: c.x,
+          y: c.y,
+          vx: c.vx,
+          vy: c.vy
+        })) : [];
+        updateStats();
+        // Atualizar custos dos upgrades
+        ['dropRate', 'multiplier', 'particleEffect', 'autoCollector', 'smallBallChance', 'largeBallChance', 'autoClicker', 'clickArea'].forEach(type => {
+          let baseCost = { dropRate: 10, multiplier: 50, particleEffect: 100, autoCollector: 200, smallBallChance: 30, largeBallChance: 150, autoClicker: 80, clickArea: 120 }[type];
+          let costMultiplier = { dropRate: 1.5, multiplier: 2, particleEffect: 1.5, autoCollector: 2, smallBallChance: 1.8, largeBallChance: 2.2, autoClicker: 1.7, clickArea: 1.9 }[type];
+          eval(type + 'Cost = Math.floor(baseCost * Math.pow(costMultiplier, eval(type)));');
+          document.getElementById(type + 'Cost').innerText = eval(type + 'Cost');
+        });
+        alert('Jogo carregado com sucesso!');
+      } else {
+        alert('Nenhum jogo salvo encontrado.');
+      }
     }
 
     function windowResized() {
