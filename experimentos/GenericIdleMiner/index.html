@@ -81,7 +81,7 @@
       <button onclick="loadGame()">Carregar Jogo</button>
       <button onclick="clearSaves()">Deletar Save</button>
     </div>
-    <div id="version-frame">Versão: v0.0.12</div>
+    <div id="version-frame">Versão: v0.0.13</div>
   </div>
   <script>
     let coins = 0;
@@ -145,7 +145,9 @@
           maxHealth: health,
           color: color(random(100, 255), random(100, 255), random(100, 255)),
           collected: false,
-          spawnScale: 0
+          spawnScale: 0,
+          showHealthBar: false,
+          healthBarTimer: 0
         };
         objects.push(obj);
         spawnEffects.push({ x: obj.x, y: obj.y, life: 20, size: obj.size });
@@ -172,9 +174,14 @@
           fill(obj.color.levels[0], obj.color.levels[1] * healthRatio, obj.color.levels[2] * healthRatio);
           noStroke();
           ellipse(obj.x, obj.y, obj.size * obj.spawnScale);
-          // Desenhar barra de vida
-          fill(255, 0, 0);
-          rect(obj.x - obj.size / 2, obj.y - obj.size / 2 - 10, obj.size * healthRatio, 5);
+          // Desenhar barra de vida se showHealthBar for true
+          if (obj.showHealthBar && obj.healthBarTimer > 0) {
+            obj.healthBarTimer -= 1;
+            fill(255, 0, 0);
+            rect(obj.x - obj.size / 2, obj.y - obj.size / 2 - 10, obj.size * healthRatio, 5);
+            if (obj.healthBarTimer <= 0) obj.showHealthBar = false;
+          
+          }
         }
       }
 
@@ -195,6 +202,8 @@
           if (!obj.collected && dist(collector.x, collector.y, obj.x, obj.y) < obj.size + 15) {
             let damage = 1 + upgrades.clickArea.value / 10;
             obj.health -= damage;
+            obj.showHealthBar = true;
+            obj.healthBarTimer = 120; // 2 segundos a 60 FPS
             damageEffects.push({
               x: obj.x,
               y: obj.y - 10,
@@ -292,6 +301,8 @@
         let obj = objects[i];
         if (!obj.collected && dist(x, y, obj.x, obj.y) < obj.size + upgrades.clickArea.value) {
           obj.health -= damage;
+          obj.showHealthBar = true;
+          obj.healthBarTimer = 120; // 2 segundos a 60 FPS
           damageEffects.push({
             x: obj.x,
             y: obj.y - 10,
@@ -405,7 +416,19 @@
         upgrades: upgrades,
         collectors: collectors.map(c => ({ x: c.x, y: c.y, vx: c.vx, vy: c.vy })),
         totalPlayTime: totalPlayTime,
-        objects: objects.map(o => ({ x: o.x, y: o.y, size: o.size, coinValue: o.coinValue, health: o.health, maxHealth: o.maxHealth, color: o.color.levels, collected: o.collected, spawnScale: o.spawnScale }))
+        objects: objects.map(o => ({
+          x: o.x,
+          y: o.y,
+          size: o.size,
+          coinValue: o.coinValue,
+          health: o.health,
+          maxHealth: o.maxHealth,
+          color: o.color.levels,
+          collected: o.collected,
+          spawnScale: o.spawnScale,
+          showHealthBar: o.showHealthBar,
+          healthBarTimer: o.healthBarTimer
+        }))
       };
       localStorage.setItem('dopamineGameSave', JSON.stringify(gameState));
       showToast('Jogo salvo com sucesso!');
@@ -440,7 +463,9 @@
           maxHealth: o.maxHealth,
           color: color(o.color[0], o.color[1], o.color[2]),
           collected: o.collected,
-          spawnScale: o.spawnScale
+          spawnScale: o.spawnScale,
+          showHealthBar: o.showHealthBar || false,
+          healthBarTimer: o.healthBarTimer || 0
         })) : [];
         totalPlayTime = gameState.totalPlayTime || 0;
         updateStats();
@@ -458,7 +483,7 @@
         toast.classList.remove('show');
       }, 3000); // Desaparece após 3 segundos
     }
-    
+
     function clearSaves() {
       localStorage.removeItem('dopamineGameSave');
       coins = 0;
