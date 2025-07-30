@@ -71,7 +71,7 @@
       <button onclick="saveGame()">Salvar Jogo</button>
       <button onclick="loadGame()">Carregar Jogo</button>
     </div>
-    <div id="version-frame">Versão: v0.0.8</div>
+    <div id="version-frame">Versão: v0.0.9</div>
   </div>
   <script>
     let coins = 0;
@@ -96,6 +96,7 @@
       canvas.parent('game-container');
       background(50);
       updateStats();
+      startAutoSave();
     }
 
     function draw() {
@@ -292,6 +293,15 @@
         showToast('Moedas insuficientes para comprar este upgrade! Custo: ' + cost);
       }
     }
+
+    // Adicionar ao final do <script> no index.html
+    function startAutoSave() {
+      setInterval(() => {
+        saveGame();
+        showToast('Jogo salvo automaticamente!');
+      }, 30000); // 30 segundos
+    }
+
 
     function createUpgradeParticles() {
       for (let i = 0; i < 50; i++) {
