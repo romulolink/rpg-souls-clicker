@@ -33,11 +33,27 @@
       font-size: 14px;
       z-index: 1000;
     }
+
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 40%;
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+    }
+    .toast.show {
+        opacity: 1;
+    }
   </style>
 </head>
 <body>
   <div id="game-container">
     <div id="ui">
+      <div id="toast" class="toast">Mensagem suave!</div>
       <div id="stats">
         <p>Moedas: <span id="coins">0</span></p>
         <p>Objetos por segundo: <span id="drop-rate">1</span></p>
@@ -245,7 +261,7 @@
         let nextCost = Math.round(baseCost * (1 + (level + 1) * costMultiplier));
         document.getElementById(type + 'Cost').innerText = nextCost;
       }else{
-        alert('Moedas insuficientes para comprar este upgrade! custo: ' + cost);
+        showToast('Moedas insuficientes para comprar este upgrade! custo: ' + cost);
       }
     }
 
@@ -275,6 +291,16 @@
       });
     }
 
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+          toast.classList.remove('show');
+      }, 3000); // Desaparece após 3 segundos
+    }
+
+
     function saveGame() {
       let gameState = {
         coins: coins,
@@ -282,7 +308,7 @@
         collectors: collectors.map(c => ({ x: c.x, y: c.y, vx: c.vx, vy: c.vy }))
       };
       localStorage.setItem('dopamineGameSave', JSON.stringify(gameState));
-      alert('Jogo salvo com sucesso!');
+      showToast('Jogo salvo com sucesso!');
     }
 
     function loadGame() {
@@ -307,9 +333,9 @@
           vy: c.vy
         })) : [];
         updateStats();
-        alert('Jogo carregado com sucesso!');
+        showToast('Jogo carregado com sucesso!');
       } else {
-        alert('Nenhum jogo salvo encontrado.');
+        showToast('Nenhum jogo salvo encontrado.');
       }
     }
 
