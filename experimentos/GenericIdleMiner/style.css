@@ -260,3 +260,116 @@ button:disabled {
 #upgrades-window h2 {
   text-align: center;
 }
+
+#xp-bar-container {
+  width: 100%;
+  height: 10px;
+  background: #1A1A2E;
+  border: 2px solid #00FF00;
+  border-radius: 5px;
+  margin-top: 10px;
+  box-shadow: 0 0 10px #00FF0066;
+}
+
+#xp-bar {
+  height: 100%;
+  background: #00FF00;
+  width: 0%;
+  border-radius: 3px;
+  box-shadow: 0 0 10px #00FF00;
+  transition: width 0.3s ease;
+}
+
+#session-end-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 420px;
+  width: calc(100vw - 420px);
+  height: 100vh;
+  background: #0A0A15cc;
+  z-index: 500;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#session-end-overlay button {
+  padding: 15px 30px;
+  font-size: 18px;
+  background: #00FFFF22;
+  border: 2px solid #00FFFF;
+  box-shadow: 0 0 15px #00FFFF66;
+}
+
+#session-end-overlay button:hover {
+  background: #00FFFF44;
+  box-shadow: 0 0 20px #00FFFF, 0 0 30px #00FFFF66;
+}
+
+
+#session-end-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #1a1a2e;
+  border: 3px solid #00FFFF;
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  font-family: 'Orbitron', sans-serif;
+  color: #00FFFF;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.7);
+  max-width: 400px;
+  min-width: 300px;
+  width: 90%;
+  margin: 10% auto;
+}
+
+.modal-content h2 {
+  margin: 0 0 15px;
+  font-size: 28px;
+  font-weight: 700;
+  text-shadow: 0 0 10px #00FFFF;
+}
+
+.modal-content p {
+  margin: 0 0 25px;
+  font-size: 18px;
+  line-height: 1.5;
+  text-shadow: 0 0 5px #00FFFF;
+}
+
+.modal-content button {
+  background-color: transparent;
+  border: 2px solid #FF00FF;
+  color: #FF00FF;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 12px 25px;
+  margin: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+}
+
+.modal-content button:hover {
+  background-color: #FF00FF;
+  color: #1a1a2e;
+  box-shadow: 0 0 15px #FF00FF;
+  transform: scale(1.05);
+}
