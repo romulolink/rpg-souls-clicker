@@ -20,7 +20,10 @@
     <div id="ui">
       <div id="toast" class="toast">Smooth message!</div>
       <div id="stats">
-        <p>Coins: <span id="coins">0</span></p>
+        <p>Level: <span id="player-level">1</span></p>
+        <p>XP: <span id="xp">0</span>/<span id="xp-required">100</span></p>
+        <div id="xp-bar"><div id="xp-bar-fill"></div></div>
+        <p>Level Points: <span id="level-points">0</span></p>
         <p>Objects per second: <span id="drop-rate">1</span></p>
         <p>Play Time: <span id="play-time">00:00:00</span></p>
         <p>Session Duration: <span id="session-duration">5</span>s</p>
@@ -30,14 +33,17 @@
         <button id="planet1Btn" class="planet-btn active" onclick="switchPlanet(1)">Planet 1</button>
         <button id="planet2Btn" class="planet-btn" onclick="unlockPlanet(2)">Planet 2 (Cost: 10K)</button>
       </div>
-      <div id="actions">
-        <h2>Actions</h2>
-        <button id="playBtn" class="planet-btn active" onclick="restartSession()">PLAY</button>
+
       
-      </div>
       <div id="upgrades-toggle">
         <button onclick="toggleUpgradesWindow()">Show Upgrades</button>
       </div>
+
+       <div id="play-container">
+          <button id="playBtn" class="planet-btn active" onclick="startSession()">PLAY</button>
+        
+        </div>
+      
     </div>
     <div id="drop-chances">
       <h2>Drop Chances</h2>
@@ -95,49 +101,49 @@
       </div>
     </div>
     <div id="upgrades-window">
-      <button id="close-upgrades-btn" onclick="toggleUpgradesWindow()">Close</button>
+      <button id="close-upgrades-btn" onclick="toggleUpgradesWindow()">X</button>
       <h2>Upgrades</h2>
       <div id="upgrades-container">
-        <button id="dropRateBtn" class="upgrade-btn" onclick="buyUpgrade('dropRate', 50, 2, 0.1)" data-tooltip="Increase Drop Rate: Increases the spawn frequency of objects. Cost: <span id='dropRateCost'>50</span> | Level: <span id='dropRateLevel'>0/99</span>">
+        <button id="dropRateBtn" class="upgrade-btn" onclick="buyUpgrade('dropRate', 50, 2, 0.1, 1)" data-tooltip="Increase Drop Rate: Increases the spawn frequency of objects. Cost: <span id='dropRateCost'>50 coins or 1 LP</span> | Level: <span id='dropRateLevel'>0/99</span>">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><circle cx="0" cy="0" r="12" fill="#00FF00" stroke="#00FF00" stroke-width="3"/></svg>
         </button>
-        <button id="multiplierBtn" class="upgrade-btn" onclick="buyUpgrade('multiplier', 200, 2.5, 0.5)" data-tooltip="Coin Multiplier: Increases coin gain per destroyed object. Cost: <span id='multiplierCost'>200</span> | Level: <span id='multiplierLevel'>0/99</span>" data-dependency="dropRate">
+        <button id="multiplierBtn" class="upgrade-btn" onclick="buyUpgrade('multiplier', 200, 2.5, 0.5, 1)" data-tooltip="Coin Multiplier: Increases coin gain per destroyed object. Cost: <span id='multiplierCost'>200 coins or 1 LP</span> | Level: <span id='multiplierLevel'>0/99</span>" data-dependency="dropRate">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#00FFFF" text-anchor="middle">💰</text></svg>
         </button>
-        <button id="particleEffectBtn" class="upgrade-btn" onclick="buyUpgrade('particleEffect', 150, 1.8, 5)" data-tooltip="Improve Particles: Increases the number of particles in explosions. Cost: <span id='particleEffectCost'>150</span> | Level: <span id='particleEffectLevel'>0/99</span>" data-dependency="multiplier">
+        <button id="particleEffectBtn" class="upgrade-btn" onclick="buyUpgrade('particleEffect', 150, 1.8, 5, 1)" data-tooltip="Improve Particles: Increases the number of particles in explosions. Cost: <span id='particleEffectCost'>150 coins or 1 LP</span> | Level: <span id='particleEffectLevel'>0/99</span>" data-dependency="multiplier">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#FF00FF" text-anchor="middle">✨</text></svg>
         </button>
-        <button id="autoCollectorBtn" class="upgrade-btn" onclick="buyUpgrade('autoCollector', 500, 2.5, 0.5)" data-tooltip="Add Collector: Adds automatic collectors that destroy objects. Cost: <span id='autoCollectorCost'>500</span> | Level: <span id='autoCollectorLevel'>0/99</span>" data-dependency="particleEffect">
+        <button id="autoCollectorBtn" class="upgrade-btn" onclick="buyUpgrade('autoCollector', 500, 2.5, 0.5, 1)" data-tooltip="Add Collector: Adds automatic collectors that destroy objects. Cost: <span id='autoCollectorCost'>500 coins or 1 LP</span> | Level: <span id='autoCollectorLevel'>0/99</span>" data-dependency="particleEffect">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><rect x="-10" y="-10" width="20" height="20" fill="#FFFF00" stroke="#FFFF00" stroke-width="3"/></svg>
         </button>
-        <button id="triangleChanceBtn" class="upgrade-btn" onclick="buyUpgrade('triangleChance', 300, 2.3, 1)" data-tooltip="Triangle Chance: Increases the spawn chance of triangles. Cost: <span id='triangleChanceCost'>300</span> | Level: <span id='triangleChanceLevel'>0/99</span>" data-dependency="autoCollector">
+        <button id="triangleChanceBtn" class="upgrade-btn" onclick="buyUpgrade('triangleChance', 300, 2.3, 1, 1)" data-tooltip="Triangle Chance: Increases the spawn chance of triangles. Cost: <span id='triangleChanceCost'>300 coins or 1 LP</span> | Level: <span id='triangleChanceLevel'>0/99</span>" data-dependency="autoCollector">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 10.4,6 -10.4,6" fill="#00FFFF" stroke="#00FFFF" stroke-width="3"/></svg>
         </button>
-        <button id="squareChanceBtn" class="upgrade-btn" onclick="buyUpgrade('squareChance', 300, 2.3, 1)" data-tooltip="Square Chance: Increases the spawn chance of squares. Cost: <span id='squareChanceCost'>300</span> | Level: <span id='squareChanceLevel'>0/99</span>" data-dependency="autoCollector">
+        <button id="squareChanceBtn" class="upgrade-btn" onclick="buyUpgrade('squareChance', 300, 2.3, 1, 1)" data-tooltip="Square Chance: Increases the spawn chance of squares. Cost: <span id='squareChanceCost'>300 coins or 1 LP</span> | Level: <span id='squareChanceLevel'>0/99</span>" data-dependency="autoCollector">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><rect x="-12" y="-12" width="24" height="24" fill="#FF0000" stroke="#FF0000" stroke-width="3"/></svg>
         </button>
-        <button id="pentagonChanceBtn" class="upgrade-btn" onclick="buyUpgrade('pentagonChance', 300, 2.3, 1)" data-tooltip="Pentagon Chance: Increases the spawn chance of pentagons. Cost: <span id='pentagonChanceCost'>300</span> | Level: <span id='pentagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
+        <button id="pentagonChanceBtn" class="upgrade-btn" onclick="buyUpgrade('pentagonChance', 300, 2.3, 1, 1)" data-tooltip="Pentagon Chance: Increases the spawn chance of pentagons. Cost: <span id='pentagonChanceCost'>300 coins or 1 LP</span> | Level: <span id='pentagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 11.3,-3.7 7,9 -7,9 -11.3,-3.7" fill="#FF9900" stroke="#FF9900" stroke-width="3"/></svg>
         </button>
-        <button id="hexagonChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('hexagonChance', 500, 2.5, 1)" data-tooltip="Hexagon Chance: Increases the spawn chance of hexagons. Cost: <span id='hexagonChanceCost'>500</span> | Level: <span id='hexagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
+        <button id="hexagonChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('hexagonChance', 500, 2.5, 1, 1)" data-tooltip="Hexagon Chance: Increases the spawn chance of hexagons. Cost: <span id='hexagonChanceCost'>500 coins or 1 LP</span> | Level: <span id='hexagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 10.4,-6 10.4,6 0,12 -10.4,6 -10.4,-6" fill="#9900FF" stroke="#9900FF" stroke-width="3"/></svg>
         </button>
-        <button id="heptagonChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('heptagonChance', 500, 2.5, 1)" data-tooltip="Heptagon Chance: Increases the spawn chance of heptagons. Cost: <span id='heptagonChanceCost'>500</span> | Level: <span id='heptagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
+        <button id="heptagonChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('heptagonChance', 500, 2.5, 1, 1)" data-tooltip="Heptagon Chance: Increases the spawn chance of heptagons. Cost: <span id='heptagonChanceCost'>500 coins or 1 LP</span> | Level: <span id='heptagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 8.7,-7.5 11.3,0 5.7,9.5 -2.8,11.1 -10.3,4.2 -9.6,-6.2" fill="#FF00FF" stroke="#FF00FF" stroke-width="3"/></svg>
         </button>
-        <button id="octagonChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('octagonChance', 500, 2.5, 1)" data-tooltip="Octagon Chance: Increases the spawn chance of octagons. Cost: <span id='octagonChanceCost'>500</span> | Level: <span id='octagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
+        <button id="octagonChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('octagonChance', 500, 2.5, 1, 1)" data-tooltip="Octagon Chance: Increases the spawn chance of octagons. Cost: <span id='octagonChanceCost'>500 coins or 1 LP</span> | Level: <span id='octagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 8.5,-8.5 12,0 8.5,8.5 0,12 -8.5,8.5 -12,0 -8.5,-8.5" fill="#FF0066" stroke="#FF0066" stroke-width="3"/></svg>
         </button>
-        <button id="starChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('starChance', 500, 2.5, 1)" data-tooltip="Star Chance: Increases the spawn chance of stars. Cost: <span id='starChanceCost'>500</span> | Level: <span id='starChanceLevel'>0/99</span>" data-dependency="autoCollector">
+        <button id="starChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('starChance', 500, 2.5, 1, 1)" data-tooltip="Star Chance: Increases the spawn chance of stars. Cost: <span id='starChanceCost'>500 coins or 1 LP</span> | Level: <span id='starChanceLevel'>0/99</span>" data-dependency="autoCollector">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 3.5,-3.8 11.3,-3.7 4.3,2.3 7,9 0,5 -7,9 -4.3,2.3 -11.3,-3.7 -3.5,-3.8" fill="#00FFFF" stroke="#00FFFF" stroke-width="3"/></svg>
         </button>
-        <button id="autoClickerBtn" class="upgrade-btn" onclick="buyUpgrade('autoClicker', 150, 2, 0.1)" data-tooltip="Auto-Clicker Rate: Increases the frequency of automatic clicks. Cost: <span id='autoClickerCost'>150</span> | Level: <span id='autoClickerLevel'>0/99</span>" data-dependency="autoCollector">
+        <button id="autoClickerBtn" class="upgrade-btn" onclick="buyUpgrade('autoClicker', 150, 2, 0.1)" data-tooltip="Auto-Clicker Rate: Increases the frequency of automatic clicks. Cost: <span id='autoClickerCost'>150 coins</span> | Level: <span id='autoClickerLevel'>0/99</span>" data-dependency="autoCollector">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#00FF00" text-anchor="middle">👆</text></svg>
         </button>
-        <button id="clickAreaBtn" class="upgrade-btn" onclick="buyUpgrade('clickArea', 200, 2.2, 2)" data-tooltip="Increase Click Area: Increases the effect area of clicks. Cost: <span id='clickAreaCost'>200</span> | Level: <span id='clickAreaLevel'>0/99</span>" data-dependency="autoClicker">
+        <button id="clickAreaBtn" class="upgrade-btn" onclick="buyUpgrade('clickArea', 200, 2.2, 2)" data-tooltip="Increase Click Area: Increases the effect area of clicks. Cost: <span id='clickAreaCost'>200 coins</span> | Level: <span id='clickAreaLevel'>0/99</span>" data-dependency="autoClicker">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><circle cx="0" cy="0" r="12" fill="none" stroke="#FF9900" stroke-width="3"/></svg>
         </button>
-        <button id="sessionDurationBtn" class="upgrade-btn" onclick="buyUpgrade('sessionDuration', 100, 2, 1)" data-tooltip="Session Duration: Increases the length of each game session. Cost: <span id='sessionDurationCost'>100</span> | Level: <span id='sessionDurationLevel'>0/99</span>" data-dependency="dropRate">
+        <button id="sessionDurationBtn" class="upgrade-btn" onclick="buyUpgrade('sessionDuration', 100, 2, 1, 1)" data-tooltip="Session Duration: Increases the length of each game session. Cost: <span id='sessionDurationCost'>100 coins or 1 LP</span> | Level: <span id='sessionDurationLevel'>0/99</span>" data-dependency="dropRate">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#FF00FF" text-anchor="middle">⏳</text></svg>
         </button>
         <button id="saveGameBtn" class="upgrade-btn" onclick="saveGame()" data-tooltip="Save Game: Saves the current progress.">
@@ -149,18 +155,35 @@
         <button id="clearSavesBtn" class="upgrade-btn" onclick="clearSaves()" data-tooltip="Delete Save: Erases all saved progress.">
           <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#FF0000" text-anchor="middle">🗑️</text></svg>
         </button>
+
+
+        <div id="play-btn-container">
+          <button id="playBtn" class="planet-btn active" onclick="restartSession()">PLAY</button>
+        
+        </div>
+
       </div>
     </div>
-   <div id="session-end-modal" style="display: none;">
+    <div id="session-end-modal" style="display: none;">
       <div class="modal-content">
         <h2>Session Ended</h2>
         <p>Would you like to restart the session or go to the upgrades screen?</p>
-        <button onclick="restartSession()">Restart</button>
+        <button onclick="startSession()">Restart</button>
         <button onclick="goToUpgrades()">Go to Upgrades</button>
       </div>
     </div>
+
+    <div id="session-timer-container">
+    <p>Session: <span id="session-time">00:00:00.000</span></p>
   </div>
-  <div id="version-frame">Version: v0.0.26</div>
+
+    <div id="coin-counter-container">
+      <p>Coins: <span id="coins">0</span></p>
+    </div>
+
+
+  </div>
+  <div id="version-frame">Version: v0.0.27</div>
   <script src="game.js"></script>
 </body>
 </html>

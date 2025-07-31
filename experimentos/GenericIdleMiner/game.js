@@ -1,4 +1,8 @@
 let coins = 0;
+let playerLevel = 1;
+let xp = 0;
+let xpRequired = 100;
+let levelPoints = 0;
 let startTime = Date.now();
 let totalPlayTime = 0;
 let currentPlanet = 1;
@@ -53,6 +57,10 @@ function setup() {
     totalPlayTime = gameState.totalPlayTime || 0;
     currentPlanet = gameState.currentPlanet || 1;
     unlockedPlanets = gameState.unlockedPlanets || [1];
+    playerLevel = gameState.playerLevel || 1;
+    xp = gameState.xp || 0;
+    xpRequired = gameState.xpRequired || 100 * playerLevel;
+    levelPoints = gameState.levelPoints || 0;
   }
   updateStats();
   updatePlanetUI();
@@ -74,7 +82,7 @@ function toggleUpgradesWindow() {
   upgradesWindow.style.display = upgradesWindow.style.display === 'block' ? 'none' : 'block';
   if (upgradesWindow.style.display === 'block') {
     GameAnalytics("addDesignEvent", "View:UpgradesWindow");
-    modal.style.display = 'none'; // Ensure modal is hidden when upgrades are shown
+    modal.style.display = 'none';
   }
 }
 
@@ -84,7 +92,17 @@ function showSessionEndModal() {
   isSessionActive = false;
 }
 
-function restartSession() {
+function formatTimeWithMillis(ms) {
+  let milliseconds = Math.floor(ms % 1000);
+  let seconds = Math.floor(ms / 1000);
+  seconds %= 3600;
+  let minutes = Math.floor(seconds / 60);
+  seconds %= 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
+}
+
+function startSession() {
+
   objects = [];
   particles = [];
   clickEffects = [];
@@ -101,6 +119,14 @@ function restartSession() {
   isSessionActive = true;
   document.getElementById('session-end-modal').style.display = 'none';
   updateStats();
+  showToast('Session started!');
+
+}
+
+function restartSession() {
+
+  startSession();
+  toggleUpgradesWindow();
   showToast('Session restarted!');
 }
 
@@ -133,6 +159,18 @@ function getDropChance(shapeType) {
   return (chance / totalChance * 100).toFixed(2);
 }
 
+function checkLevelUp() {
+  while (xp >= xpRequired) {
+    xp -= xpRequired;
+    playerLevel += 1;
+    levelPoints += 1;
+    xpRequired = 100 * playerLevel;
+    showToast(`Level Up! Reached Level ${playerLevel}. Gained 1 Level Point!`);
+    GameAnalytics("addProgressionEvent", "Complete", `LevelUp:Level${playerLevel}`);
+  }
+  updateStats();
+}
+
 function draw() {
   background(20, 20, 30, 255);
   totalPlayTime += deltaTime;
@@ -144,6 +182,10 @@ function draw() {
       showSessionEndModal();
       return;
     }
+
+    let sessionTimer = Date.now() - sessionStartTime;
+    let remaining = Math.max(0, upgrades.sessionDuration.value * 1000 - sessionTimer);
+    document.getElementById('session-time').innerText = formatTimeWithMillis(remaining);
 
     if (frameCount % max(1, floor(60 / upgrades.dropRate.value)) === 0) {
       let objData = getRandomObject();
@@ -230,7 +272,9 @@ function draw() {
           if (obj.health <= 0) {
             obj.collected = true;
             let coinGain = Math.round(obj.coinValue * upgrades.multiplier.value);
+            let xpGain = Math.round(obj.maxHealth * 0.5);
             coins += coinGain;
+            xp += xpGain;
             coinEffects.push({
               x: obj.x,
               y: obj.y,
@@ -238,6 +282,7 @@ function draw() {
               life: 30,
               vy: -1
             });
+            checkLevelUp();
             updateStats();
             createParticleExplosion(obj.x, obj.y, obj.color);
             objects.splice(i, 1);
@@ -420,7 +465,9 @@ function simulateClick(x, y) {
       if (obj.health <= 0) {
         obj.collected = true;
         let coinGain = Math.round(obj.coinValue * upgrades.multiplier.value);
+        let xpGain = Math.round(obj.maxHealth * 0.5);
         coins += coinGain;
+        xp += xpGain;
         coinEffects.push({
           x: obj.x,
           y: obj.y,
@@ -428,6 +475,7 @@ function simulateClick(x, y) {
           life: 30,
           vy: -1
         });
+        checkLevelUp();
         updateStats();
         createParticleExplosion(obj.x, obj.y, obj.color);
         GameAnalytics("addProgressionEvent", "Complete", `Destroy:${obj.shapeType}:Planet${currentPlanet}`);
@@ -460,7 +508,7 @@ function createParticleExplosion(x, y, baseColor) {
   }
 }
 
-function buyUpgrade(type, baseCost, costMultiplier, increment) {
+function buyUpgrade(type, baseCost, costMultiplier, increment, levelPointCost = 0) {
   let level = upgrades[type].level;
   if (level >= 99) {
     showToast('Upgrade reached maximum level (99)!');
@@ -473,8 +521,22 @@ function buyUpgrade(type, baseCost, costMultiplier, increment) {
     showToast(`Requires ${dependency} level 1!`);
     return;
   }
-  if (coins >= cost) {
+  let purchased = false;
+  if (levelPointCost > 0 && levelPoints >= levelPointCost) {
+    levelPoints -= levelPointCost;
+    purchased = true;
+    showToast(`Purchased ${type} with 1 Level Point!`);
+    GameAnalytics("addResourceEvent", "Sink", "LevelPoints", type, "Upgrade", levelPointCost);
+  } else if (coins >= cost) {
     coins -= cost;
+    purchased = true;
+    showToast(`Purchased ${type} with ${formatLargeNumber(cost)} coins!`);
+    GameAnalytics("addResourceEvent", "Sink", "Coins", type, "Upgrade", cost);
+  } else {
+    showToast(`Not enough ${levelPointCost > 0 ? 'level points or coins' : 'coins'}! Cost: ${formatLargeNumber(cost)} coins or ${levelPointCost} LP`);
+    return;
+  }
+  if (purchased) {
     upgrades[type].level += 1;
     if (type === 'dropRate') upgrades.dropRate.value += increment;
     else if (type === 'multiplier') upgrades.multiplier.value += increment;
@@ -493,9 +555,6 @@ function buyUpgrade(type, baseCost, costMultiplier, increment) {
     else if (type === 'sessionDuration') upgrades.sessionDuration.value += increment;
     updateStats();
     createUpgradeParticles();
-    GameAnalytics("addResourceEvent", "Sink", "Coins", type, "Upgrade", cost);
-  } else {
-    showToast('Not enough coins to buy this upgrade! Cost: ' + formatLargeNumber(cost));
   }
 }
 
@@ -545,7 +604,7 @@ function updatePlanetUI() {
 
 function createUpgradeParticles() {
   const neonColors = ['#00FF00', '#00FFFF', '#FF00FF', '#FF9900'];
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0;  i < 50; i++) {
     particles.push({
       x: random(width),
       y: random(height),
@@ -560,33 +619,46 @@ function createUpgradeParticles() {
 
 function updateStats() {
   document.getElementById('coins').innerText = formatLargeNumber(coins);
+  document.getElementById('player-level').innerText = playerLevel;
+  document.getElementById('xp').innerText = formatLargeNumber(xp);
+  document.getElementById('xp-required').innerText = formatLargeNumber(xpRequired);
+  document.getElementById('level-points').innerText = levelPoints;
+  document.getElementById('xp-bar-fill').style.width = `${(xp / xpRequired) * 100}%`;
   document.getElementById('drop-rate').innerText = upgrades.dropRate.value.toFixed(1);
   document.getElementById('session-duration').innerText = upgrades.sessionDuration.value.toFixed(0);
+
+  document.getElementById('player-level').innerText = playerLevel;
+  document.getElementById('xp').innerText = formatLargeNumber(xp);
+  document.getElementById('xp-required').innerText = formatLargeNumber(xpRequired);
+  document.getElementById('xp-bar-fill').style.width = `${(xp / xpRequired) * 100}%`;
+
   const upgradeDetails = {
-    dropRate: { name: 'Increase Drop Rate: Increases the spawn frequency of objects.', baseCost: 50, costMultiplier: 2 },
-    multiplier: { name: 'Coin Multiplier: Increases coin gain per destroyed object.', baseCost: 200, costMultiplier: 2.5 },
-    particleEffect: { name: 'Improve Particles: Increases the number of particles in explosions.', baseCost: 150, costMultiplier: 1.8 },
-    autoCollector: { name: 'Add Collector: Adds automatic collectors that destroy objects.', baseCost: 500, costMultiplier: 2.5 },
-    triangleChance: { name: 'Triangle Chance: Increases the spawn chance of triangles.', baseCost: 300, costMultiplier: 2.3 },
-    squareChance: { name: 'Square Chance: Increases the spawn chance of squares.', baseCost: 300, costMultiplier: 2.3 },
-    pentagonChance: { name: 'Pentagon Chance: Increases the spawn chance of pentagons.', baseCost: 300, costMultiplier: 2.3 },
-    hexagonChance: { name: 'Hexagon Chance: Increases the spawn chance of hexagons.', baseCost: 500, costMultiplier: 2.5 },
-    heptagonChance: { name: 'Heptagon Chance: Increases the spawn chance of heptagons.', baseCost: 500, costMultiplier: 2.5 },
-    octagonChance: { name: 'Octagon Chance: Increases the spawn chance of octagons.', baseCost: 500, costMultiplier: 2.5 },
-    starChance: { name: 'Star Chance: Increases the spawn chance of stars.', baseCost: 500, costMultiplier: 2.5 },
+    dropRate: { name: 'Increase Drop Rate: Increases the spawn frequency of objects.', baseCost: 50, costMultiplier: 2, levelPointCost: 1 },
+    multiplier: { name: 'Coin Multiplier: Increases coin gain per destroyed object.', baseCost: 200, costMultiplier: 2.5, levelPointCost: 1 },
+    particleEffect: { name: 'Improve Particles: Increases the number of particles in explosions.', baseCost: 150, costMultiplier: 1.8, levelPointCost: 1 },
+    autoCollector: { name: 'Add Collector: Adds automatic collectors that destroy objects.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
+    triangleChance: { name: 'Triangle Chance: Increases the spawn chance of triangles.', baseCost: 300, costMultiplier: 2.3, levelPointCost: 1 },
+    squareChance: { name: 'Square Chance: Increases the spawn chance of squares.', baseCost: 300, costMultiplier: 2.3, levelPointCost: 1 },
+    pentagonChance: { name: 'Pentagon Chance: Increases the spawn chance of pentagons.', baseCost: 300, costMultiplier: 2.3, levelPointCost: 1 },
+    hexagonChance: { name: 'Hexagon Chance: Increases the spawn chance of hexagons.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
+    heptagonChance: { name: 'Heptagon Chance: Increases the spawn chance of heptagons.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
+    octagonChance: { name: 'Octagon Chance: Increases the spawn chance of octagons.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
+    starChance: { name: 'Star Chance: Increases the spawn chance of stars.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
     autoClicker: { name: 'Auto-Clicker Rate: Increases the frequency of automatic clicks.', baseCost: 150, costMultiplier: 2 },
     clickArea: { name: 'Increase Click Area: Increases the effect area of clicks.', baseCost: 200, costMultiplier: 2.2 },
-    sessionDuration: { name: 'Session Duration: Increases the length of each game session.', baseCost: 100, costMultiplier: 2 }
+    sessionDuration: { name: 'Session Duration: Increases the length of each game session.', baseCost: 100, costMultiplier: 2, levelPointCost: 1 }
   };
   Object.keys(upgradeDetails).forEach(type => {
     let baseCost = upgradeDetails[type].baseCost;
     let costMultiplier = upgradeDetails[type].costMultiplier;
+    let levelPointCost = upgradeDetails[type].levelPointCost || 0;
     let cost = Math.round(baseCost * (1 + upgrades[type].level * costMultiplier));
     let button = document.getElementById(type + 'Btn');
     if (button) {
-      button.setAttribute('data-tooltip', `${upgradeDetails[type].name} Cost: ${formatLargeNumber(cost)} | Level: ${upgrades[type].level}/99`);
+      let costText = levelPointCost > 0 ? `${formatLargeNumber(cost)} coins or ${levelPointCost} LP` : `${formatLargeNumber(cost)} coins`;
+      button.setAttribute('data-tooltip', `${upgradeDetails[type].name} Cost: ${costText} | Level: ${upgrades[type].level}/99`);
       let dependency = button.getAttribute('data-dependency');
-      button.disabled = (dependency && upgrades[dependency].level === 0) || coins < cost || upgrades[type].level >= 99;
+      button.disabled = (dependency && upgrades[dependency].level === 0) || (coins < cost && levelPoints < levelPointCost) || upgrades[type].level >= 99;
     }
   });
   let shapeTypesCurrent = getCurrentShapeTypes();
@@ -605,6 +677,10 @@ function startAutoSave() {
 function saveGame() {
   let gameState = {
     coins: coins,
+    playerLevel: playerLevel,
+    xp: xp,
+    xpRequired: xpRequired,
+    levelPoints: levelPoints,
     upgrades: upgrades,
     collectors: collectors.map(c => ({ x: c.x, y: c.y, vx: c.vx, vy: c.vy })),
     totalPlayTime: totalPlayTime,
@@ -635,6 +711,10 @@ function loadGame() {
   if (savedState) {
     let gameState = JSON.parse(savedState);
     coins = gameState.coins || 0;
+    playerLevel = gameState.playerLevel || 1;
+    xp = gameState.xp || 0;
+    xpRequired = gameState.xpRequired || 100 * playerLevel;
+    levelPoints = gameState.levelPoints || 0;
     upgrades = gameState.upgrades || {
       dropRate: { value: 1, level: 0 },
       multiplier: { value: 1, level: 0 },
@@ -694,6 +774,10 @@ function loadGame() {
 function clearSaves() {
   localStorage.removeItem('dopamineGameSave');
   coins = 0;
+  playerLevel = 1;
+  xp = 0;
+  xpRequired = 100;
+  levelPoints = 0;
   upgrades = {
     dropRate: { value: 1, level: 0 },
     multiplier: { value: 1, level: 0 },
