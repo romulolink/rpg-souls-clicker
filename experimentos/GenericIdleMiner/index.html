@@ -5,7 +5,6 @@
   <title>Jogo Incremental Dopamina</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <script src="./ga-sdk/js/GameAnalytics.min.js"></script>
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-PVR4R17HFG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -13,6 +12,7 @@
     gtag('js', new Date());
     gtag('config', 'G-PVR4R17HFG');
   </script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -29,24 +29,8 @@
         <button id="planet1Btn" class="planet-btn active" onclick="switchPlanet(1)">Planeta 1</button>
         <button id="planet2Btn" class="planet-btn" onclick="unlockPlanet(2)">Planeta 2 (Custo: 10K)</button>
       </div>
-      <div id="upgrades" style="height: 400px; overflow: scroll;">
-        <h2>Upgrades</h2>
-        <button onclick="buyUpgrade('dropRate', 50, 2, 0.1)">Aumentar Taxa de Drop (Custo: <span id="dropRateCost">50</span>) <span id="dropRateLevel" class="upgrade-level">0/99</span></button>
-        <button onclick="buyUpgrade('multiplier', 200, 2.5, 0.5)">Multiplicador de Moedas (Custo: <span id="multiplierCost">200</span>) <span id="multiplierLevel" class="upgrade-level">0/99</span></button>
-        <button onclick="buyUpgrade('particleEffect', 150, 1.8, 5)">Melhorar Partículas (Custo: <span id="particleEffectCost">150</span>) <span id="particleEffectLevel" class="upgrade-level">0/99</span></button>
-        <button onclick="buyUpgrade('autoCollector', 500, 2.5, 0.5)">Adicionar Coletor (Custo: <span id="autoCollectorCost">500</span>) <span id="autoCollectorLevel" class="upgrade-level">0/99</span></button>
-        <button id="triangleChanceBtn" onclick="buyUpgrade('triangleChance', 300, 2.3, 1)">Chance de Triângulos (Custo: <span id="triangleChanceCost">300</span>) <span id="triangleChanceLevel" class="upgrade-level">0/99</span></button>
-        <button id="squareChanceBtn" onclick="buyUpgrade('squareChance', 300, 2.3, 1)">Chance de Quadrados (Custo: <span id="squareChanceCost">300</span>) <span id="squareChanceLevel" class="upgrade-level">0/99</span></button>
-        <button id="pentagonChanceBtn" onclick="buyUpgrade('pentagonChance', 300, 2.3, 1)">Chance de Pentágonos (Custo: <span id="pentagonChanceCost">300</span>) <span id="pentagonChanceLevel" class="upgrade-level">0/99</span></button>
-        <button id="hexagonChanceBtn" style="display: none;" onclick="buyUpgrade('hexagonChance', 500, 2.5, 1)">Chance de Hexágonos (Custo: <span id="hexagonChanceCost">500</span>) <span id="hexagonChanceLevel" class="upgrade-level">0/99</span></button>
-        <button id="heptagonChanceBtn" style="display: none;" onclick="buyUpgrade('heptagonChance', 500, 2.5, 1)">Chance de Heptágonos (Custo: <span id="heptagonChanceCost">500</span>) <span id="heptagonChanceLevel" class="upgrade-level">0/99</span></button>
-        <button id="octagonChanceBtn" style="display: none;" onclick="buyUpgrade('octagonChance', 500, 2.5, 1)">Chance de Octógonos (Custo: <span id="octagonChanceCost">500</span>) <span id="octagonChanceLevel" class="upgrade-level">0/99</span></button>
-        <button id="starChanceBtn" style="display: none;" onclick="buyUpgrade('starChance', 500, 2.5, 1)">Chance de Estrelas (Custo: <span id="starChanceCost">500</span>) <span id="starChanceLevel" class="upgrade-level">0/99</span></button>
-        <button onclick="buyUpgrade('autoClicker', 150, 2, 0.1)">Taxa de Auto-Clicker (Custo: <span id="autoClickerCost">150</span>) <span id="autoClickerLevel" class="upgrade-level">0/99</span></button>
-        <button onclick="buyUpgrade('clickArea', 200, 2.2, 2)">Aumentar Área de Clique (Custo: <span id="clickAreaCost">200</span>) <span id="clickAreaLevel" class="upgrade-level">0/99</span></button>
-        <button onclick="saveGame()">Salvar Jogo</button>
-        <button onclick="loadGame()">Carregar Jogo</button>
-        <button onclick="clearSaves()">Deletar Save</button>
+      <div id="upgrades-toggle">
+        <button onclick="toggleUpgradesWindow()">Mostrar Upgrades</button>
       </div>
     </div>
     <div id="drop-chances">
@@ -54,25 +38,25 @@
       <div id="planet1Shapes">
         <div class="shape-chance">
           <svg width="30" height="30" viewBox="-15 -15 30 30">
-            <circle cx="0" cy="0" r="12" fill="#4CAF50" stroke="#FFFFFF" stroke-width="2"/>
+            <circle cx="0" cy="0" r="12" fill="#00FF00" stroke="#00FF00" stroke-width="3" style="filter: drop-shadow(0 0 5px #00FF00);"/>
           </svg>
           <span>[1-5] Círculo: <span id="circleChance">0%</span></span>
         </div>
         <div class="shape-chance">
           <svg width="30" height="30" viewBox="-15 -15 30 30">
-            <polygon points="0,-12 10.4,6 -10.4,6" fill="#2196F3" stroke="#FFFFFF" stroke-width="2"/>
+            <polygon points="0,-12 10.4,6 -10.4,6" fill="#00FFFF" stroke="#00FFFF" stroke-width="3" style="filter: drop-shadow(0 0 5px #00FFFF);"/>
           </svg>
           <span>[10-20] Triângulo: <span id="triangleChance">0%</span></span>
         </div>
         <div class="shape-chance">
           <svg width="30" height="30" viewBox="-15 -15 30 30">
-            <rect x="-12" y="-12" width="24" height="24" fill="#F44336" stroke="#FFFFFF" stroke-width="2"/>
+            <rect x="-12" y="-12" width="24" height="24" fill="#FF0000" stroke="#FF0000" stroke-width="3" style="filter: drop-shadow(0 0 5px #FF0000);"/>
           </svg>
           <span>[20-40] Quadrado: <span id="squareChance">0%</span></span>
         </div>
         <div class="shape-chance">
           <svg width="30" height="30" viewBox="-15 -15 30 30">
-            <polygon points="0,-12 11.3,-3.7 7,9 -7,9 -11.3,-3.7" fill="#FF9800" stroke="#FFFFFF" stroke-width="2"/>
+            <polygon points="0,-12 11.3,-3.7 7,9 -7,9 -11.3,-3.7" fill="#FF9900" stroke="#FF9900" stroke-width="3" style="filter: drop-shadow(0 0 5px #FF9900);"/>
           </svg>
           <span>[50-100] Pentágono: <span id="pentagonChance">0%</span></span>
         </div>
@@ -80,32 +64,86 @@
       <div id="planet2Shapes" style="display: none;">
         <div class="shape-chance">
           <svg width="30" height="30" viewBox="-15 -15 30 30">
-            <polygon points="0,-12 10.4,-6 10.4,6 0,12 -10.4,6 -10.4,-6" fill="#9333EA" stroke="#FFFFFF" stroke-width="2"/>
+            <polygon points="0,-12 10.4,-6 10.4,6 0,12 -10.4,6 -10.4,-6" fill="#9900FF" stroke="#9900FF" stroke-width="3" style="filter: drop-shadow(0 0 5px #9900FF);"/>
           </svg>
           <span>[150-300] Hexágono: <span id="hexagonChance">0%</span></span>
         </div>
         <div class="shape-chance">
           <svg width="30" height="30" viewBox="-15 -15 30 30">
-            <polygon points="0,-12 8.7,-7.5 11.3,0 5.7,9.5 -2.8,11.1 -10.3,4.2 -9.6,-6.2" fill="#C026D3" stroke="#FFFFFF" stroke-width="2"/>
+            <polygon points="0,-12 8.7,-7.5 11.3,0 5.7,9.5 -2.8,11.1 -10.3,4.2 -9.6,-6.2" fill="#FF00FF" stroke="#FF00FF" stroke-width="3" style="filter: drop-shadow(0 0 5px #FF00FF);"/>
           </svg>
           <span>[300-600] Heptágono: <span id="heptagonChance">0%</span></span>
         </div>
         <div class="shape-chance">
           <svg width="30" height="30" viewBox="-15 -15 30 30">
-            <polygon points="0,-12 8.5,-8.5 12,0 8.5,8.5 0,12 -8.5,8.5 -12,0 -8.5,-8.5" fill="#DB2777" stroke="#FFFFFF" stroke-width="2"/>
+            <polygon points="0,-12 8.5,-8.5 12,0 8.5,8.5 0,12 -8.5,8.5 -12,0 -8.5,-8.5" fill="#FF0066" stroke="#FF0066" stroke-width="3" style="filter: drop-shadow(0 0 5px #FF0066);"/>
           </svg>
           <span>[600-1200] Octógono: <span id="octagonChance">0%</span></span>
         </div>
         <div class="shape-chance">
           <svg width="30" height="30" viewBox="-15 -15 30 30">
-            <polygon points="0,-12 3.5,-3.8 11.3,-3.7 4.3,2.3 7,9 0,5 -7,9 -4.3,2.3 -11.3,-3.7 -3.5,-3.8" fill="#F472B6" stroke="#FFFFFF" stroke-width="2"/>
+            <polygon points="0,-12 3.5,-3.8 11.3,-3.7 4.3,2.3 7,9 0,5 -7,9 -4.3,2.3 -11.3,-3.7 -3.5,-3.8" fill="#00FFFF" stroke="#00FFFF" stroke-width="3" style="filter: drop-shadow(0 0 5px #00FFFF);"/>
           </svg>
           <span>[1200-2400] Estrela: <span id="starChance">0%</span></span>
         </div>
       </div>
     </div>
+    <div id="upgrades-window">
+      <button id="close-upgrades-btn" onclick="toggleUpgradesWindow()">Fechar</button>
+      <h2>Upgrades</h2>
+      <div id="upgrades-container">
+        <button id="dropRateBtn" class="upgrade-btn" onclick="buyUpgrade('dropRate', 50, 2, 0.1)" data-tooltip="Aumentar Taxa de Drop: Aumenta a frequência de spawn de objetos. Custo: <span id='dropRateCost'>50</span> | Nível: <span id='dropRateLevel'>0/99</span>">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><circle cx="0" cy="0" r="12" fill="#00FF00" stroke="#00FF00" stroke-width="3"/></svg>
+        </button>
+        <button id="multiplierBtn" class="upgrade-btn" onclick="buyUpgrade('multiplier', 200, 2.5, 0.5)" data-tooltip="Multiplicador de Moedas: Aumenta o ganho de moedas por objeto destruído. Custo: <span id='multiplierCost'>200</span> | Nível: <span id='multiplierLevel'>0/99</span>" data-dependency="dropRate">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#00FFFF" text-anchor="middle">💰</text></svg>
+        </button>
+        <button id="particleEffectBtn" class="upgrade-btn" onclick="buyUpgrade('particleEffect', 150, 1.8, 5)" data-tooltip="Melhorar Partículas: Aumenta o número de partículas em explosões. Custo: <span id='particleEffectCost'>150</span> | Nível: <span id='particleEffectLevel'>0/99</span>" data-dependency="multiplier">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#FF00FF" text-anchor="middle">✨</text></svg>
+        </button>
+        <button id="autoCollectorBtn" class="upgrade-btn" onclick="buyUpgrade('autoCollector', 500, 2.5, 0.5)" data-tooltip="Adicionar Coletor: Adiciona coletores automáticos que destroem objetos. Custo: <span id='autoCollectorCost'>500</span> | Nível: <span id='autoCollectorLevel'>0/99</span>" data-dependency="particleEffect">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><rect x="-10" y="-10" width="20" height="20" fill="#FFFF00" stroke="#FFFF00" stroke-width="3"/></svg>
+        </button>
+        <button id="triangleChanceBtn" class="upgrade-btn" onclick="buyUpgrade('triangleChance', 300, 2.3, 1)" data-tooltip="Chance de Triângulos: Aumenta a chance de spawn de triângulos. Custo: <span id='triangleChanceCost'>300</span> | Nível: <span id='triangleChanceLevel'>0/99</span>" data-dependency="autoCollector">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 10.4,6 -10.4,6" fill="#00FFFF" stroke="#00FFFF" stroke-width="3"/></svg>
+        </button>
+        <button id="squareChanceBtn" class="upgrade-btn" onclick="buyUpgrade('squareChance', 300, 2.3, 1)" data-tooltip="Chance de Quadrados: Aumenta a chance de spawn de quadrados. Custo: <span id='squareChanceCost'>300</span> | Nível: <span id='squareChanceLevel'>0/99</span>" data-dependency="autoCollector">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><rect x="-12" y="-12" width="24" height="24" fill="#FF0000" stroke="#FF0000" stroke-width="3"/></svg>
+        </button>
+        <button id="pentagonChanceBtn" class="upgrade-btn" onclick="buyUpgrade('pentagonChance', 300, 2.3, 1)" data-tooltip="Chance de Pentágonos: Aumenta a chance de spawn de pentágonos. Custo: <span id='pentagonChanceCost'>300</span> | Nível: <span id='pentagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 11.3,-3.7 7,9 -7,9 -11.3,-3.7" fill="#FF9900" stroke="#FF9900" stroke-width="3"/></svg>
+        </button>
+        <button id="hexagonChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('hexagonChance', 500, 2.5, 1)" data-tooltip="Chance de Hexágonos: Aumenta a chance de spawn de hexágonos. Custo: <span id='hexagonChanceCost'>500</span> | Nível: <span id='hexagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 10.4,-6 10.4,6 0,12 -10.4,6 -10.4,-6" fill="#9900FF" stroke="#9900FF" stroke-width="3"/></svg>
+        </button>
+        <button id="heptagonChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('heptagonChance', 500, 2.5, 1)" data-tooltip="Chance de Heptágonos: Aumenta a chance de spawn de heptágonos. Custo: <span id='heptagonChanceCost'>500</span> | Nível: <span id='heptagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 8.7,-7.5 11.3,0 5.7,9.5 -2.8,11.1 -10.3,4.2 -9.6,-6.2" fill="#FF00FF" stroke="#FF00FF" stroke-width="3"/></svg>
+        </button>
+        <button id="octagonChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('octagonChance', 500, 2.5, 1)" data-tooltip="Chance de Octógonos: Aumenta a chance de spawn de octógonos. Custo: <span id='octagonChanceCost'>500</span> | Nível: <span id='octagonChanceLevel'>0/99</span>" data-dependency="autoCollector">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 8.5,-8.5 12,0 8.5,8.5 0,12 -8.5,8.5 -12,0 -8.5,-8.5" fill="#FF0066" stroke="#FF0066" stroke-width="3"/></svg>
+        </button>
+        <button id="starChanceBtn" class="upgrade-btn" style="display: none;" onclick="buyUpgrade('starChance', 500, 2.5, 1)" data-tooltip="Chance de Estrelas: Aumenta a chance de spawn de estrelas. Custo: <span id='starChanceCost'>500</span> | Nível: <span id='starChanceLevel'>0/99</span>" data-dependency="autoCollector">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><polygon points="0,-12 3.5,-3.8 11.3,-3.7 4.3,2.3 7,9 0,5 -7,9 -4.3,2.3 -11.3,-3.7 -3.5,-3.8" fill="#00FFFF" stroke="#00FFFF" stroke-width="3"/></svg>
+        </button>
+        <button id="autoClickerBtn" class="upgrade-btn" onclick="buyUpgrade('autoClicker', 150, 2, 0.1)" data-tooltip="Taxa de Auto-Clicker: Aumenta a frequência de cliques automáticos. Custo: <span id='autoClickerCost'>150</span> | Nível: <span id='autoClickerLevel'>0/99</span>" data-dependency="autoCollector">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#00FF00" text-anchor="middle">👆</text></svg>
+        </button>
+        <button id="clickAreaBtn" class="upgrade-btn" onclick="buyUpgrade('clickArea', 200, 2.2, 2)" data-tooltip="Aumentar Área de Clique: Aumenta a área de efeito dos cliques. Custo: <span id='clickAreaCost'>200</span> | Nível: <span id='clickAreaLevel'>0/99</span>" data-dependency="autoClicker">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><circle cx="0" cy="0" r="12" fill="none" stroke="#FF9900" stroke-width="3"/></svg>
+        </button>
+        <button id="saveGameBtn" class="upgrade-btn" onclick="saveGame()" data-tooltip="Salvar Jogo: Salva o progresso atual.">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#00FFFF" text-anchor="middle">💾</text></svg>
+        </button>
+        <button id="loadGameBtn" class="upgrade-btn" onclick="loadGame()" data-tooltip="Carregar Jogo: Carrega o progresso salvo.">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#00FFFF" text-anchor="middle">📂</text></svg>
+        </button>
+        <button id="clearSavesBtn" class="upgrade-btn" onclick="clearSaves()" data-tooltip="Deletar Save: Apaga todo o progresso salvo.">
+          <svg width="30" height="30" viewBox="-15 -15 30 30"><text x="0" y="5" font-size="20" fill="#FF0000" text-anchor="middle">🗑️</text></svg>
+        </button>
+      </div>
+    </div>
   </div>
-  <div id="version-frame">Versão: v0.0.22</div>
+  <div id="version-frame">Versão: v0.0.26</div>
   <script>
     let coins = 0;
     let startTime = Date.now();
@@ -135,25 +173,24 @@
     let damageEffects = [];
     let coinEffects = [];
 
-    // Base de dados de objetos por planeta
     const shapeTypes = [
-      { type: 'circle', sizeRange: [5, 30], healthRange: [1, 5], coinRange: [1, 5], baseChance: 50 },
-      { type: 'triangle', sizeRange: [15, 35], healthRange: [10, 20], coinRange: [10, 20], baseChance: 2 },
-      { type: 'square', sizeRange: [20, 40], healthRange: [20, 40], coinRange: [20, 40], baseChance: 1 },
-      { type: 'pentagon', sizeRange: [25, 45], healthRange: [50, 100], coinRange: [50, 100], baseChance: 0.5 }
+      { type: 'circle', sizeRange: [5, 30], healthRange: [1, 5], coinRange: [1, 5], baseChance: 50, color: '#00FF00' },
+      { type: 'triangle', sizeRange: [15, 35], healthRange: [10, 20], coinRange: [10, 20], baseChance: 2, color: '#00FFFF' },
+      { type: 'square', sizeRange: [20, 40], healthRange: [20, 40], coinRange: [20, 40], baseChance: 1, color: '#FF0000' },
+      { type: 'pentagon', sizeRange: [25, 45], healthRange: [50, 100], coinRange: [50, 100], baseChance: 0.5, color: '#FF9900' }
     ];
 
     const shapeTypesPlanet2 = [
-      { type: 'hexagon', sizeRange: [30, 50], healthRange: [100, 200], coinRange: [150, 300], baseChance: 20 },
-      { type: 'heptagon', sizeRange: [35, 55], healthRange: [200, 400], coinRange: [300, 600], baseChance: 5 },
-      { type: 'octagon', sizeRange: [40, 60], healthRange: [400, 800], coinRange: [600, 1200], baseChance: 2 },
-      { type: 'star', sizeRange: [45, 65], healthRange: [800, 1600], coinRange: [1200, 2400], baseChance: 1 }
+      { type: 'hexagon', sizeRange: [30, 50], healthRange: [100, 200], coinRange: [150, 300], baseChance: 20, color: '#9900FF' },
+      { type: 'heptagon', sizeRange: [35, 55], healthRange: [200, 400], coinRange: [300, 600], baseChance: 5, color: '#FF00FF' },
+      { type: 'octagon', sizeRange: [40, 60], healthRange: [400, 800], coinRange: [600, 1200], baseChance: 2, color: '#FF0066' },
+      { type: 'star', sizeRange: [45, 65], healthRange: [800, 1600], coinRange: [1200, 2400], baseChance: 1, color: '#00FFFF' }
     ];
 
     function setup() {
       let canvas = createCanvas(windowWidth - 420, windowHeight);
       canvas.parent('game-container');
-      background(50);
+      background(20, 20, 30, 255);
       let savedState = localStorage.getItem('dopamineGameSave');
       if (savedState) {
         let gameState = JSON.parse(savedState);
@@ -171,6 +208,16 @@
       GameAnalytics("addDesignEvent", "View:CoinEffect");
       GameAnalytics("addDesignEvent", "View:PlanetsPanel");
       GameAnalytics("addDesignEvent", "Balance:CollectorDamage");
+      GameAnalytics("addDesignEvent", "View:NeonStyle");
+      GameAnalytics("addDesignEvent", "View:UpgradesSkillTree");
+    }
+
+    function toggleUpgradesWindow() {
+      const upgradesWindow = document.getElementById('upgrades-window');
+      upgradesWindow.style.display = upgradesWindow.style.display === 'block' ? 'none' : 'block';
+      if (upgradesWindow.style.display === 'block') {
+        GameAnalytics("addDesignEvent", "View:UpgradesWindow");
+      }
     }
 
     function formatTime(ms) {
@@ -197,11 +244,10 @@
     }
 
     function draw() {
-      background(50, 50, 80, 255);
+      background(20, 20, 30, 255);
       totalPlayTime += deltaTime;
       document.getElementById('play-time').innerText = formatTime(totalPlayTime);
 
-      // Adicionar novos objetos com base na taxa de drop
       if (frameCount % max(1, floor(60 / upgrades.dropRate.value)) === 0) {
         let objData = getRandomObject();
         let obj = {
@@ -211,48 +257,51 @@
           coinValue: objData.coinValue,
           health: objData.health,
           maxHealth: objData.health,
-          color: color(random(100, 255), random(100, 255), random(100, 255)),
+          color: color(objData.color),
           collected: false,
           spawnScale: 0,
           showHealthBar: false,
           healthBarTimer: 0,
-          shapeType: objData.shapeType
+          shapeType: objData.shapeType,
+          pulsePhase: random(TWO_PI) // Initialize random phase for varied pulsing
         };
         objects.push(obj);
         spawnEffects.push({ x: obj.x, y: obj.y, life: 20, size: obj.size });
       }
 
-      // Atualizar e desenhar efeitos de spawn
       for (let i = spawnEffects.length - 1; i >= 0; i--) {
         let effect = spawnEffects[i];
         effect.life -= 1;
         let scale = map(effect.life, 0, 20, 1, 0);
         noFill();
-        stroke(255, 255, 255, map(effect.life, 0, 20, 0, 150));
-        strokeWeight(2);
+        stroke(255, 255, 255, map(effect.life, 0, 20, 0, 200));
+        strokeWeight(3);
         ellipse(effect.x, effect.y, effect.size * scale);
         if (effect.life <= 0) spawnEffects.splice(i, 1);
       }
 
-      // Atualizar e desenhar objetos
       for (let i = objects.length - 1; i >= 0; i--) {
         let obj = objects[i];
         if (!obj.collected) {
           obj.spawnScale = min(obj.spawnScale + 0.1, 1);
+          obj.pulsePhase += 0.05; // Increment phase for pulsing (controls speed)
           let healthRatio = obj.health / obj.maxHealth;
-          fill(obj.color.levels[0], obj.color.levels[1] * healthRatio, obj.color.levels[2] * healthRatio);
-          noStroke();
+          fill(obj.color.levels[0], obj.color.levels[1] * healthRatio, obj.color.levels[2] * healthRatio, 255);
+          stroke(obj.color.levels[0], obj.color.levels[1], obj.color.levels[2], 200);
+          strokeWeight(3);
           drawShape(obj);
           if (obj.showHealthBar && obj.healthBarTimer > 0) {
             obj.healthBarTimer -= 1;
-            fill(255, 0, 0);
-            rect(obj.x - obj.size / 2, obj.y - obj.size / 2 - 10, obj.size * healthRatio, 5);
+            fill(255, 0, 0, 255);
+            stroke(255, 0, 0, 200);
+            strokeWeight(2);
+            let pulseScale = 0.9 + 0.2 * sin(obj.pulsePhase); // Match pulse scale
+            rect(obj.x - (obj.size * pulseScale) / 2, obj.y - (obj.size * pulseScale) / 2 - 10, obj.size * pulseScale * healthRatio, 5);
             if (obj.healthBarTimer <= 0) obj.showHealthBar = false;
           }
         }
       }
 
-      // Atualizar e desenhar coletores
       for (let collector of collectors) {
         collector.x += collector.vx;
         collector.y += collector.vy;
@@ -262,7 +311,9 @@
         }
         collector.x = constrain(collector.x, 0, width);
         collector.y = constrain(collector.y, 0, height);
-        fill(255, 215, 0);
+        fill(255, 255, 0, 255);
+        stroke(255, 255, 0, 200);
+        strokeWeight(3);
         rect(collector.x - 15, collector.y - 15, 30, 30);
         for (let i = objects.length - 1; i >= 0; i--) {
           let obj = objects[i];
@@ -299,7 +350,6 @@
         }
       }
 
-      // Auto-clicker
       if (upgrades.autoClicker.value > 0 && frameCount % max(1, floor(60 / upgrades.autoClicker.value)) === 0) {
         let target = objects.find(obj => !obj.collected);
         if (target) {
@@ -307,58 +357,59 @@
         }
       }
 
-      // Atualizar e desenhar partículas
       for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.1;
+        if (!p.noGravity) p.vy += 0.1;
         p.life -= 1;
         fill(p.color.levels[0], p.color.levels[1], p.color.levels[2], p.life);
+        stroke(p.color.levels[0], p.color.levels[1], p.color.levels[2], 150);
+        strokeWeight(2);
         ellipse(p.x, p.y, p.size);
         if (p.life <= 0) particles.splice(i, 1);
       }
 
-      // Atualizar e desenhar efeitos de clique
       for (let i = clickEffects.length - 1; i >= 0; i--) {
         let effect = clickEffects[i];
         effect.life -= 1;
-        let alpha = map(effect.life, 0, 30, 0, 100);
+        let alpha = map(effect.life, 0, 30, 0, 150);
         noFill();
         stroke(255, 255, 0, alpha);
-        strokeWeight(2);
+        strokeWeight(3);
         rectMode(CENTER);
         rect(effect.x, effect.y, effect.size * (30 - effect.life) / 30, effect.size * (30 - effect.life) / 30);
         rectMode(CORNER);
         if (effect.life <= 0) clickEffects.splice(i, 1);
       }
 
-      // Atualizar e desenhar efeitos de dano
       for (let i = damageEffects.length - 1; i >= 0; i--) {
         let effect = damageEffects[i];
         effect.y += effect.vy;
         effect.life -= 1;
-        fill(255, 255, 255, map(effect.life, 0, 30, 0, 255));
-        textSize(12);
+        fill(255, 0, 0, map(effect.life, 0, 30, 0, 255));
+        stroke(255, 0, 0, map(effect.life, 0, 30, 0, 150));
+        strokeWeight(1);
+        textSize(14);
         textAlign(CENTER);
         text(effect.text, effect.x, effect.y);
         if (effect.life <= 0) damageEffects.splice(i, 1);
       }
 
-      // Atualizar e desenhar efeitos de moedas
       for (let i = coinEffects.length - 1; i >= 0; i--) {
         let effect = coinEffects[i];
         effect.y += effect.vy;
         effect.life -= 1;
         fill(255, 255, 0, map(effect.life, 0, 30, 0, 255));
-        textSize(12);
+        stroke(255, 255, 0, map(effect.life, 0, 30, 0, 150));
+        strokeWeight(1);
+        textSize(14);
         textStyle(BOLD);
         textAlign(CENTER);
         text(effect.text, effect.x, effect.y);
         if (effect.life <= 0) coinEffects.splice(i, 1);
       }
 
-      // Limitar número de partículas e efeitos para desempenho
       if (particles.length > 200) particles.splice(0, particles.length - 200);
       if (damageEffects.length > 50) damageEffects.splice(0, damageEffects.length - 50);
       if (coinEffects.length > 50) coinEffects.splice(0, coinEffects.length - 50);
@@ -367,15 +418,12 @@
     function drawShape(obj) {
       push();
       translate(obj.x, obj.y);
-      scale(obj.spawnScale);
+      let pulseScale = 0.9 + 0.2 * sin(obj.pulsePhase); // Pulse between 0.9x and 1.1x
+      scale(obj.spawnScale * pulseScale); // Combine spawn and pulse scaling
       if (obj.shapeType === 'circle') {
         ellipse(0, 0, obj.size);
       } else if (obj.shapeType === 'triangle') {
-        triangle(
-          0, -obj.size / 2,
-          obj.size / 2, obj.size / 2,
-          -obj.size / 2, obj.size / 2
-        );
+        triangle(0, -obj.size / 2, obj.size / 2, obj.size / 2, -obj.size / 2, obj.size / 2);
       } else if (obj.shapeType === 'square') {
         rectMode(CENTER);
         rect(0, 0, obj.size, obj.size);
@@ -439,7 +487,7 @@
       let size = random(selectedShape.sizeRange[0], selectedShape.sizeRange[1]);
       let health = random(selectedShape.healthRange[0], selectedShape.healthRange[1]);
       let coinValue = random(selectedShape.coinRange[0], selectedShape.coinRange[1]);
-      return { size, health, coinValue, shapeType: selectedShape.type };
+      return { size, health, coinValue, shapeType: selectedShape.type, color: selectedShape.color };
     }
 
     function calculateCoinValue(size) {
@@ -498,6 +546,7 @@
 
     function createParticleExplosion(x, y, baseColor) {
       let particleCount = upgrades.particleEffect.value;
+      const neonColors = ['#00FF00', '#00FFFF', '#FF00FF', '#FF9900'];
       for (let i = 0; i < particleCount; i++) {
         particles.push({
           x: x,
@@ -505,12 +554,9 @@
           vx: random(-3, 3),
           vy: random(-3, 3),
           size: random(3, 8),
-          color: color(
-            constrain(baseColor.levels[0] + random(-50, 50), 0, 255),
-            constrain(baseColor.levels[1] + random(-50, 50), 0, 255),
-            constrain(baseColor.levels[2] + random(-50, 50), 0, 255)
-          ),
-          life: random(20, 60)
+          color: color(random(neonColors)),
+          life: random(20, 60),
+          noGravity: true
         });
       }
     }
@@ -522,6 +568,12 @@
         return;
       }
       let cost = Math.round(baseCost * (1 + level * costMultiplier));
+      let button = document.getElementById(type + 'Btn');
+      let dependency = button ? button.getAttribute('data-dependency') : null;
+      if (dependency && upgrades[dependency].level === 0) {
+        showToast(`Requer ${dependency} nível 1!`);
+        return;
+      }
       if (coins >= cost) {
         coins -= cost;
         upgrades[type].level += 1;
@@ -541,9 +593,6 @@
         else if (type === 'clickArea') upgrades.clickArea.value += increment;
         updateStats();
         createUpgradeParticles();
-        let nextCost = Math.round(baseCost * (1 + (level + 1) * costMultiplier));
-        document.getElementById(type + 'Cost').innerText = formatLargeNumber(nextCost);
-        document.getElementById(type + 'Level').innerText = `${upgrades[type].level}/99`;
         GameAnalytics("addResourceEvent", "Sink", "Coins", type, "Upgrade", cost);
       } else {
         showToast('Moedas insuficientes para comprar este upgrade! Custo: ' + formatLargeNumber(cost));
@@ -595,6 +644,7 @@
     }
 
     function createUpgradeParticles() {
+      const neonColors = ['#00FF00', '#00FFFF', '#FF00FF', '#FF9900'];
       for (let i = 0; i < 50; i++) {
         particles.push({
           x: random(width),
@@ -602,7 +652,7 @@
           vx: random(-5, 5),
           vy: random(-5, 5),
           size: random(5, 10),
-          color: color(random(150, 255), random(100, 255), 0),
+          color: color(random(neonColors)),
           life: random(30, 80)
         });
       }
@@ -611,25 +661,32 @@
     function updateStats() {
       document.getElementById('coins').innerText = formatLargeNumber(coins);
       document.getElementById('drop-rate').innerText = upgrades.dropRate.value.toFixed(1);
-      ['dropRate', 'multiplier', 'particleEffect', 'autoCollector', 'triangleChance', 'squareChance', 'pentagonChance',
-       'hexagonChance', 'heptagonChance', 'octagonChance', 'starChance', 'autoClicker', 'clickArea'].forEach(type => {
-        let baseCost = { 
-          dropRate: 50, multiplier: 200, particleEffect: 150, autoCollector: 500, 
-          triangleChance: 300, squareChance: 300, pentagonChance: 300,
-          hexagonChance: 500, heptagonChance: 500, octagonChance: 500, starChance: 500,
-          autoClicker: 150, clickArea: 200 
-        }[type];
-        let costMultiplier = { 
-          dropRate: 2, multiplier: 2.5, particleEffect: 1.8, autoCollector: 2.5, 
-          triangleChance: 2.3, squareChance: 2.3, pentagonChance: 2.3,
-          hexagonChance: 2.5, heptagonChance: 2.5, octagonChance: 2.5, starChance: 2.5,
-          autoClicker: 2, clickArea: 2.2 
-        }[type];
+      const upgradeDetails = {
+        dropRate: { name: 'Aumentar Taxa de Drop: Aumenta a frequência de spawn de objetos.', baseCost: 50, costMultiplier: 2 },
+        multiplier: { name: 'Multiplicador de Moedas: Aumenta o ganho de moedas por objeto destruído.', baseCost: 200, costMultiplier: 2.5 },
+        particleEffect: { name: 'Melhorar Partículas: Aumenta o número de partículas em explosões.', baseCost: 150, costMultiplier: 1.8 },
+        autoCollector: { name: 'Adicionar Coletor: Adiciona coletores automáticos que destroem objetos.', baseCost: 500, costMultiplier: 2.5 },
+        triangleChance: { name: 'Chance de Triângulos: Aumenta a chance de spawn de triângulos.', baseCost: 300, costMultiplier: 2.3 },
+        squareChance: { name: 'Chance de Quadrados: Aumenta a chance de spawn de quadrados.', baseCost: 300, costMultiplier: 2.3 },
+        pentagonChance: { name: 'Chance de Pentágonos: Aumenta a chance de spawn de pentágonos.', baseCost: 300, costMultiplier: 2.3 },
+        hexagonChance: { name: 'Chance de Hexágonos: Aumenta a chance de spawn de hexágonos.', baseCost: 500, costMultiplier: 2.5 },
+        heptagonChance: { name: 'Chance de Heptágonos: Aumenta a chance de spawn de heptágonos.', baseCost: 500, costMultiplier: 2.5 },
+        octagonChance: { name: 'Chance de Octógonos: Aumenta a chance de spawn de octógonos.', baseCost: 500, costMultiplier: 2.5 },
+        starChance: { name: 'Chance de Estrelas: Aumenta a chance de spawn de estrelas.', baseCost: 500, costMultiplier: 2.5 },
+        autoClicker: { name: 'Taxa de Auto-Clicker: Aumenta a frequência de cliques automáticos.', baseCost: 150, costMultiplier: 2 },
+        clickArea: { name: 'Aumentar Área de Clique: Aumenta a área de efeito dos cliques.', baseCost: 200, costMultiplier: 2.2 }
+      };
+      Object.keys(upgradeDetails).forEach(type => {
+        let baseCost = upgradeDetails[type].baseCost;
+        let costMultiplier = upgradeDetails[type].costMultiplier;
         let cost = Math.round(baseCost * (1 + upgrades[type].level * costMultiplier));
-        document.getElementById(type + 'Cost').innerText = formatLargeNumber(cost);
-        document.getElementById(type + 'Level').innerText = `${upgrades[type].level}/99`;
+        let button = document.getElementById(type + 'Btn');
+        if (button) {
+          button.setAttribute('data-tooltip', `${upgradeDetails[type].name} Custo: ${formatLargeNumber(cost)} | Nível: ${upgrades[type].level}/99`);
+          let dependency = button.getAttribute('data-dependency');
+          button.disabled = (dependency && upgrades[dependency].level === 0) || coins < cost || upgrades[type].level >= 99;
+        }
       });
-      // Atualizar chances de drop
       let shapeTypesCurrent = getCurrentShapeTypes();
       shapeTypesCurrent.forEach(shape => {
         document.getElementById(`${shape.type}Chance`).innerText = `${getDropChance(shape.type)}%`;
@@ -663,7 +720,8 @@
           spawnScale: o.spawnScale,
           showHealthBar: o.showHealthBar,
           healthBarTimer: o.healthBarTimer,
-          shapeType: o.shapeType
+          shapeType: o.shapeType,
+          pulsePhase: o.pulsePhase
         }))
       };
       localStorage.setItem('dopamineGameSave', JSON.stringify(gameState));
@@ -713,7 +771,8 @@
           spawnScale: o.spawnScale,
           showHealthBar: o.showHealthBar || false,
           healthBarTimer: o.healthBarTimer || 0,
-          shapeType: o.shapeType || 'circle'
+          shapeType: o.shapeType || 'circle',
+          pulsePhase: o.pulsePhase || random(TWO_PI)
         })).filter(o => {
           let validShapes = currentPlanet === 1 ? shapeTypes : shapeTypesPlanet2;
           return validShapes.some(shape => shape.type === o.shapeType);
