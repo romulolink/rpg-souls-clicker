@@ -9,6 +9,8 @@ let currentPlanet = 1;
 let unlockedPlanets = [1];
 let isSessionActive = true;
 let sessionStartTime = Date.now();
+let sessionDurationBase = 10; // Base session duration in seconds
+let clickAreaBase = 10; // Base click area size
 let upgrades = {
   dropRate: { value: 1, level: 0 },
   multiplier: { value: 1, level: 0 },
@@ -22,8 +24,8 @@ let upgrades = {
   octagonChance: { value: 0, level: 0 },
   starChance: { value: 0, level: 0 },
   autoClicker: { value: 0, level: 0 },
-  clickArea: { value: 10, level: 0 },
-  sessionDuration: { value: 5, level: 0 }
+  clickArea: { value: 1, level: 0 },
+  sessionDuration: { value: 0, level: 0 }
 };
 let objects = [];
 let particles = [];
@@ -68,12 +70,7 @@ function setup() {
   startAutoSave();
   GameAnalytics("setEnabledInfoLog", true);
   GameAnalytics("initialize", "59e28319882515cd0b7a00c0fa7bdbd3", "4753424e89922ada37e553eace0400d4872beb5b");
-  GameAnalytics("addDesignEvent", "View:DropChancesPanel");
-  GameAnalytics("addDesignEvent", "View:CoinEffect");
-  GameAnalytics("addDesignEvent", "View:PlanetsPanel");
-  GameAnalytics("addDesignEvent", "Balance:CollectorDamage");
-  GameAnalytics("addDesignEvent", "View:NeonStyle");
-  GameAnalytics("addDesignEvent", "View:UpgradesSkillTree");
+
 }
 
 function toggleUpgradesWindow() {
@@ -178,20 +175,22 @@ function draw() {
 
   if (isSessionActive) {
     let elapsed = (Date.now() - sessionStartTime) / 1000;
-    if (elapsed >= upgrades.sessionDuration.value) {
+    if (elapsed >= (sessionDurationBase * Math.pow(1.25, upgrades.sessionDuration.value))) {
       showSessionEndModal();
       return;
     }
 
     let sessionTimer = Date.now() - sessionStartTime;
-    let remaining = Math.max(0, upgrades.sessionDuration.value * 1000 - sessionTimer);
+    let remaining = Math.max(0, (sessionDurationBase * Math.pow(1.25, upgrades.sessionDuration.value))  * 1000 - sessionTimer);
     document.getElementById('session-time').innerText = formatTimeWithMillis(remaining);
+
+    let margim = 150;
 
     if (frameCount % max(1, floor(60 / upgrades.dropRate.value)) === 0) {
       let objData = getRandomObject();
       let obj = {
-        x: random(width),
-        y: random(height),
+        x: random(margim, width - margim),
+        y: random(margim, height - margim),
         size: objData.size,
         coinValue: objData.coinValue,
         health: objData.health,
@@ -252,12 +251,12 @@ function draw() {
       collector.y = constrain(collector.y, 0, height);
       fill(255, 255, 0, 255);
       stroke(255, 255, 0, 200);
-      strokeWeight(3);
+      strokeWeight(30);
       rect(collector.x - 15, collector.y - 15, 30, 30);
       for (let i = objects.length - 1; i >= 0; i--) {
         let obj = objects[i];
         if (!obj.collected && dist(collector.x, collector.y, obj.x, obj.y) < obj.size + 15) {
-          let baseDamage = 1 + upgrades.clickArea.value / 10;
+          let baseDamage = (1 + upgrades.clickArea.value * Math.pow(1.25,clickAreaBase)) / 10;
           let damage = obj.maxHealth > 100 ? baseDamage / (obj.maxHealth / 100) : baseDamage;
           obj.health -= damage;
           obj.showHealthBar = true;
@@ -340,12 +339,12 @@ function draw() {
 
     for (let i = coinEffects.length - 1; i >= 0; i--) {
       let effect = coinEffects[i];
-      effect.y += effect.vy;
+      effect.y += effect.vy - 1;
       effect.life -= 1;
       fill(255, 255, 0, map(effect.life, 0, 30, 0, 255));
       stroke(255, 255, 0, map(effect.life, 0, 30, 0, 150));
       strokeWeight(1);
-      textSize(14);
+      textSize(20);
       textStyle(BOLD);
       textAlign(CENTER);
       text(effect.text, effect.x, effect.y);
@@ -448,10 +447,10 @@ function calculateHealth(size) {
 function simulateClick(x, y) {
   if (!isSessionActive) return;
   let hit = false;
-  let damage = 1 + upgrades.clickArea.value / 10;
+  let damage = (1 + upgrades.clickArea.value * Math.pow(1.25,clickAreaBase)) / 10;
   for (let i = objects.length - 1; i >= 0; i--) {
     let obj = objects[i];
-    if (!obj.collected && dist(x, y, obj.x, obj.y) < obj.size + upgrades.clickArea.value) {
+    if (!obj.collected && dist(x, y, obj.x, obj.y) < obj.size + upgrades.clickArea.value * 7) {
       obj.health -= damage;
       obj.showHealthBar = true;
       obj.healthBarTimer = 120;
@@ -483,7 +482,7 @@ function simulateClick(x, y) {
       hit = true;
     }
   }
-  clickEffects.push({ x: x, y: y, size: upgrades.clickArea.value * 2, life: 30 });
+  clickEffects.push({ x: x, y: y, size: upgrades.clickArea.value * 2 * 7, life: 30 });
   return hit;
 }
 
@@ -555,6 +554,8 @@ function buyUpgrade(type, baseCost, costMultiplier, increment, levelPointCost = 
     else if (type === 'sessionDuration') upgrades.sessionDuration.value += increment;
     updateStats();
     createUpgradeParticles();
+
+    GameAnalytics("addDesignEvent", type + ":" + upgrades[type].value + ":" + Math.floor(totalPlayTime / 60000));
   }
 }
 
@@ -633,21 +634,120 @@ function updateStats() {
   document.getElementById('xp-bar-fill').style.width = `${(xp / xpRequired) * 100}%`;
 
   const upgradeDetails = {
-    dropRate: { name: 'Increase Drop Rate: Increases the spawn frequency of objects.', baseCost: 50, costMultiplier: 2, levelPointCost: 1 },
-    multiplier: { name: 'Coin Multiplier: Increases coin gain per destroyed object.', baseCost: 200, costMultiplier: 2.5, levelPointCost: 1 },
-    particleEffect: { name: 'Improve Particles: Increases the number of particles in explosions.', baseCost: 150, costMultiplier: 1.8, levelPointCost: 1 },
-    autoCollector: { name: 'Add Collector: Adds automatic collectors that destroy objects.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
-    triangleChance: { name: 'Triangle Chance: Increases the spawn chance of triangles.', baseCost: 300, costMultiplier: 2.3, levelPointCost: 1 },
-    squareChance: { name: 'Square Chance: Increases the spawn chance of squares.', baseCost: 300, costMultiplier: 2.3, levelPointCost: 1 },
-    pentagonChance: { name: 'Pentagon Chance: Increases the spawn chance of pentagons.', baseCost: 300, costMultiplier: 2.3, levelPointCost: 1 },
-    hexagonChance: { name: 'Hexagon Chance: Increases the spawn chance of hexagons.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
-    heptagonChance: { name: 'Heptagon Chance: Increases the spawn chance of heptagons.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
-    octagonChance: { name: 'Octagon Chance: Increases the spawn chance of octagons.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
-    starChance: { name: 'Star Chance: Increases the spawn chance of stars.', baseCost: 500, costMultiplier: 2.5, levelPointCost: 1 },
-    autoClicker: { name: 'Auto-Clicker Rate: Increases the frequency of automatic clicks.', baseCost: 150, costMultiplier: 2 },
-    clickArea: { name: 'Increase Click Area: Increases the effect area of clicks.', baseCost: 200, costMultiplier: 2.2 },
-    sessionDuration: { name: 'Session Duration: Increases the length of each game session.', baseCost: 100, costMultiplier: 2, levelPointCost: 1 }
-  };
+  dropRate: { 
+    name: 'Increase Drop Rate: Increases the spawn frequency of objects.', 
+    baseCost: 50, 
+    costMultiplier: 2, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 1 
+  },
+  multiplier: { 
+    name: 'Coin Multiplier: Increases coin gain per destroyed object.', 
+    baseCost: 200, 
+    costMultiplier: 2.5, 
+    levelPointCost: 1, 
+    increment: 0.5, 
+    format: 1 
+  },
+  particleEffect: { 
+    name: 'Improve Particles: Increases the number of particles in explosions.', 
+    baseCost: 150, 
+    costMultiplier: 1.8, 
+    levelPointCost: 1, 
+    increment: 5, 
+    format: 0 
+  },
+  autoCollector: { 
+    name: 'Add Collector: Adds automatic collectors that destroy objects.', 
+    baseCost: 500, 
+    costMultiplier: 2.5, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 1 
+  },
+  triangleChance: { 
+    name: 'Triangle Chance: Increases the spawn chance of triangles.', 
+    baseCost: 300, 
+    costMultiplier: 2.3, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 1 
+  },
+  squareChance: { 
+    name: 'Square Chance: Increases the spawn chance of squares.', 
+    baseCost: 300, 
+    costMultiplier: 2.3, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 1 
+  },
+  pentagonChance: { 
+    name: 'Pentagon Chance: Increases the spawn chance of pentagons.', 
+    baseCost: 300, 
+    costMultiplier: 2.3, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 1 
+  },
+  hexagonChance: { 
+    name: 'Hexagon Chance: Increases the spawn chance of hexagons.', 
+    baseCost: 500, 
+    costMultiplier: 2.5, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 1 
+  },
+  heptagonChance: { 
+    name: 'Heptagon Chance: Increases the spawn chance of heptagons.', 
+    baseCost: 500, 
+    costMultiplier: 2.5, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 1 
+  },
+  octagonChance: { 
+    name: 'Octagon Chance: Increases the spawn chance of octagons.', 
+    baseCost: 500, 
+    costMultiplier: 2.5, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 1 
+  },
+  starChance: { 
+    name: 'Star Chance: Increases the spawn chance of stars.', 
+    baseCost: 500, 
+    costMultiplier: 2.5, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 1 
+  },
+  autoClicker: { 
+    name: 'Auto-Clicker Rate: Increases the frequency of automatic clicks.', 
+    baseCost: 150, 
+    costMultiplier: 2, 
+    levelPointCost: 0, 
+    increment: 0.1, 
+    format: 1 
+  },
+  clickArea: { 
+    name: 'Increase Click Area: Increases the effect area of clicks.', 
+    baseCost: 200, 
+    costMultiplier: 2.2, 
+    levelPointCost: 0, 
+    increment: 1, 
+    format: 0 
+  },
+  sessionDuration: { 
+    name: 'Session Duration: Increases the length of each game session.', 
+    baseCost: 100, 
+    costMultiplier: 2, 
+    levelPointCost: 1, 
+    increment: 1, 
+    format: 0 
+  }
+};
+
   Object.keys(upgradeDetails).forEach(type => {
     let baseCost = upgradeDetails[type].baseCost;
     let costMultiplier = upgradeDetails[type].costMultiplier;
@@ -656,11 +756,35 @@ function updateStats() {
     let button = document.getElementById(type + 'Btn');
     if (button) {
       let costText = levelPointCost > 0 ? `${formatLargeNumber(cost)} coins or ${levelPointCost} LP` : `${formatLargeNumber(cost)} coins`;
-      button.setAttribute('data-tooltip', `${upgradeDetails[type].name} Cost: ${costText} | Level: ${upgrades[type].level}/99`);
+
+      let currentValue = upgrades[type].value.toFixed(upgradeDetails[type].format);
+      
+      let nextValue = (upgrades[type].value + upgradeDetails[type].increment).toFixed(upgradeDetails[type].format);
+      let valueText = type.includes('Chance') ? `Chance: ${currentValue}% → ${nextValue}%` : `Value: ${currentValue} → ${nextValue}`;
+
+
+      if(type === 'clickArea') {
+
+           currentValue = upgrades[type].value.toFixed(upgradeDetails[type].format);
+
+           nextValue = (upgrades[type].value + upgradeDetails[type].increment).toFixed(upgradeDetails[type].format);
+           valueText = `Dmg: ${ ((1 + currentValue * Math.pow(1.25,clickAreaBase)) / 10).toFixed(2) } → ${((1 + nextValue * Math.pow(1.25,clickAreaBase)) / 10).toFixed(2)} Area: ${currentValue} → ${nextValue}`; 
+
+      }
+
+      if(type === 'sessionDuration') {
+
+         nextValue = (upgrades[type].value + upgradeDetails[type].increment).toFixed(upgradeDetails[type].format);
+         valueText = `Value: ${ (sessionDurationBase * Math.pow(1.25,currentValue)).toFixed(2)} → ${ (
+          sessionDurationBase * Math.pow(1.25,nextValue)).toFixed(2)}`;
+      }
+
+      button.setAttribute('data-tooltip', `${upgradeDetails[type].name} ${valueText} | Cost: ${costText} | Level: ${upgrades[type].level}/99`);
       let dependency = button.getAttribute('data-dependency');
       button.disabled = (dependency && upgrades[dependency].level === 0) || (coins < cost && levelPoints < levelPointCost) || upgrades[type].level >= 99;
     }
   });
+
   let shapeTypesCurrent = getCurrentShapeTypes();
   shapeTypesCurrent.forEach(shape => {
     document.getElementById(`${shape.type}Chance`).innerText = `${getDropChance(shape.type)}%`;
@@ -728,8 +852,8 @@ function loadGame() {
       octagonChance: { value: 0, level: 0 },
       starChance: { value: 0, level: 0 },
       autoClicker: { value: 0, level: 0 },
-      clickArea: { value: 10, level: 0 },
-      sessionDuration: { value: 5, level: 0 }
+      clickArea: { value: 1, level: 0 },
+      sessionDuration: { value: 0, level: 0 }
     };
     if (gameState.upgrades && gameState.upgrades.largeObjectChance) {
       upgrades.triangleChance = { value: gameState.upgrades.largeObjectChance.value / 3, level: Math.floor(gameState.upgrades.largeObjectChance.level / 3) };
@@ -791,8 +915,8 @@ function clearSaves() {
     octagonChance: { value: 0, level: 0 },
     starChance: { value: 0, level: 0 },
     autoClicker: { value: 0, level: 0 },
-    clickArea: { value: 10, level: 0 },
-    sessionDuration: { value: 5, level: 0 }
+    clickArea: { value: 1, level: 0 },
+    sessionDuration: { value: 0, level: 0 }
   };
   collectors = [];
   objects = [];

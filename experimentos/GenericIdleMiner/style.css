@@ -6,6 +6,10 @@ body {
   font-family: 'Orbitron', sans-serif;
 }
 
+#game-container, #upgrades-window {
+  user-select: none;
+}
+
 #game-container {
   display: flex;
   flex-direction: row;
@@ -211,7 +215,8 @@ button:disabled {
   content: attr(data-tooltip);
   position: absolute;
   top: -50px;
-  left: 50%;
+  left: 250px;
+  text-align: justify;
   transform: translateX(-50%);
   background: #1A1A2Ecc;
   color: #00FFFF;
@@ -309,6 +314,11 @@ button:disabled {
   color: #00FFFF;
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
   z-index: 1000;
+}
+#options button{
+
+  float:left;
+  margin-left:5px;
 }
 
 #session-timer-container p {
