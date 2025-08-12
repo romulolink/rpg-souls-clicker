@@ -13,15 +13,15 @@
                 super('MainScene');
             }
             preload() {
-                this.load.spritesheet('player', 'https://rpg-souls-clicker.vercel.app/img/sprites/dude.png', { frameWidth: 32, frameHeight: 32 });
+                this.load.spritesheet('player', 'https://rpg-rogue-clicker.vercel.app/img/sprites/dude.png', { frameWidth: 32, frameHeight: 32 });
                 // Adicione seus próprios caminhos para inimigos e NPCs
                 this.load.spritesheet('boar', '../img/sprites/boar.png', { frameWidth: 32, frameHeight: 32 });
                 this.load.spritesheet('npc', '../img/sprites/npc.png', { frameWidth: 32, frameHeight: 32 });
             }
             create() {
                 const biomes = [
-                    { id: 'biome1', tileset: 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png', startPos: { x: 50, y: 50 } },
-                    { id: 'biome2', tileset: 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png', startPos: { x: 5, y: 5 } },
+                    { id: 'biome1', tileset: 'https://rpg-rogue-clicker.vercel.app/experimentos/tileset.png', startPos: { x: 50, y: 50 } },
+                    { id: 'biome2', tileset: 'https://rpg-rogue-clicker.vercel.app/experimentos/tileset.png', startPos: { x: 5, y: 5 } },
                 ];
                 this.scene.start('BiomeScene', biomes[0]);
             }
@@ -368,7 +368,7 @@ class BiomeScene extends Phaser.Scene {
                         this.textures.remove(`tiles_${this.biomeId}`);
                         this.scene.start('BiomeScene', {
                             id: teleport.targetBiome,
-                            tileset: 'https://rpg-souls-clicker.vercel.app/experimentos/tileset.png',
+                            tileset: 'https://rpg-rogue-clicker.vercel.app/experimentos/tileset.png',
                             startPos: teleport.targetPos
                         });
                         return;
